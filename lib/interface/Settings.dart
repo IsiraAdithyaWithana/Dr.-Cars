@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
+//import 'security_screen.dart';
+=======
 
+>>>>>>> 348426836f0fe4b4c241e871c267b67fb8aa26c0
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
