@@ -27,7 +27,7 @@ class ProfileScreen extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundImage: AssetImage('assets/profile_pic.jpg'),
+              backgroundImage: AssetImage('images/logo.png'),
             ),
             SizedBox(height: 10),
             Text(
@@ -80,9 +80,9 @@ class ProfileScreen extends StatelessWidget {
         ),
         items:
             [
-              'Car',
-              'Van',
-              'SUV',
+              'Car before 2020',
+              'Car before 2010',
+              'Cae before 2000',
             ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
         onChanged: (value) {},
       ),
