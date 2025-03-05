@@ -16,7 +16,7 @@ class SettingsScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          _buildSettingItem(Icons.person_outline, "Account setting", context),
+          _buildSettingItem(Icons.person_outline, "Account Setting", context),
           _buildSettingItem(
             Icons.notifications_outlined,
             "Notification",
