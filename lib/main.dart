@@ -1,9 +1,5 @@
 import 'interface/servicerecords.dart';
 import 'package:flutter/material.dart';
-import 'interface/signin.dart';
-import 'interface/Service History.dart';
-import 'interface/profile.dart';
-import 'interface/Settings.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,7 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: ServiceRecordsPage(),
+      home: SettingsScreen(),
     );
   }
 }
