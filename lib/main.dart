@@ -15,11 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-<<<<<<< HEAD
-      home:ServiceRecordsPage(),
-=======
       home: ServiceHistorypage(),
->>>>>>> 82ea51047be8e469c5e19b29120a26fef581ca58
     );
   }
 }
