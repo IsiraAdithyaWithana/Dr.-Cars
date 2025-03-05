@@ -53,7 +53,7 @@ class SignInScreen extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: () {},
                 icon: Image.asset(
-                  'assets/google_logo.png',
+                  'images/google.png',
                   height: 24,
                 ), // Add Google logo to assets
                 label: Text("Continue with Google"),
