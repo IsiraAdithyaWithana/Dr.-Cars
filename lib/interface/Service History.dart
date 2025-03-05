@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // this one is for awsome fonts
 
 class ServiceHistorypage extends StatelessWidget {
   const ServiceHistorypage({super.key});
@@ -91,7 +92,7 @@ class ServiceHistorypage extends StatelessWidget {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.compass_calibration),
+            icon: FaIcon(FontAwesomeIcons.compass), // font awsome commpass icon
             label: 'map',
           ),
           BottomNavigationBarItem(
