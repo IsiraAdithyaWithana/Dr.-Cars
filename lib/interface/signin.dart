@@ -15,7 +15,7 @@ class SignInScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/logo.png',
+                'images/logo.png',
                 height: 100,
               ), // Replace with your logo
               SizedBox(height: 20),
