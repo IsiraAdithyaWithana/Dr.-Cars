@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class SignInScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
 
+  SignInScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -12,7 +14,10 @@ class SignInScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/logo.png', height: 100), // Replace with your logo
+              Image.asset(
+                'assets/logo.png',
+                height: 100,
+              ), // Replace with your logo
               SizedBox(height: 20),
               Text(
                 "Create an account",
@@ -25,7 +30,9 @@ class SignInScreen extends StatelessWidget {
                 controller: _emailController,
                 decoration: InputDecoration(
                   hintText: "Email",
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   filled: true,
                   fillColor: Colors.grey[200],
                 ),
@@ -45,7 +52,10 @@ class SignInScreen extends StatelessWidget {
               SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: () {},
-                icon: Image.asset('assets/google_logo.png', height: 24), // Add Google logo to assets
+                icon: Image.asset(
+                  'assets/google_logo.png',
+                  height: 24,
+                ), // Add Google logo to assets
                 label: Text("Continue with Google"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
