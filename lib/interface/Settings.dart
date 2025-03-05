@@ -35,7 +35,7 @@ class SettingsScreen extends StatelessWidget {
             Icons.logout,
             "Log Out",
             context,
-            color: Colors.red,
+            color: const Color.fromARGB(255, 14, 13, 13),
             onTap: () => _showLogoutDialog(context),
           ),
         ],
