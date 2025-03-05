@@ -3,6 +3,7 @@ import 'interface/signin.dart';
 import 'interface/Service History.dart';
 import 'interface/profile.dart';
 import 'interface/Settings.dart';
+import 'main/welcome.dart';
 
 void main() {
   runApp(MyApp());
