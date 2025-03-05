@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,38 +12,40 @@ class SettingsScreen extends StatelessWidget {
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.more_vert),
+            onPressed: () {},
+          ),
+        ],
       ),
       body: ListView(
         children: [
-          _buildSettingItem(Icons.security, "Security", context, onTap: () {
-            Navigator.pushNamed(context, '/security');
-          }),
-          _buildSettingItem(
-            Icons.delete_outline,
-            "Delete Account",
-            context,
-            color: Colors.red,
-            onTap: () => _showDeleteAccountDialog(context),
-          ),
-          _buildSettingItem(
-            Icons.logout,
-            "Log Out",
-            context,
-            color: Colors.red,
-            onTap: () => _showLogoutDialog(context),
-          ),
+          _buildSettingItem(Icons.person_outline, "Account setting", context),
+          _buildSettingItem(Icons.notifications_outlined, "Notification", context),
+          _buildSettingItem(Icons.people_outline, "Interest", context),
+          _buildSettingItem(Icons.description_outlined, "Terms and conditions", context),
+          _buildSettingItem(Icons.lock_outline, "Privacy policy", context),
+          _buildSettingItem(Icons.security, "Security", context),
+          _buildSettingItem(Icons.delete_outline, "Delete account", context, color: Colors.red, onTap: () => _showDeleteAccountDialog(context)),
+          _buildSettingItem(Icons.logout, "Log out", context, onTap: () => _showLogoutDialog(context)),
         ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+          BottomNavigationBarItem(icon: Image.asset('assets/logo.png', height: 30), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+        ],
+        selectedItemColor: Colors.red,
+        unselectedItemColor: Colors.black,
       ),
     );
   }
 
-  Widget _buildSettingItem(
-    IconData icon,
-    String title,
-    BuildContext context, {
-    Color color = Colors.black,
-    VoidCallback? onTap,
-  }) {
+  Widget _buildSettingItem(IconData icon, String title, BuildContext context, {Color color = Colors.black, VoidCallback? onTap}) {
     return ListTile(
       leading: Icon(icon, color: color),
       title: Text(title, style: TextStyle(color: color)),
@@ -65,8 +65,7 @@ class SettingsScreen extends StatelessWidget {
             TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
-                Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                _logout(context);
               },
               child: Text("Log Out", style: TextStyle(color: Colors.red)),
             ),
@@ -87,8 +86,7 @@ class SettingsScreen extends StatelessWidget {
             TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
-                Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                _deleteAccount(context);
               },
               child: Text("Delete", style: TextStyle(color: Colors.red)),
             ),
@@ -96,5 +94,23 @@ class SettingsScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _logout(BuildContext context) {
+    // Implement the logout logic here, like clearing authentication tokens, etc.
+    // For example:
+    // AuthService.logout();
+
+    Navigator.pop(context);  // Close the dialog
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);  // Navigate to login screen
+  }
+
+  void _deleteAccount(BuildContext context) {
+    // Implement the delete account logic here, like calling an API to delete the user account
+    // For example:
+    // AuthService.deleteAccount();
+
+    Navigator.pop(context);  // Close the dialog
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);  // Navigate to login screen after deleting the account
   }
 }
