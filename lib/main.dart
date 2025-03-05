@@ -5,6 +5,7 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -56,6 +57,11 @@ class SettingsScreen extends StatelessWidget {
         selectedItemColor: Colors.red,
         unselectedItemColor: const Color.fromARGB(255, 8, 8, 8),
       ),
+=======
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: SettingsScreen(),
+>>>>>>> a9ffd9591d99d6e92147c92c06bb677163335f15
     );
   }
 
