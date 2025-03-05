@@ -1,5 +1,8 @@
+import 'package:dr_cars/interface/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // this one is for awsome fonts
+
+int _selectedIndex = 0;
 
 class ServiceHistorypage extends StatelessWidget {
   const ServiceHistorypage({super.key});
@@ -90,30 +93,42 @@ class ServiceHistorypage extends StatelessWidget {
       ),
 
       bottomNavigationBar: BottomNavigationBar(
-        type:
-            BottomNavigationBarType.fixed, // we use this to show all the names
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.compass), // font awsome commpass icon
-            label: 'Map',
-          ),
-          BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('images/logo.png')),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Alerts',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.verified_user),
-            label: 'User',
-          ),
-        ],
-      ),
+  type: BottomNavigationBarType.fixed,
+  selectedItemColor: Colors.black,
+  unselectedItemColor: Colors.grey,
+  currentIndex: _selectedIndex, // Highlight selected item
+  onTap: (index) {
+    (() {
+      _selectedIndex = index; // Update selected index
+    });
+
+    if (index == 4) { // Navigate when "User" icon is clicked
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ProfileScreen()),
+      );
+    }
+  },
+  items: [
+    BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+    BottomNavigationBarItem(
+      icon: FaIcon(FontAwesomeIcons.compass),
+      label: 'Map',
+    ),
+    BottomNavigationBarItem(
+      icon: Image.asset('images/logo.png', width: 40, height: 40),
+      label: '',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.notifications),
+      label: 'Alerts',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.verified_user),
+      label: 'User',
+    ),
+  ],
+),
     );
   }
 }
