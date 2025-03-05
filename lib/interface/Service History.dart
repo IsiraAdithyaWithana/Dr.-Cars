@@ -10,6 +10,8 @@ class ServiceHistorypage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Service History'),
         backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
