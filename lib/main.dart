@@ -15,7 +15,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: ServiceHistorypage(),
+      title: 'Vehicle Service App',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: Welcome(),
     );
   }
 }
