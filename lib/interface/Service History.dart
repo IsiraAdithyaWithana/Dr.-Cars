@@ -86,6 +86,8 @@ class ServiceHistorypage extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.black,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
