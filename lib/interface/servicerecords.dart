@@ -1,3 +1,4 @@
+import 'package:dr_cars/interface/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -6,6 +7,8 @@ void main() {
     MaterialApp(debugShowCheckedModeBanner: false, home: ServiceRecordsPage()),
   );
 }
+
+int _selectedIndex = 0;
 
 class ServiceRecordsPage extends StatelessWidget {
   const ServiceRecordsPage({super.key});
@@ -154,30 +157,43 @@ class ServiceRecordsPage extends StatelessWidget {
       ),
 
       // Bottom Navigation Bar
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.compass),
-            label: 'Map',
-          ),
-          BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('images/logo.png')),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Alerts',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.verified_user),
-            label: 'User',
-          ),
-        ],
-      ),
+bottomNavigationBar: BottomNavigationBar(
+  type: BottomNavigationBarType.fixed,
+  selectedItemColor: Colors.black,
+  unselectedItemColor: Colors.grey,
+  currentIndex: _selectedIndex, // Highlight selected item
+  onTap: (index) {
+    (() {
+      _selectedIndex = index; // Update selected index
+    });
+
+    if (index == 4) { // Navigate when "User" icon is clicked
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ProfileScreen()),
+      );
+    }
+  },
+  items: [
+    BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+    BottomNavigationBarItem(
+      icon: FaIcon(FontAwesomeIcons.compass),
+      label: 'Map',
+    ),
+    BottomNavigationBarItem(
+      icon: ImageIcon(AssetImage('images/logo.png')),
+      label: '',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.notifications),
+      label: 'Alerts',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.verified_user),
+      label: 'User',
+    ),
+  ],
+),
     );
   }
 }
