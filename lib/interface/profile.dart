@@ -31,7 +31,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             SizedBox(height: 10),
             Text(
-              'User One',
+              'User Profile',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
@@ -78,9 +78,12 @@ class ProfileScreen extends StatelessWidget {
           labelText: label,
           border: OutlineInputBorder(),
         ),
-        items: ['Option 1', 'Option 2', 'Option 3']
-            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-            .toList(),
+        items:
+            [
+              'Car',
+              'Van',
+              'SUV',
+            ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
         onChanged: (value) {},
       ),
     );
