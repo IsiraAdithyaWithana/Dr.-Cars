@@ -1,4 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:dr_cars/interface/Settings.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: SettingsScreen(),
+    );
+  }
+}
 
 class SettingsScreen extends StatelessWidget {
   @override
@@ -102,6 +119,10 @@ class SettingsScreen extends StatelessWidget {
     // AuthService.logout();
 
     Navigator.pop(context);  // Close the dialog
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Successfully logged out!"),
+      backgroundColor: Colors.green,
+    ));
     Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);  // Navigate to login screen
   }
 
@@ -111,6 +132,10 @@ class SettingsScreen extends StatelessWidget {
     // AuthService.deleteAccount();
 
     Navigator.pop(context);  // Close the dialog
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Successfully deleted account!"),
+      backgroundColor: Colors.green,
+    ));
     Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);  // Navigate to login screen after deleting the account
   }
 }
