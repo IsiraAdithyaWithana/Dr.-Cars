@@ -34,7 +34,7 @@ class SettingsScreen extends StatelessWidget {
           _buildSettingItem(Icons.security, "Security", context),
           _buildSettingItem(
             Icons.delete_outline,
-            "Delete account",
+            "Delete Account",
             context,
             color: Colors.red,
           ),
