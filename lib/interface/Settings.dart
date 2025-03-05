@@ -46,7 +46,7 @@ class SettingsScreen extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
           BottomNavigationBarItem(
-            icon: Image.asset('assets/logo.png', height: 30),
+            icon: Image.asset('images/logo.png', height: 30),
             label: '',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
