@@ -89,12 +89,16 @@ class ServiceHistorypage extends StatelessWidget {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.car_repair),
-            label: 'Services',
+            icon: Icon(Icons.compass_calibration),
+            label: 'map',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
             label: 'Alerts',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.verified_user),
+            label: 'User',
           ),
         ],
       ),
