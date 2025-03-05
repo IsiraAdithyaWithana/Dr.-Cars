@@ -30,7 +30,7 @@ class SettingsScreen extends StatelessWidget {
             "Terms and conditions",
             context,
           ),
-          _buildSettingItem(Icons.lock_outline, "Privacy policy", context),
+          _buildSettingItem(Icons.lock_outline, "Privacy Policy", context),
           _buildSettingItem(Icons.security, "Security", context),
           _buildSettingItem(
             Icons.delete_outline,
