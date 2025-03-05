@@ -38,7 +38,7 @@ class SettingsScreen extends StatelessWidget {
             context,
             color: Colors.red,
           ),
-          _buildSettingItem(Icons.logout, "Log out", context),
+          _buildSettingItem(Icons.logout, "Log Out", context),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
