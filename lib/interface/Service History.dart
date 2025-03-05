@@ -93,7 +93,7 @@ class ServiceHistorypage extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
             icon: FaIcon(FontAwesomeIcons.compass), // font awsome commpass icon
-            label: 'map',
+            label: 'Map',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
@@ -117,6 +117,7 @@ class ServiceRecordCard extends StatelessWidget {
   final String notes;
 
   const ServiceRecordCard({
+    super.key,
     required this.date,
     required this.mileage,
     required this.provider,
