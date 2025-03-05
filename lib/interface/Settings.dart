@@ -53,7 +53,7 @@ class SettingsScreen extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
         selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.black,
+        unselectedItemColor: const Color.fromARGB(255, 8, 8, 8),
       ),
     );
   }
