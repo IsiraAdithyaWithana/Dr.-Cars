@@ -181,7 +181,7 @@ bottomNavigationBar: BottomNavigationBar(
       label: 'Map',
     ),
     BottomNavigationBarItem(
-      icon: ImageIcon(AssetImage('images/logo.png')),
+      icon: Image.asset('images/logo.png', width: 40, height: 40),
       label: '',
     ),
     BottomNavigationBarItem(
