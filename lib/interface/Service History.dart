@@ -99,6 +99,10 @@ class ServiceHistorypage extends StatelessWidget {
             label: 'Map',
           ),
           BottomNavigationBarItem(
+            icon: ImageIcon(AssetImage('assets/logo.png')),
+            label: '',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
             label: 'Alerts',
           ),
