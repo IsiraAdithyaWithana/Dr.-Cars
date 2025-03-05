@@ -1,8 +1,6 @@
-import 'interface/servicerecords.dart';
+import 'package:dr_cars/interface/Service%20History.dart';
+import 'package:dr_cars/interface/servicerecords.dart';
 import 'package:flutter/material.dart';
-import 'interface/signin.dart';
-import 'interface/Service History.dart';
-import 'interface/profile.dart';
 import 'interface/Settings.dart';
 
 void main() {
@@ -16,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SettingsScreen(),
+      home: ServiceRecordsPage(),
     );
   }
 }
