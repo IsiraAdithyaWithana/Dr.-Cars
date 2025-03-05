@@ -165,7 +165,7 @@ class ServiceRecordsPage extends StatelessWidget {
             label: 'Map',
           ),
           BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/logo.png')),
+            icon: ImageIcon(AssetImage('Images/logo.png')),
             label: '',
           ),
           BottomNavigationBarItem(
