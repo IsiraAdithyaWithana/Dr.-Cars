@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'records_screen.dart';
 import 'appointments_screen.dart';
+import 'add_vehicle.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -45,6 +46,16 @@ class HomeScreen extends StatelessWidget {
                 );
               },
               child: Text("Go to Appointments Screen"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to Add Vehicle Page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AddVehicle()),
+                );
+              },
+              child: Text("Go to Add Vehicle"),
             ),
           ],
         ),
