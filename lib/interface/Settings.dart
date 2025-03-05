@@ -60,7 +60,7 @@ class SettingsScreen extends StatelessWidget {
     IconData icon,
     String title,
     BuildContext context, {
-    Color color = Colors.black,
+    Color color = const Color.fromARGB(220, 0, 0, 0),
   }) {
     return ListTile(
       leading: Icon(icon, color: color),
