@@ -16,7 +16,7 @@ class SettingsScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          _buildSettingItem(Icons.person_outline, "Account setting", context),
+          _buildSettingItem(Icons.person_outline, "Account Setting", context),
           _buildSettingItem(
             Icons.notifications_outlined,
             "Notification",
@@ -60,7 +60,7 @@ class SettingsScreen extends StatelessWidget {
     IconData icon,
     String title,
     BuildContext context, {
-    Color color = Colors.black,
+    Color color = const Color.fromARGB(220, 0, 0, 0),
   }) {
     return ListTile(
       leading: Icon(icon, color: color),
