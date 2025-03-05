@@ -86,7 +86,10 @@ class ServiceHistorypage extends StatelessWidget {
           ],
         ),
       ),
+
       bottomNavigationBar: BottomNavigationBar(
+        type:
+            BottomNavigationBarType.fixed, // we use this to show all the names
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.black,
         items: const [
