@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../service/add_service.dart';
 
 class OwnerInfo extends StatefulWidget {
+  const OwnerInfo({super.key});
+
   @override
   _OwnerInfoPageState createState() => _OwnerInfoPageState();
 }

@@ -34,14 +34,12 @@ class _AddServiceState extends State<AddService> {
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
     );
-    if (pickedDate != null) {
-      setState(() {
-        _nextServiceDateController.text = DateFormat(
-          'yyyy/MM/dd',
-        ).format(pickedDate);
-      });
+    setState(() {
+      _nextServiceDateController.text = DateFormat(
+        'yyyy/MM/dd',
+      ).format(pickedDate);
+    });
     }
-  }
 
   @override
   Widget build(BuildContext context) {

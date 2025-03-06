@@ -18,6 +18,8 @@ class MyApp extends StatelessWidget {
 }
 
 class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +54,7 @@ class SettingsScreen extends StatelessWidget {
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
-          BottomNavigationBarItem(icon: Image.asset('assets/logo.png', height: 30), label: ''),
+          BottomNavigationBarItem(icon: Image.asset('images/logo.png', height: 30), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
