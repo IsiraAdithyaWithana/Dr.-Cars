@@ -1,4 +1,6 @@
 import 'package:dr_cars/main/signup.dart';
+import 'package:dr_cars/main/signup_selection.dart';
+import 'package:dr_cars/main/temp_fornow.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatelessWidget {
@@ -26,7 +28,10 @@ class LoginPage extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Handle continue action
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ForNowTemp()),
+                );
               },
               child: Text('Continue'),
               style: ElevatedButton.styleFrom(
@@ -53,7 +58,7 @@ class LoginPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SignUpPage()),
+                  MaterialPageRoute(builder: (context) => SignupSelection()),
                 );
               },
               child: Text('Create an account'),

@@ -2,7 +2,7 @@ import 'package:dr_cars/main/login.dart';
 import 'package:dr_cars/main/temp_fornow.dart';
 import 'package:flutter/material.dart';
 
-class SignUpPage extends StatelessWidget {
+class SignUpService extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,7 +18,7 @@ class SignUpPage extends StatelessWidget {
                   Image.asset('images/bg_removed_logo.png', height: 100),
                   SizedBox(height: 20),
                   Text(
-                    'Sign Up as a Vehicle Owner',
+                    'Sign Up as a Service Center',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 20),
