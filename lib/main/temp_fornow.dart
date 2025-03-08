@@ -1,3 +1,5 @@
+import 'package:dr_cars/interface/Settings.dart';
+import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/main/signup.dart';
 import 'package:dr_cars/main/signup_service.dart';
 import 'package:dr_cars/main/temp_fornow.dart';
@@ -24,7 +26,7 @@ class ForNowTemp extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SignUpPage()),
+                  MaterialPageRoute(builder: (context) => SettingsScreen()),
                 );
               },
               child: Text('Vehicle Owner'),
