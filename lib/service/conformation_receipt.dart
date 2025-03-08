@@ -8,8 +8,6 @@ class RecieptPage extends StatelessWidget {
     {"service": "Brake Fluid Replacement", "price": "800"},
   ];
 
-  const RecieptPage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
