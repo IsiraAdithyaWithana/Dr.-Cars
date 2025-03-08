@@ -1,42 +1,49 @@
 import 'package:flutter/material.dart';
 
-class AppointmentPage extends StatefulWidget {
-  const AppointmentPage({super.key});
+class AppointmentsPage extends StatefulWidget {
+  const AppointmentsPage({Key? key}) : super(key: key);
 
   @override
-  AppointmentPageState createState() => AppointmentPageState();
+  _AppointmentsPageState createState() => _AppointmentsPageState();
 }
 
-class AppointmentPageState extends State<AppointmentPage> {
-  final TextEditingController _vehicleNumberController = TextEditingController();
-  String? _selectedModel = "CAR";
-  String? _selectedService = "FULL SERVICE";
-  String? _selectedBranch = "KANDY";
+class _AppointmentsPageState extends State<AppointmentsPage> {
+  // Lists for dropdowns
+  final List<String> vehicleModels = ['Car', 'Van', 'SUV', 'Truck', 'Motorcycle'];
+  final List<String> serviceTypes = ['Full Service', 'Oil Change', 'Brake Check', 'Tire Rotation'];
+  final List<String> branches = ['Kandy', 'Colombo', 'Galle', 'Jaffna', 'Kurunegala'];
+
+  // Selected values
+  String? _selectedModel;
+  String? _selectedService;
+  String? _selectedBranch;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
 
-  Future<void> _pickDate(BuildContext context) async {
-    DateTime? picked = await showDatePicker(
+  // Function to pick a date
+  Future<void> _pickDate() async {
+    DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
     );
-    if (picked != null && picked != _selectedDate) {
+    if (pickedDate != null) {
       setState(() {
-        _selectedDate = picked;
+        _selectedDate = pickedDate;
       });
     }
   }
 
-  Future<void> _pickTime(BuildContext context) async {
-    TimeOfDay? picked = await showTimePicker(
+  // Function to pick a time
+  Future<void> _pickTime() async {
+    TimeOfDay? pickedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
     );
-    if (picked != null && picked != _selectedTime) {
+    if (pickedTime != null) {
       setState(() {
-        _selectedTime = picked;
+        _selectedTime = pickedTime;
       });
     }
   }
@@ -44,115 +51,76 @@ class AppointmentPageState extends State<AppointmentPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Book Your Appointment"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Book Your Appointment')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "VEHICLE DETAILS",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const Divider(color: Colors.red, thickness: 1),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Vehicle Number *', style: TextStyle(fontWeight: FontWeight.bold)),
+            const TextField(decoration: InputDecoration(border: OutlineInputBorder())),
 
-              // Vehicle Number
-              const Text("Vehicle Number *"),
-              TextField(
-                controller: _vehicleNumberController,
-                decoration: const InputDecoration(
-                  hintText: "Enter vehicle number",
-                  border: UnderlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
+            const SizedBox(height: 16),
+            const Text('Vehicle Model *', style: TextStyle(fontWeight: FontWeight.bold)),
+            DropdownButtonFormField<String>(
+              value: _selectedModel,
+              items: vehicleModels.map((model) {
+                return DropdownMenuItem(value: model, child: Text(model));
+              }).toList(),
+              onChanged: (value) => setState(() => _selectedModel = value),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+            ),
 
-              // Vehicle Model Dropdown
-              const Text("Vehicle Model *"),
-              DropdownButtonFormField<String>(
-                value: _selectedModel,
-                items: ["CAR", "SUV", "VAN", "TRUCK"]
-                    .map((model) => DropdownMenuItem(value: model, child: Text(model)))
-                    .toList(),
-                onChanged: null, // Disabled Dropdown
-                decoration: const InputDecoration(
-                  filled: true,
-                  fillColor: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 16),
+            const SizedBox(height: 16),
+            const Text('Type of Service', style: TextStyle(fontWeight: FontWeight.bold)),
+            DropdownButtonFormField<String>(
+              value: _selectedService,
+              items: serviceTypes.map((service) {
+                return DropdownMenuItem(value: service, child: Text(service));
+              }).toList(),
+              onChanged: (value) => setState(() => _selectedService = value),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+            ),
 
-              // Type of Service Dropdown
-              const Text("Type of Service"),
-              DropdownButtonFormField<String>(
-                value: _selectedService,
-                items: ["FULL SERVICE", "OIL CHANGE", "BRAKE CHECK"]
-                    .map((service) => DropdownMenuItem(value: service, child: Text(service)))
-                    .toList(),
-                onChanged: null, // Disabled Dropdown
-                decoration: const InputDecoration(
-                  filled: true,
-                  fillColor: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 16),
+            const SizedBox(height: 16),
+            const Text('Preferred Branch *', style: TextStyle(fontWeight: FontWeight.bold)),
+            DropdownButtonFormField<String>(
+              value: _selectedBranch,
+              items: branches.map((branch) {
+                return DropdownMenuItem(value: branch, child: Text(branch));
+              }).toList(),
+              onChanged: (value) => setState(() => _selectedBranch = value),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+            ),
 
-              // Preferred Branch Dropdown
-              const Text("Preferred Branch *"),
-              DropdownButtonFormField<String>(
-                value: _selectedBranch,
-                items: ["KANDY", "COLOMBO", "GALLE"]
-                    .map((branch) => DropdownMenuItem(value: branch, child: Text(branch)))
-                    .toList(),
-                onChanged: null, // Disabled Dropdown
-                decoration: const InputDecoration(
-                  filled: true,
-                  fillColor: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 16),
+            const SizedBox(height: 16),
+            const Text('Preferred Date *', style: TextStyle(fontWeight: FontWeight.bold)),
+            TextButton.icon(
+              icon: const Icon(Icons.calendar_today),
+              label: Text(_selectedDate == null ? 'Select Date' : _selectedDate!.toLocal().toString().split(' ')[0]),
+              onPressed: _pickDate,
+            ),
 
-              // Preferred Date Picker
-              const Text("Preferred Date *"),
-              GestureDetector(
-                onTap: () => _pickDate(context),
-                child: AbsorbPointer(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: _selectedDate == null
-                          ? "SELECT DATE"
-                          : "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}",
-                      suffixIcon: const Icon(Icons.calendar_today),
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
+            const SizedBox(height: 16),
+            const Text('Preferred Time *', style: TextStyle(fontWeight: FontWeight.bold)),
+            TextButton.icon(
+              icon: const Icon(Icons.access_time),
+              label: Text(_selectedTime == null ? 'Select Time' : _selectedTime!.format(context)),
+              onPressed: _pickTime,
+            ),
 
-              // Preferred Time Picker
-              const Text("Preferred Time *"),
-              GestureDetector(
-                onTap: () => _pickTime(context),
-                child: AbsorbPointer(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: _selectedTime == null
-                          ? "SELECT TIME"
-                          : "${_selectedTime!.hour}:${_selectedTime!.minute}",
-                      suffixIcon: const Icon(Icons.access_time),
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                if (_selectedModel == null || _selectedBranch == null || _selectedDate == null || _selectedTime == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all required fields')));
+                  return;
+                }
+                // Handle appointment submission
+              },
+              child: const Text('Submit Appointment'),
+            ),
+          ],
         ),
       ),
     );
