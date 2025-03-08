@@ -9,9 +9,9 @@ class AppointmentsPage extends StatefulWidget {
 
 class _AppointmentsPageState extends State<AppointmentsPage> {
   // Lists for dropdowns
-  final List<String> vehicleModels = ['Car', 'Van', 'SUV', 'Truck', 'Motorcycle'];
-  final List<String> serviceTypes = ['Full Service', 'Oil Change', 'Brake Check', 'Tire Rotation'];
-  final List<String> branches = ['Kandy', 'Colombo', 'Galle', 'Jaffna', 'Kurunegala'];
+  final List<String> vehicleModels = ['Car', 'Van', 'Jeep', 'Truck', 'Motorcycle','Three-Wheeler','Bus'];
+  final List<String> serviceTypes = ['Full Service', 'Oil Change', 'Brake Check', 'Tire Rotation','Body Wash','Hybrid Battery Service','Interior cleaning','Filter replacement','Wheel Alignment'];
+  final List<String> branches = ['Kandy', 'Colombo', 'Galle', 'Jaffna', 'Kurunegala','Kalutara','Matara','Batticaloa'];
 
   // Selected values
   String? _selectedModel;
