@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dr_cars/interface/Settings.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -31,30 +27,47 @@ class SettingsScreen extends StatelessWidget {
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert),
-            onPressed: () {},
-          ),
-        ],
+        actions: [IconButton(icon: Icon(Icons.more_vert), onPressed: () {})],
       ),
       body: ListView(
         children: [
           _buildSettingItem(Icons.person_outline, "Account setting", context),
-          _buildSettingItem(Icons.notifications_outlined, "Notification", context),
+          _buildSettingItem(
+            Icons.notifications_outlined,
+            "Notification",
+            context,
+          ),
           _buildSettingItem(Icons.people_outline, "Interest", context),
-          _buildSettingItem(Icons.description_outlined, "Terms and conditions", context),
+          _buildSettingItem(
+            Icons.description_outlined,
+            "Terms and conditions",
+            context,
+          ),
           _buildSettingItem(Icons.lock_outline, "Privacy policy", context),
           _buildSettingItem(Icons.security, "Security", context),
-          _buildSettingItem(Icons.delete_outline, "Delete account", context, color: Colors.red, onTap: () => _showDeleteAccountDialog(context)),
-          _buildSettingItem(Icons.logout, "Log out", context, onTap: () => _showLogoutDialog(context)),
+          _buildSettingItem(
+            Icons.delete_outline,
+            "Delete account",
+            context,
+            color: Colors.red,
+            onTap: () => _showDeleteAccountDialog(context),
+          ),
+          _buildSettingItem(
+            Icons.logout,
+            "Log out",
+            context,
+            onTap: () => _showLogoutDialog(context),
+          ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
-          BottomNavigationBarItem(icon: Image.asset('images/logo.png', height: 30), label: ''),
+          BottomNavigationBarItem(
+            icon: Image.asset('images/logo.png', height: 30),
+            label: '',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
@@ -64,7 +77,13 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingItem(IconData icon, String title, BuildContext context, {Color color = Colors.black, VoidCallback? onTap}) {
+  Widget _buildSettingItem(
+    IconData icon,
+    String title,
+    BuildContext context, {
+    Color color = Colors.black,
+    VoidCallback? onTap,
+  }) {
     return ListTile(
       leading: Icon(icon, color: color),
       title: Text(title, style: TextStyle(color: color)),
@@ -81,7 +100,10 @@ class SettingsScreen extends StatelessWidget {
           title: Text("Log Out"),
           content: Text("Are you sure you want to log out?"),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Cancel"),
+            ),
             TextButton(
               onPressed: () {
                 _logout(context);
@@ -100,9 +122,14 @@ class SettingsScreen extends StatelessWidget {
       builder: (context) {
         return AlertDialog(
           title: Text("Delete Account"),
-          content: Text("Are you sure you want to delete your account? This action cannot be undone."),
+          content: Text(
+            "Are you sure you want to delete your account? This action cannot be undone.",
+          ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Cancel"),
+            ),
             TextButton(
               onPressed: () {
                 _deleteAccount(context);
@@ -120,12 +147,18 @@ class SettingsScreen extends StatelessWidget {
     // For example:
     // AuthService.logout();
 
-    Navigator.pop(context);  // Close the dialog
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Successfully logged out!"),
-      backgroundColor: Colors.green,
-    ));
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);  // Navigate to login screen
+    Navigator.pop(context); // Close the dialog
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Successfully logged out!"),
+        backgroundColor: Colors.green,
+      ),
+    );
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/login',
+      (route) => false,
+    ); // Navigate to login screen
   }
 
   void _deleteAccount(BuildContext context) {
@@ -133,11 +166,17 @@ class SettingsScreen extends StatelessWidget {
     // For example:
     // AuthService.deleteAccount();
 
-    Navigator.pop(context);  // Close the dialog
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Successfully deleted account!"),
-      backgroundColor: Colors.green,
-    ));
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);  // Navigate to login screen after deleting the account
+    Navigator.pop(context); // Close the dialog
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Successfully deleted account!"),
+        backgroundColor: Colors.green,
+      ),
+    );
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/login',
+      (route) => false,
+    ); // Navigate to login screen after deleting the account
   }
 }

@@ -15,7 +15,7 @@ class Welcome extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('images/logow.png', height: 250),
+                Image.asset('images/bg_removed_logo.png', height: 250),
                 SizedBox(height: 20),
                 Text(
                   "Welcome",
