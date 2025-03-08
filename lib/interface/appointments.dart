@@ -49,78 +49,159 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     }
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Book Your Appointment')),
+      appBar: AppBar(
+        title: const Text('Book Your Appointment', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 0, 0, 0)),
+        ),
+        centerTitle: true,
+      ),
+    
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Card(
+          elevation: 5, // 🌟 Adds shadow for a modern look
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Vehicle Details',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 0, 0, 0)),
+                ),
+                const Divider(color: Colors.redAccent, thickness: 1.5),
+
+                const SizedBox(height: 16),
+                _buildLabel('Vehicle Number '),
+                _buildTextField(),
+
+                const SizedBox(height: 16),
+                _buildLabel('Vehicle Model '),
+                _buildDropdown(vehicleModels, _selectedModel, (value) => setState(() => _selectedModel = value)),
+
+                const SizedBox(height: 16),
+                _buildLabel('Type of Service '),
+                _buildDropdown(serviceTypes, _selectedService, (value) => setState(() => _selectedService = value)),
+
+                const SizedBox(height: 16),
+                _buildLabel('Preferred Branch '),
+                _buildDropdown(branches, _selectedBranch, (value) => setState(() => _selectedBranch = value)),
+
+                const SizedBox(height: 16),
+                _buildLabel('Preferred Date '),
+                _buildDatePicker(),
+
+                const SizedBox(height: 16),
+                _buildLabel('Preferred Time '),
+                _buildTimePicker(),
+
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 58, 85, 255), 
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () {
+                      if (_selectedModel == null || _selectedBranch == null || _selectedDate == null || _selectedTime == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please fill all required fields')),
+                        );
+                        return;
+                      }
+                      // Handle appointment submission
+                    },
+                    child: const Text('Submit Appointment', style: TextStyle(fontSize: 16, color: Colors.white)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 🔹 Label Widget
+  Widget _buildLabel(String text) {
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+    );
+  }
+
+  // 🔹 TextField Widget
+  Widget _buildTextField() {
+    return TextField(
+      decoration: InputDecoration(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        filled: true,
+        fillColor: Colors.grey[200],
+      ),
+    );
+  }
+
+  // 🔹 Dropdown Widget
+  Widget _buildDropdown(List<String> items, String? selectedValue, Function(String?) onChanged) {
+    return DropdownButtonFormField<String>(
+      value: selectedValue,
+      items: items.map((item) {
+        return DropdownMenuItem(value: item, child: Text(item));
+      }).toList(),
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        filled: true,
+        fillColor: Colors.grey[200],
+      ),
+    );
+  }
+
+  // 🔹 Date Picker Widget
+  Widget _buildDatePicker() {
+    return InkWell(
+      onTap: _pickDate,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(10),
+          color: Colors.grey[200],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Vehicle Number *', style: TextStyle(fontWeight: FontWeight.bold)),
-            const TextField(decoration: InputDecoration(border: OutlineInputBorder())),
+            Text(_selectedDate == null ? 'Select Date' : _selectedDate!.toLocal().toString().split(' ')[0]),
+            const Icon(Icons.calendar_today, color: Colors.grey),
+          ],
+        ),
+      ),
+    );
+  }
 
-            const SizedBox(height: 16),
-            const Text('Vehicle Model *', style: TextStyle(fontWeight: FontWeight.bold)),
-            DropdownButtonFormField<String>(
-              value: _selectedModel,
-              items: vehicleModels.map((model) {
-                return DropdownMenuItem(value: model, child: Text(model));
-              }).toList(),
-              onChanged: (value) => setState(() => _selectedModel = value),
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-            ),
-
-            const SizedBox(height: 16),
-            const Text('Type of Service', style: TextStyle(fontWeight: FontWeight.bold)),
-            DropdownButtonFormField<String>(
-              value: _selectedService,
-              items: serviceTypes.map((service) {
-                return DropdownMenuItem(value: service, child: Text(service));
-              }).toList(),
-              onChanged: (value) => setState(() => _selectedService = value),
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-            ),
-
-            const SizedBox(height: 16),
-            const Text('Preferred Branch *', style: TextStyle(fontWeight: FontWeight.bold)),
-            DropdownButtonFormField<String>(
-              value: _selectedBranch,
-              items: branches.map((branch) {
-                return DropdownMenuItem(value: branch, child: Text(branch));
-              }).toList(),
-              onChanged: (value) => setState(() => _selectedBranch = value),
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-            ),
-
-            const SizedBox(height: 16),
-            const Text('Preferred Date *', style: TextStyle(fontWeight: FontWeight.bold)),
-            TextButton.icon(
-              icon: const Icon(Icons.calendar_today),
-              label: Text(_selectedDate == null ? 'Select Date' : _selectedDate!.toLocal().toString().split(' ')[0]),
-              onPressed: _pickDate,
-            ),
-
-            const SizedBox(height: 16),
-            const Text('Preferred Time *', style: TextStyle(fontWeight: FontWeight.bold)),
-            TextButton.icon(
-              icon: const Icon(Icons.access_time),
-              label: Text(_selectedTime == null ? 'Select Time' : _selectedTime!.format(context)),
-              onPressed: _pickTime,
-            ),
-
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                if (_selectedModel == null || _selectedBranch == null || _selectedDate == null || _selectedTime == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all required fields')));
-                  return;
-                }
-                // Handle appointment submission
-              },
-              child: const Text('Submit Appointment'),
-            ),
+  // 🔹 Time Picker Widget
+  Widget _buildTimePicker() {
+    return InkWell(
+      onTap: _pickTime,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(10),
+          color: Colors.grey[200],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(_selectedTime == null ? 'Select Time' : _selectedTime!.format(context)),
+            const Icon(Icons.access_time, color: Colors.grey),
           ],
         ),
       ),
