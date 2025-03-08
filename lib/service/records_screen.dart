@@ -33,7 +33,7 @@ class _RecordsScreenState extends State<RecordsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('images/logow.png', height: 100),
+              Image.asset('images/logo.png', height: 100),
               SizedBox(height: 20),
               Text(
                 "Find Vehicle",

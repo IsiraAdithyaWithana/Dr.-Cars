@@ -1,4 +1,4 @@
-import 'package:dr_cars/main/login.dart';
+import 'package:dr_cars/main/signin.dart';
 import 'package:flutter/material.dart';
 import 'main_menu.dart';
 
@@ -31,7 +31,7 @@ class Welcome extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => LoginPage()),
+                      MaterialPageRoute(builder: (context) => SignInScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(

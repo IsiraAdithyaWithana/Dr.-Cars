@@ -1,4 +1,4 @@
-import 'package:dr_cars/main/login.dart';
+import 'package:dr_cars/main/signin.dart';
 import 'package:dr_cars/main/temp_fornow.dart';
 import 'package:flutter/material.dart';
 
@@ -76,7 +76,7 @@ class SignUpService extends StatelessWidget {
                       // Navigate to login page
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => LoginPage()),
+                        MaterialPageRoute(builder: (context) => SignInScreen()),
                       );
                     },
                     child: Text('Already have an account? Sign In'),

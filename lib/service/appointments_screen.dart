@@ -46,7 +46,7 @@ class AppointmentsScreen extends StatelessWidget {
           padding: EdgeInsets.all(16.0),
           children: [
             SizedBox(height: 20),
-            Image.asset('images/logow.png', height: 100),
+            Image.asset('images/logo.png', height: 100),
             SizedBox(height: 20),
             Text(
               "Select a day to view appointments",
