@@ -21,7 +21,7 @@ class MyGarageScreen extends StatelessWidget {
       'name': 'Corolla 141',
       'km': '4,020',
       'oil': '1,291',
-      'image': 'images/dashcar.jpg',
+      'image': 'images/dashcar.png',
     },
   ];
 
@@ -97,12 +97,20 @@ class MyGarageScreen extends StatelessWidget {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      '⚙️ ${car['km']} Kilometers',
-                                      style: TextStyle(color: Colors.white),
+                                      '⚙️ ${car['km']} KM',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.normal,
+                                      ),
                                     ),
                                     Text(
                                       '🛢 ${car['oil']} OIL',
-                                      style: TextStyle(color: Colors.white),
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.normal,
+                                      ),
                                     ),
                                   ],
                                 ),
