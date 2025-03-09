@@ -74,6 +74,7 @@ flutter:
     - images/google.png
     - images/bg_removed_logo.png
     - images/google_ico.png
+    - images/dashcar.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

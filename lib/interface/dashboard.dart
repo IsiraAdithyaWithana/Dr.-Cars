@@ -19,16 +19,9 @@ class MyGarageScreen extends StatelessWidget {
     {
       'year': 2016,
       'name': 'Focus RS',
-      'miles': '4,020',
+      'km': '4,020',
       'oil': '1,291',
-      'image': 'assets/focus_rs.jpg',
-    },
-    {
-      'year': 2017,
-      'name': 'Mustang GT',
-      'miles': '17,528',
-      'oil': '820',
-      'image': 'assets/mustang_gt.jpg',
+      'image': 'images/dashcar.jpg',
     },
   ];
 
@@ -37,8 +30,8 @@ class MyGarageScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'My Garage',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          'Your vehicle',
+          style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -47,9 +40,9 @@ class MyGarageScreen extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 10),
+          SizedBox(height: 60),
           Container(
-            height: 220,
+            height: 400,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: cars.length,
@@ -58,7 +51,7 @@ class MyGarageScreen extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Container(
-                    width: 180,
+                    width: 475,
                     decoration: BoxDecoration(
                       color: Colors.black,
                       borderRadius: BorderRadius.circular(16),
@@ -78,13 +71,13 @@ class MyGarageScreen extends StatelessWidget {
                         children: [
                           Text(
                             car['year'].toString(),
-                            style: TextStyle(color: Colors.white, fontSize: 14),
+                            style: TextStyle(color: Colors.white, fontSize: 22),
                           ),
                           Text(
                             car['name'],
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 18,
+                              fontSize: 42,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -93,7 +86,7 @@ class MyGarageScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                '⚙️ ${car['miles']} MILES',
+                                '⚙️ ${car['km']} Kilometers',
                                 style: TextStyle(color: Colors.white),
                               ),
                               Text(
@@ -122,11 +115,6 @@ class MyGarageScreen extends StatelessWidget {
             child: ListView(
               children: [
                 ListTile(
-                  title: Text('2017 Mustang GT'),
-                  subtitle: Text('18,348 miles'),
-                  trailing: Icon(Icons.check_circle, color: Colors.blue),
-                ),
-                ListTile(
                   title: Text('2016 Focus RS'),
                   subtitle: Text('5,301 miles'),
                   trailing: Icon(Icons.check_circle, color: Colors.blue),
@@ -135,6 +123,20 @@ class MyGarageScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+          BottomNavigationBarItem(
+            icon: Image.asset('images/logo.png', height: 30),
+            label: '',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+        ],
+        selectedItemColor: Colors.red,
+        unselectedItemColor: Colors.black,
       ),
     );
   }
