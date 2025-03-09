@@ -18,7 +18,7 @@ class MyGarageScreen extends StatelessWidget {
   final List<Map<String, dynamic>> cars = [
     {
       'year': 2016,
-      'name': 'Focus RS',
+      'name': 'Corolla 141',
       'km': '4,020',
       'oil': '1,291',
       'image': 'images/dashcar.jpg',
