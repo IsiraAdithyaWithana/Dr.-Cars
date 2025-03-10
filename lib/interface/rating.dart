@@ -152,7 +152,20 @@ class _ReviewScreenState extends State<ReviewScreen> {
       ),
       
       // Bottom navigation bar
-     
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+          BottomNavigationBarItem(
+            icon: Image.asset('images/logo.png', height: 30),
+            label: '',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+        ],
+        selectedItemColor: Colors.red,
+        unselectedItemColor: Colors.black,
+      ),
     );
   }
 }
