@@ -81,7 +81,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
         title: Center(
           child: Text(
             "Reviews",
-            style: TextStyle(color: Colors.black, fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ),
         actions: [
@@ -99,16 +99,16 @@ class _ReviewScreenState extends State<ReviewScreen> {
             // Section title
             Text(
               "Share your feedback",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 15),
+            SizedBox(height: 18),
             
             // Rating question
             Text(
               "How was the service at the service center today?",
-              style: TextStyle(fontSize: 16, color: Colors.black87),
+              style: TextStyle(fontSize: 19, color: Colors.black87),
             ),
-            SizedBox(height: 15),
+            SizedBox(height: 18),
             
             // Star rating row
             Row(
@@ -117,7 +117,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 return IconButton(
                   icon: Icon(
                     Icons.star,
-                    size: 32,
+                    size: 34,
                     color: _selectedRating > index ? Colors.orange : Colors.grey,
                   ),
                   onPressed: () {
@@ -133,14 +133,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
             // Feedback input label
             Text(
               "Can you tell us more?",
-              style: TextStyle(fontSize: 16, color: Colors.black87),
+              style: TextStyle(fontSize: 18, color: Colors.black87),
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 15),
             
             // Feedback input field
             TextField(
               controller: _feedbackController,
-              maxLines: 4,
+              maxLines: 6,
               decoration: InputDecoration(
                 hintText: "Add feedback",
                 hintStyle: TextStyle(color: Colors.grey),
