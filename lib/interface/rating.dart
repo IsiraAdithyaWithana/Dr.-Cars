@@ -135,7 +135,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
               "Can you tell us more?",
               style: TextStyle(fontSize: 18, color: Colors.black87),
             ),
-            SizedBox(height: 15),
+            SizedBox(height: 18),
             
             // Feedback input field
             TextField(
@@ -167,11 +167,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     ),
                     child: Text(
                       "Cancel",
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: TextStyle(color: Colors.black, fontSize: 20),
                     ),
                   ),
                 ),
-                SizedBox(width: 15),
+                SizedBox(width: 20),
                 
                 // Submit button
                 Expanded(
@@ -183,7 +183,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     ),
                     child: Text(
                       "Submit",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(color: Colors.white, fontSize: 20),
                     ),
                   ),
                 ),
