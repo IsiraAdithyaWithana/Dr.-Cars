@@ -28,6 +28,34 @@ class _ReviewScreenState extends State<ReviewScreen> {
   int _selectedRating = 0; // Stores the selected star rating
   final TextEditingController _feedbackController = TextEditingController(); // Controller for feedback input
 
+  void _showSubmitDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Submit Review"),
+          content: Text("Are you sure you want to submit your feedback?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: Text("No"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                // You can add submit logic here
+              },
+              child: Text("Yes"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   
 
   @override
@@ -136,7 +164,19 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 SizedBox(width: 15),
                 
                 // Submit button
-                
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _showSubmitDialog,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      padding: EdgeInsets.symmetric(vertical: 15),
+                    ),
+                    child: Text(
+                      "Submit",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                ),
               ],
             ),
           ],
