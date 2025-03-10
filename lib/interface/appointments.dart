@@ -100,12 +100,13 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
                 const SizedBox(height: 24),
                 SizedBox(
-                  width: double.infinity,
+                  width: 200,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 58, 85, 255), 
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      minimumSize: Size(200,60),
+                      backgroundColor: const Color.fromARGB(255, 9, 23, 111), 
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                     ),
                     onPressed: () {
                       if (_selectedModel == null || _selectedBranch == null || _selectedDate == null || _selectedTime == null) {
@@ -139,7 +140,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   Widget _buildTextField() {
     return TextField(
       decoration: InputDecoration(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        hintText: "EX: CAD-0896",
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
         filled: true,
         fillColor: Colors.grey[200],
       ),
@@ -155,7 +157,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       }).toList(),
       onChanged: onChanged,
       decoration: InputDecoration(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        hintText: "SELECT",
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
         filled: true,
         fillColor: Colors.grey[200],
       ),
@@ -171,13 +174,13 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         width: double.infinity,
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(25),
           color: Colors.grey[200],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(_selectedDate == null ? 'Select Date' : _selectedDate!.toLocal().toString().split(' ')[0]),
+            Text(_selectedDate == null ? 'SELECT DATE' : _selectedDate!.toLocal().toString().split(' ')[0]),
             const Icon(Icons.calendar_today, color: Colors.grey),
           ],
         ),
@@ -194,13 +197,13 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         width: double.infinity,
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(25),
           color: Colors.grey[200],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(_selectedTime == null ? 'Select Time' : _selectedTime!.format(context)),
+            Text(_selectedTime == null ? 'SELECT TIME' : _selectedTime!.format(context)),
             const Icon(Icons.access_time, color: Colors.grey),
           ],
         ),
