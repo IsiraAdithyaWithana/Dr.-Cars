@@ -9,10 +9,16 @@ class AppointmentsPage extends StatefulWidget {
 
 class _AppointmentsPageState extends State<AppointmentsPage> {
   // Lists for dropdowns
-  final List<String> vehicleModels = ['Car', 'Van', 'Jeep', 'Truck', 'Motorcycle','Three-Wheeler','Bus'];
-  final List<String> serviceTypes = ['Full Service', 'Oil and filter change', 'Tire pressure and rotation check','Fluid level check','Battery check and replacements','Wiper blade replacement'
-                                                'Light blub check','Brake system services','Susupension and alignment services','Exhaust system service','Air conditioning services','Electrical system services','Car detailing(Interior and exterior cleaning, waxing)','Tire sales and installation','pre-purchase inspections','Diagnostic testing'];
-  final List<String> branches = ['Kandy', 'Colombo', 'Galle', 'Jaffna', 'Kurunegala','Kalutara','Matara','Batticaloa'];
+  final List<String> vehicleModels = ['Car', 'Van', 'Jeep', 'Truck', 'Motorcycle', 'Three-Wheeler', 'Bus'];
+  final List<String> serviceTypes = [
+    'Full Service', 'Oil and filter change', 'Tire pressure and rotation check',
+    'Fluid level check', 'Battery check and replacements', 'Wiper blade replacement',
+    'Light bulb check', 'Brake system services', 'Suspension and alignment services',
+    'Exhaust system service', 'Air conditioning services', 'Electrical system services',
+    'Car detailing (Interior and exterior cleaning, waxing)', 'Tire sales and installation',
+    'Pre-purchase inspections', 'Diagnostic testing'
+  ];
+  final List<String> branches = ['Kandy', 'Colombo', 'Galle', 'Jaffna', 'Kurunegala', 'Kalutara', 'Matara', 'Batticaloa'];
 
   // Selected values
   String? _selectedModel;
@@ -49,81 +55,91 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     }
   }
 
- @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Book Your Appointment', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 0, 0, 0)),
+        title: const Text(
+          'Book Your Appointment',
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black),
         ),
         centerTitle: true,
       ),
-    
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Card(
-          elevation: 5, // 🌟 Adds shadow for a modern look
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Vehicle Details',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 0, 0, 0)),
-                ),
-                const Divider(color: Colors.redAccent, thickness: 1.5),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Center(
+            child: FractionallySizedBox(
+              widthFactor: constraints.maxWidth > 600 ? 0.5 : 0.9, // 50% on large screens, 90% on small screens
+              child: Card(
+                elevation: 5,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Vehicle Details',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                      const Divider(color: Color.fromARGB(255, 189, 7, 7), thickness: 1.5),
 
-                const SizedBox(height: 16),
-                _buildLabel('Vehicle Number '),
-                _buildTextField(),
+                      const SizedBox(height: 16),
+                      _buildLabel('Vehicle Number '),
+                      _buildTextField(),
 
-                const SizedBox(height: 16),
-                _buildLabel('Vehicle Model '),
-                _buildDropdown(vehicleModels, _selectedModel, (value) => setState(() => _selectedModel = value)),
+                      const SizedBox(height: 16),
+                      _buildLabel('Vehicle Model '),
+                      _buildDropdown(vehicleModels, _selectedModel, (value) => setState(() => _selectedModel = value)),
 
-                const SizedBox(height: 16),
-                _buildLabel('Type of Service '),
-                _buildDropdown(serviceTypes, _selectedService, (value) => setState(() => _selectedService = value)),
+                      const SizedBox(height: 16),
+                      _buildLabel('Type of Service '),
+                      _buildDropdown(serviceTypes, _selectedService, (value) => setState(() => _selectedService = value)),
 
-                const SizedBox(height: 16),
-                _buildLabel('Preferred Branch '),
-                _buildDropdown(branches, _selectedBranch, (value) => setState(() => _selectedBranch = value)),
+                      const SizedBox(height: 16),
+                      _buildLabel('Preferred Branch '),
+                      _buildDropdown(branches, _selectedBranch, (value) => setState(() => _selectedBranch = value)),
 
-                const SizedBox(height: 16),
-                _buildLabel('Preferred Date '),
-                _buildDatePicker(),
+                      const SizedBox(height: 16),
+                      _buildLabel('Preferred Date '),
+                      _buildDatePicker(),
 
-                const SizedBox(height: 16),
-                _buildLabel('Preferred Time '),
-                _buildTimePicker(),
+                      const SizedBox(height: 16),
+                      _buildLabel('Preferred Time '),
+                      _buildTimePicker(),
 
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: 200,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: Size(200,60),
-                      backgroundColor: const Color.fromARGB(255, 9, 23, 111), 
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-                    ),
-                    onPressed: () {
-                      if (_selectedModel == null || _selectedBranch == null || _selectedDate == null || _selectedTime == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please fill all required fields')),
-                        );
-                        return;
-                      }
-                      // Handle appointment submission
-                    },
-                    child: const Text('Submit Appointment', style: TextStyle(fontSize: 16, color: Colors.white)),
+                      const SizedBox(height: 24),
+                      Center(
+                        child: SizedBox(
+                          width: 180, // Smaller submit button
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(180, 50),
+                              backgroundColor: const Color.fromARGB(255, 9, 23, 111), 
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                            ),
+                            onPressed: () {
+                              if (_selectedModel == null || _selectedBranch == null || _selectedDate == null || _selectedTime == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Please fill all required fields')),
+                                );
+                                return;
+                              }
+                              // Handle appointment submission
+                            },
+                            child: const Text('Submit Appointment', style: TextStyle(fontSize: 16, color: Colors.white)),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
