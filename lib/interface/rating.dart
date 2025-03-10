@@ -28,6 +28,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
   int _selectedRating = 0; // Stores the selected star rating
   final TextEditingController _feedbackController = TextEditingController(); // Controller for feedback input
 
+  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,9 +40,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
           icon: Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {},
         ),
-        title: Text(
-          "Reviews",
-          style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+        title: Center(
+          child: Text(
+            "Reviews",
+            style: TextStyle(color: Colors.black, fontSize: 22, fontWeight: FontWeight.bold),
+          ),
         ),
         actions: [
           IconButton(
@@ -132,19 +136,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 SizedBox(width: 15),
                 
                 // Submit button
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      padding: EdgeInsets.symmetric(vertical: 15),
-                    ),
-                    child: Text(
-                      "Submit",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ),
-                ),
+                
               ],
             ),
           ],
@@ -152,7 +144,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       ),
       
       // Bottom navigation bar
-      bottomNavigationBar: BottomNavigationBar(
+       bottomNavigationBar: BottomNavigationBar(
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
