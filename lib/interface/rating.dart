@@ -45,13 +45,23 @@ class _ReviewScreenState extends State<ReviewScreen> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog
-                // You can add submit logic here
+                _showSnackBar(); // Show snackbar on confirmation
               },
               child: Text("Yes"),
             ),
           ],
         );
       },
+    );
+  }
+
+  void _showSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Thank you for your feedback!"),
+         backgroundColor: Colors.green,
+        duration: Duration(seconds: 2),
+      ),
     );
   }
 
