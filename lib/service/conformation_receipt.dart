@@ -1,48 +1,42 @@
 import 'package:flutter/material.dart';
 
-class RecieptPage extends StatelessWidget {
+class RecieptPage extends StatefulWidget {
   final String previousOilChange;
   final String currentMileage;
   final String nextServiceDate;
-  final bool oilChanged;
-  final bool airFilterChanged;
-  final bool oilFilterChanged;
-  final bool coolantChanged;
-  final bool brakeFluidChanged;
-  final bool oesterboxOilChanged;
-  final bool differentialOilChanged;
-  final bool beltInspection;
-  final bool batteryTesting;
+  final Map<String, bool> servicesSelected;
 
-  RecieptPage({
+  const RecieptPage({
     super.key,
     required this.previousOilChange,
     required this.currentMileage,
     required this.nextServiceDate,
-    required this.oilChanged,
-    required this.airFilterChanged,
-    required this.oilFilterChanged,
-    required this.coolantChanged,
-    required this.brakeFluidChanged,
-    required this.oesterboxOilChanged,
-    required this.differentialOilChanged,
-    required this.beltInspection,
-    required this.batteryTesting, // ✅ Add this
+    required this.servicesSelected,
   });
 
-  // Example data for services and prices
-  final List<Map<String, String>> services = [
-    {"service": "Oil Changing with 5W-15", "price": "1500"},
-    {"service": "Air Filter Replacement", "price": "500"},
-    {"service": "Brake Fluid Replacement", "price": "800"},
-  ];
+  @override
+  _RecieptPageState createState() => _RecieptPageState();
+}
+
+class _RecieptPageState extends State<RecieptPage> {
+  final Map<String, TextEditingController> _priceControllers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    widget.servicesSelected.forEach((service, selected) {
+      if (selected) {
+        _priceControllers[service] = TextEditingController();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Conformation Receipt",
+          "Confirmation Receipt",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
@@ -54,19 +48,17 @@ class RecieptPage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Table for Services and Prices
+            // Service Table
             Table(
-              border: TableBorder.all(), // Add borders to the table
+              border: TableBorder.all(),
               columnWidths: const {
-                0: FlexColumnWidth(2), // Service column width
-                1: FlexColumnWidth(1), // Price column width
+                0: FlexColumnWidth(2),
+                1: FlexColumnWidth(1),
               },
               children: [
                 // Table Header
                 TableRow(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200], // Header background color
-                  ),
+                  decoration: BoxDecoration(color: Colors.grey[200]),
                   children: const [
                     Padding(
                       padding: EdgeInsets.all(8.0),
@@ -90,24 +82,34 @@ class RecieptPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                // Table Rows (Dynamic Data)
-                for (var service in services)
-                  TableRow(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(service["service"]!),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(service["price"]!),
-                      ),
-                    ],
-                  ),
+                // Dynamic Rows for Selected Services
+                ...widget.servicesSelected.entries
+                    .where((entry) => entry.value)
+                    .map((entry) {
+                      return TableRow(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(entry.key),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: TextField(
+                              controller: _priceControllers[entry.key],
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                hintText: "Enter Price",
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    })
+                    .toList(),
               ],
             ),
             const SizedBox(height: 20),
-
             // Send Receipt Button
             SizedBox(
               width: double.infinity,
@@ -120,9 +122,18 @@ class RecieptPage extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  // Add functionality to send the receipt
+                  Map<String, String> finalPrices = {};
+                  _priceControllers.forEach((service, controller) {
+                    finalPrices[service] = controller.text;
+                  });
+
+                  // Display confirmation message
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Receipt sent successfully!")),
+                    SnackBar(
+                      content: Text(
+                        "Receipt sent successfully with prices: ${finalPrices.toString()}",
+                      ),
+                    ),
                   );
                 },
                 child: const Text(
