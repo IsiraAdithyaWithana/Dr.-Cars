@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dr_cars/interface/Settings.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
