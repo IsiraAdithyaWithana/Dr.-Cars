@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dr_cars/interface/rating.dart';
 
 void main() {
   runApp(const MyApp());
