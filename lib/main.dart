@@ -9,6 +9,7 @@ import 'package:dr_cars/service/add_vehicle.dart';
 import 'package:dr_cars/service/owner_info.dart';
 import 'package:dr_cars/service/records_screen.dart';
 import 'package:dr_cars/service/service_info_screen.dart';
+import 'package:dr_cars/service/service_menu.dart';
 import 'package:flutter/material.dart';
 import 'main/signin.dart';
 import 'package:dr_cars/interface/appointments.dart';
@@ -23,6 +24,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(debugShowCheckedModeBanner: false, home: AppointmentsPage());
-  }
+
+}
 }
