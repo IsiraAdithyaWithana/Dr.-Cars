@@ -9,54 +9,106 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Vehicle Service App')),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ElevatedButton(
-              onPressed: () async {
-                // Show password dialog
-                bool isAuthenticated = await showDialog(
-                  context: context,
-                  builder: (context) => PasswordDialog(),
-                );
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Centered Logo at the Top
+              SizedBox(
+                width: double.infinity,
+                child: Image.asset('images/logo.png', height: 150),
+              ),
+              const SizedBox(height: 50),
 
-                if (isAuthenticated) {
-                  // Navigate to RecordsScreen if password is correct
+              // Buttons with increased spacing and adjusted size
+              _buildMenuButton(
+                context,
+                text: "Add New",
+                subtext: "Add new vehicles and add services",
+                onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => RecordsScreen()),
+                    MaterialPageRoute(builder: (context) => AddVehicle()),
                   );
-                } else {
-                  // Show error message if password is incorrect
-                  ScaffoldMessenger.of(
+                },
+              ),
+
+              const SizedBox(height: 24), // Increased spacing
+
+              _buildMenuButton(
+                context,
+                text: "Records",
+                subtext: "For quick view of services (For non users)",
+                onPressed: () async {
+                  bool isAuthenticated = await showDialog(
+                    context: context,
+                    builder: (context) => PasswordDialog(),
+                  );
+
+                  if (isAuthenticated) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => RecordsScreen()),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Wrong password")),
+                    );
+                  }
+                },
+              ),
+
+              const SizedBox(height: 24), // Increased spacing
+
+              _buildMenuButton(
+                context,
+                text: "Appointments",
+                subtext: "Accept service appointments",
+                onPressed: () {
+                  Navigator.push(
                     context,
-                  ).showSnackBar(SnackBar(content: Text("Wrong password")));
-                }
-              },
-              child: Text("Go to Records Screen"),
+                    MaterialPageRoute(
+                      builder: (context) => AppointmentsScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Custom Button Widget with Fixed Size
+  Widget _buildMenuButton(
+    BuildContext context, {
+    required String text,
+    required String subtext,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      width: 300, // Reduced button width
+      height: 90, // Increased button height
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        onPressed: onPressed,
+        child: Column(
+          mainAxisAlignment:
+              MainAxisAlignment.spaceBetween, // Ensures text spacing
+          children: [
+            Text(
+              text,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AppointmentsScreen()),
-                );
-              },
-              child: Text("Go to Appointments Screen"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Navigate to Add Vehicle Page
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AddVehicle()),
-                );
-              },
-              child: Text("Go to Add Vehicle"),
-            ),
+            Text(subtext, style: const TextStyle(fontSize: 12)),
           ],
         ),
       ),
@@ -64,6 +116,7 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+// Password Dialog for Records Screen
 class PasswordDialog extends StatefulWidget {
   const PasswordDialog({super.key});
 
@@ -77,32 +130,28 @@ class _PasswordDialogState extends State<PasswordDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Enter Password'),
+      title: const Text('Enter Password'),
       content: TextField(
         controller: _passwordController,
         obscureText: true,
-        decoration: InputDecoration(labelText: 'Password'),
+        decoration: const InputDecoration(labelText: 'Password'),
       ),
       actions: [
         TextButton(
           onPressed: () {
-            Navigator.of(context).pop(false); // Return false if canceled
+            Navigator.of(context).pop(false);
           },
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
         TextButton(
           onPressed: () {
             if (_passwordController.text == 'Isira') {
-              Navigator.of(
-                context,
-              ).pop(true); // Return true if password is correct
+              Navigator.of(context).pop(true);
             } else {
-              Navigator.of(
-                context,
-              ).pop(false); // Return false if password is incorrect
+              Navigator.of(context).pop(false);
             }
           },
-          child: Text('Submit'),
+          child: const Text('Submit'),
         ),
       ],
     );
