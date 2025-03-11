@@ -1,3 +1,4 @@
+import 'package:dr_cars/service/service_menu.dart';
 import 'package:flutter/material.dart';
 
 class RecieptPage extends StatefulWidget {
@@ -36,13 +37,27 @@ class _RecieptPageState extends State<RecieptPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Confirmation Receipt",
+          "Vehicle Owner Information",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          // Home icon button in the right corner
+          IconButton(
+            icon: const Icon(Icons.home, color: Colors.black),
+            onPressed: () {
+              // Navigate back to the home screen
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
