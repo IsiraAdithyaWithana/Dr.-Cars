@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dr_cars/interface/rating.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,19 +15,20 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: 'Arial', // Setting default font
       ),
-      home: ReviewScreen(),
+      home: RatingScreen(),
     );
   }
 }
 
-class ReviewScreen extends StatefulWidget {
+class RatingScreen extends StatefulWidget {
   @override
   _ReviewScreenState createState() => _ReviewScreenState();
 }
 
-class _ReviewScreenState extends State<ReviewScreen> {
+class _ReviewScreenState extends State<RatingScreen> {
   int _selectedRating = 0; // Stores the selected star rating
-  final TextEditingController _feedbackController = TextEditingController(); // Controller for feedback input
+  final TextEditingController _feedbackController =
+      TextEditingController(); // Controller for feedback input
 
   void _showSubmitDialog() {
     showDialog(
@@ -59,14 +61,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text("Thank you for your feedback!"),
-         backgroundColor: Colors.green,
+        backgroundColor: Colors.green,
         duration: Duration(seconds: 2),
       ),
     );
   }
-
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +80,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
         title: Center(
           child: Text(
             "Reviews",
-            style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         actions: [
@@ -102,14 +105,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 18),
-            
+
             // Rating question
             Text(
               "How was the service at the service center today?",
               style: TextStyle(fontSize: 19, color: Colors.black87),
             ),
             SizedBox(height: 18),
-            
+
             // Star rating row
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -118,7 +121,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   icon: Icon(
                     Icons.star,
                     size: 34,
-                    color: _selectedRating > index ? Colors.orange : Colors.grey,
+                    color:
+                        _selectedRating > index ? Colors.orange : Colors.grey,
                   ),
                   onPressed: () {
                     setState(() {
@@ -129,14 +133,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
               }),
             ),
             SizedBox(height: 25),
-            
+
             // Feedback input label
             Text(
               "Can you tell us more?",
               style: TextStyle(fontSize: 18, color: Colors.black87),
             ),
             SizedBox(height: 18),
-            
+
             // Feedback input field
             TextField(
               controller: _feedbackController,
@@ -153,7 +157,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
               ),
             ),
             SizedBox(height: 25),
-            
+
             // Buttons row
             Row(
               children: [
@@ -172,7 +176,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   ),
                 ),
                 SizedBox(width: 20),
-                
+
                 // Submit button
                 Expanded(
                   child: ElevatedButton(
@@ -192,9 +196,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
           ],
         ),
       ),
-      
+
       // Bottom navigation bar
-       bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: BottomNavigationBar(
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
