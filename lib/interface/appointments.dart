@@ -93,32 +93,41 @@ Widget build(BuildContext context) {
                       const SizedBox(height: 16),
                       _buildLabel('Type of Service '),
                      
-                      SizedBox(
-                        width: double.infinity, // ✅ Prevents dropdown from expanding
-                       child: DropdownButtonFormField<String>(
-                            value: _selectedService,
-                            items: serviceTypes.map((service) {
-                              return DropdownMenuItem<String>(
-                                value: service,
+                       SizedBox(
+                        width: double.infinity, // ✅ Ensures it fits within the container
+                        child: DropdownButtonFormField<String>(
+                          value: _selectedService,
+                          items: serviceTypes.map((service) {
+                            return DropdownMenuItem<String>(
+                              value: service,
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  maxWidth: MediaQuery.of(context).size.width * 0.6, // ✅ Limits dropdown width
+                                ),
                                 child: Text(
                                   service,
-                                  overflow: TextOverflow.ellipsis, // Prevents text from expanding out
+                                  overflow: TextOverflow.ellipsis, // ✅ Truncates long text
+                                  maxLines: 1,
+                                  softWrap: false,
                                 ),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedService = value;
-                              });
-                            },
-                            decoration: InputDecoration(
-                              hintText: "SELECT",
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
-                              filled: true,
-                              fillColor: Colors.grey[200],
-                            ),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedService = value;
+                            });
+                          },
+                          isExpanded: true, // ✅ Ensures the dropdown fits inside its container
+                          decoration: InputDecoration(
+                            hintText: "SELECT",
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+                            filled: true,
+                            fillColor: Colors.grey[200],
                           ),
                         ),
+                      ),
+
 
                       const SizedBox(height: 16),
                       _buildLabel('Preferred Branch '),
