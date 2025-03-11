@@ -55,28 +55,28 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Book Your Appointment',
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black),
-        ),
-        centerTitle: true,
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text(
+        'Book Your Appointment',
+        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return Center(
-            child: FractionallySizedBox(
-              widthFactor: constraints.maxWidth > 600 ? 0.5 : 0.9, // 50% on large screens, 90% on small screens
-              child: Card(
-                elevation: 5,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+      centerTitle: true,
+    ),
+    body: LayoutBuilder(
+      builder: (context, constraints) {
+        return Center(
+          child: FractionallySizedBox(
+            widthFactor: constraints.maxWidth > 600 ? 0.6 : 0.95, // ✅ Increased width slightly for safety
+            child: Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: SingleChildScrollView( // ✅ Allows scrolling to avoid overflow
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
@@ -84,39 +84,68 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
                       ),
                       const Divider(color: Color.fromARGB(255, 189, 7, 7), thickness: 1.5),
-
                       const SizedBox(height: 16),
                       _buildLabel('Vehicle Number '),
                       _buildTextField(),
-
                       const SizedBox(height: 16),
                       _buildLabel('Vehicle Model '),
                       _buildDropdown(vehicleModels, _selectedModel, (value) => setState(() => _selectedModel = value)),
-
                       const SizedBox(height: 16),
                       _buildLabel('Type of Service '),
-                      _buildDropdown(serviceTypes, _selectedService, (value) => setState(() => _selectedService = value)),
+                     
+                       SizedBox(
+                        width: double.infinity, // ✅ Ensures it fits within the container
+                        child: DropdownButtonFormField<String>(
+                          value: _selectedService,
+                          items: serviceTypes.map((service) {
+                            return DropdownMenuItem<String>(
+                              value: service,
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  maxWidth: MediaQuery.of(context).size.width * 0.6, // ✅ Limits dropdown width
+                                ),
+                                child: Text(
+                                  service,
+                                  overflow: TextOverflow.ellipsis, // ✅ Truncates long text
+                                  maxLines: 1,
+                                  softWrap: false,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedService = value;
+                            });
+                          },
+                          isExpanded: true, // ✅ Ensures the dropdown fits inside its container
+                          decoration: InputDecoration(
+                            hintText: "SELECT",
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                          ),
+                        ),
+                      ),
+
 
                       const SizedBox(height: 16),
                       _buildLabel('Preferred Branch '),
                       _buildDropdown(branches, _selectedBranch, (value) => setState(() => _selectedBranch = value)),
-
                       const SizedBox(height: 16),
                       _buildLabel('Preferred Date '),
                       _buildDatePicker(),
-
                       const SizedBox(height: 16),
                       _buildLabel('Preferred Time '),
                       _buildTimePicker(),
-
                       const SizedBox(height: 24),
                       Center(
                         child: SizedBox(
-                          width: 180, // Smaller submit button
+                          width: 180, 
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               minimumSize: const Size(180, 50),
-                              backgroundColor: const Color.fromARGB(255, 9, 23, 111), 
+                              backgroundColor: const Color.fromARGB(255, 9, 23, 111),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                             ),
@@ -127,7 +156,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                 );
                                 return;
                               }
-                              // Handle appointment submission
                             },
                             child: const Text('Submit Appointment', style: TextStyle(fontSize: 16, color: Colors.white)),
                           ),
@@ -138,11 +166,13 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                 ),
               ),
             ),
-          );
-        },
-      ),
-    );
-  }
+          ),
+        );
+      },
+    ),
+  );
+}
+
 
   // 🔹 Label Widget
   Widget _buildLabel(String text) {
@@ -180,6 +210,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       ),
     );
   }
+
+  
 
   // 🔹 Date Picker Widget
   Widget _buildDatePicker() {

@@ -2,13 +2,7 @@ import 'package:dr_cars/interface/Service%20History.dart';
 import 'package:dr_cars/interface/Settings.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/servicerecords.dart';
-import 'package:dr_cars/main/main_menu.dart';
 import 'package:dr_cars/main/welcome.dart';
-import 'package:dr_cars/service/add_service.dart';
-import 'package:dr_cars/service/add_vehicle.dart';
-import 'package:dr_cars/service/owner_info.dart';
-import 'package:dr_cars/service/records_screen.dart';
-import 'package:dr_cars/service/service_info_screen.dart';
 import 'package:flutter/material.dart';
 import 'main/signin.dart';
 import 'package:dr_cars/interface/appointments.dart';
@@ -24,6 +18,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     return MaterialApp(debugShowCheckedModeBanner: false, home: RatingScreen());
+=======
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: AppointmentsPage(),
+    );
+>>>>>>> bf20c2045111d51cf3598ac6e34a127fc982aaf9
   }
 }

@@ -1,3 +1,4 @@
+import 'package:dr_cars/service/service_menu.dart';
 import 'package:flutter/material.dart';
 import '../service/add_service.dart';
 
@@ -31,25 +32,39 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "Vehicle Owner Information",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          // Home icon button in the right corner
+          IconButton(
+            icon: const Icon(Icons.home, color: Colors.black),
+            onPressed: () {
+              // Navigate back to the home screen
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Column(
           children: [
-            SizedBox(height: 20), // Space between app bar and image
-            CircleAvatar(
+            const SizedBox(height: 20), // Space between app bar and image
+            const CircleAvatar(
               radius: 50,
               backgroundImage: AssetImage('images/logo.png'),
             ),
-            SizedBox(height: 20), // Space between image and form
+            const SizedBox(height: 20), // Space between image and form
 
             _buildTextField(nameController, "Name", "Name of user"),
             _buildTextField(usernameController, "User Name", "Username"),
@@ -75,7 +90,7 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
               });
             }),
 
-            SizedBox(height: 20), // Space before button
+            const SizedBox(height: 20), // Space before button
             // Continue Button
             SizedBox(
               width: double.infinity, // Full-width button
@@ -90,10 +105,10 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => AddService()),
+                    MaterialPageRoute(builder: (context) => const AddService()),
                   );
                 },
-                child: Text(
+                child: const Text(
                   "Continue",
                   style: TextStyle(
                     color: Colors.white, // White text
@@ -103,7 +118,7 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
                 ),
               ),
             ),
-            SizedBox(height: 20), // Space after button
+            const SizedBox(height: 20), // Space after button
           ],
         ),
       ),
@@ -122,7 +137,7 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
         ),
       ),
     );
@@ -139,7 +154,7 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
       child: DropdownButtonFormField<String>(
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
         ),
         value: selectedValue,
         items:
