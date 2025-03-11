@@ -1,6 +1,35 @@
 import 'package:flutter/material.dart';
 
 class RecieptPage extends StatelessWidget {
+  final String previousOilChange;
+  final String currentMileage;
+  final String nextServiceDate;
+  final bool oilChanged;
+  final bool airFilterChanged;
+  final bool oilFilterChanged;
+  final bool coolantChanged;
+  final bool brakeFluidChanged;
+  final bool oesterboxOilChanged;
+  final bool differentialOilChanged;
+  final bool beltInspection;
+  final bool batteryTesting;
+
+  RecieptPage({
+    super.key,
+    required this.previousOilChange,
+    required this.currentMileage,
+    required this.nextServiceDate,
+    required this.oilChanged,
+    required this.airFilterChanged,
+    required this.oilFilterChanged,
+    required this.coolantChanged,
+    required this.brakeFluidChanged,
+    required this.oesterboxOilChanged,
+    required this.differentialOilChanged,
+    required this.beltInspection,
+    required this.batteryTesting, // ✅ Add this
+  });
+
   // Example data for services and prices
   final List<Map<String, String>> services = [
     {"service": "Oil Changing with 5W-15", "price": "1500"},

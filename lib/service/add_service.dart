@@ -1,6 +1,7 @@
+import 'package:dr_cars/service/conformation_receipt.dart';
+import 'package:dr_cars/service/service_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Import the intl package
-import 'conformation_receipt.dart';
 
 class AddService extends StatefulWidget {
   const AddService({super.key});
@@ -55,125 +56,91 @@ class _AddServiceState extends State<AddService> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.black),
+        actions: [
+          // Add a home icon button in the right corner
+          IconButton(
+            icon: Icon(Icons.home, color: Colors.black), // Home icon
+            onPressed: () {
+              // Navigate back to the home screen
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => HomeScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Previous Oil Change
-              TextField(
-                controller: _previousOilChangeController,
-                decoration: InputDecoration(
-                  labelText: "Previous oil change",
-                  border: OutlineInputBorder(),
-                ),
+              _buildTextField(
+                _previousOilChangeController,
+                "Previous oil change",
               ),
-              SizedBox(height: 20),
-
-              // Current Mileage
-              TextField(
-                controller: _currentMileageController,
-                decoration: InputDecoration(
-                  labelText: "Current Mileage",
-                  border: OutlineInputBorder(),
-                ),
+              _buildTextField(
+                _currentMileageController,
+                "Current Mileage",
                 keyboardType: TextInputType.number,
               ),
-              SizedBox(height: 20),
 
-              // Services Done
+              SizedBox(height: 20),
               Text(
                 "Services Done",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
 
-              // Checkboxes for Services
-              CheckboxListTile(
-                title: Text("Oil Changed"),
-                value: _oilChanged,
-                onChanged: (value) {
-                  setState(() {
-                    _oilChanged = value!;
-                  });
-                },
+              _buildCheckbox(
+                "Oil Changed",
+                _oilChanged,
+                (value) => setState(() => _oilChanged = value),
               ),
-              CheckboxListTile(
-                title: Text("Air Filter Changed"),
-                value: _airFilterChanged,
-                onChanged: (value) {
-                  setState(() {
-                    _airFilterChanged = value!;
-                  });
-                },
+              _buildCheckbox(
+                "Air Filter Changed",
+                _airFilterChanged,
+                (value) => setState(() => _airFilterChanged = value),
               ),
-              CheckboxListTile(
-                title: Text("Oil Filter Changed"),
-                value: _oilFilterChanged,
-                onChanged: (value) {
-                  setState(() {
-                    _oilFilterChanged = value!;
-                  });
-                },
+              _buildCheckbox(
+                "Oil Filter Changed",
+                _oilFilterChanged,
+                (value) => setState(() => _oilFilterChanged = value),
               ),
-              CheckboxListTile(
-                title: Text("Coolant Changed"),
-                value: _coolantChanged,
-                onChanged: (value) {
-                  setState(() {
-                    _coolantChanged = value!;
-                  });
-                },
+              _buildCheckbox(
+                "Coolant Changed",
+                _coolantChanged,
+                (value) => setState(() => _coolantChanged = value),
               ),
-              CheckboxListTile(
-                title: Text("Brake Fluid Changed"),
-                value: _brakeFluidChanged,
-                onChanged: (value) {
-                  setState(() {
-                    _brakeFluidChanged = value!;
-                  });
-                },
+              _buildCheckbox(
+                "Brake Fluid Changed",
+                _brakeFluidChanged,
+                (value) => setState(() => _brakeFluidChanged = value),
               ),
-              CheckboxListTile(
-                title: Text("Oesterbox Oil Changed"),
-                value: _oesterboxOilChanged,
-                onChanged: (value) {
-                  setState(() {
-                    _oesterboxOilChanged = value!;
-                  });
-                },
+              _buildCheckbox(
+                "Oesterbox Oil Changed",
+                _oesterboxOilChanged,
+                (value) => setState(() => _oesterboxOilChanged = value),
               ),
-              CheckboxListTile(
-                title: Text("Differential Oil Changed"),
-                value: _differentialOilChanged,
-                onChanged: (value) {
-                  setState(() {
-                    _differentialOilChanged = value!;
-                  });
-                },
+              _buildCheckbox(
+                "Differential Oil Changed",
+                _differentialOilChanged,
+                (value) => setState(() => _differentialOilChanged = value),
               ),
-              CheckboxListTile(
-                title: Text("Belt Inspection"),
-                value: _beltInspection,
-                onChanged: (value) {
-                  setState(() {
-                    _beltInspection = value!;
-                  });
-                },
+              _buildCheckbox(
+                "Belt Inspection",
+                _beltInspection,
+                (value) => setState(() => _beltInspection = value),
               ),
-              CheckboxListTile(
-                title: Text("Battery Testing"),
-                value: _batteryTesting,
-                onChanged: (value) {
-                  setState(() {
-                    _batteryTesting = value!;
-                  });
-                },
+              _buildCheckbox(
+                "Battery Testing",
+                _batteryTesting,
+                (value) => setState(() => _batteryTesting = value),
               ),
+
               SizedBox(height: 20),
 
-              // Next Service Date
               TextField(
                 controller: _nextServiceDateController,
                 decoration: InputDecoration(
@@ -197,25 +164,24 @@ class _AddServiceState extends State<AddService> {
                     ),
                   ),
                   onPressed: () {
-                    // Navigate to the next page
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder:
                             (context) => RecieptPage(
-                              // previousOilChange:
-                              //     _previousOilChangeController.text,
-                              // currentMileage: _currentMileageController.text,
-                              // nextServiceDate: _nextServiceDateController.text,
-                              // oilChanged: _oilChanged,
-                              // airFilterChanged: _airFilterChanged,
-                              // oilFilterChanged: _oilFilterChanged,
-                              // coolantChanged: _coolantChanged,
-                              // brakeFluidChanged: _brakeFluidChanged,
-                              // oesterboxOilChanged: _oesterboxOilChanged,
-                              // differentialOilChanged: _differentialOilChanged,
-                              // beltInspection: _beltInspection,
-                              // batteryTesting: _batteryTesting,
+                              previousOilChange:
+                                  _previousOilChangeController.text,
+                              currentMileage: _currentMileageController.text,
+                              nextServiceDate: _nextServiceDateController.text,
+                              oilChanged: _oilChanged,
+                              airFilterChanged: _airFilterChanged,
+                              oilFilterChanged: _oilFilterChanged,
+                              coolantChanged: _coolantChanged,
+                              brakeFluidChanged: _brakeFluidChanged,
+                              oesterboxOilChanged: _oesterboxOilChanged,
+                              differentialOilChanged: _differentialOilChanged,
+                              beltInspection: _beltInspection,
+                              batteryTesting: _batteryTesting,
                             ),
                       ),
                     );
@@ -236,64 +202,30 @@ class _AddServiceState extends State<AddService> {
       ),
     );
   }
-}
 
-class ReceiptPage extends StatelessWidget {
-  final String previousOilChange;
-  final String currentMileage;
-  final String nextServiceDate;
-  final bool oilChanged;
-  final bool airFilterChanged;
-  final bool oilFilterChanged;
-  final bool coolantChanged;
-  final bool brakeFluidChanged;
-  final bool oesterboxOilChanged;
-  final bool differentialOilChanged;
-  final bool beltInspection;
-  final bool batteryTesting;
-
-  const ReceiptPage({
-    super.key,
-    required this.previousOilChange,
-    required this.currentMileage,
-    required this.nextServiceDate,
-    required this.oilChanged,
-    required this.airFilterChanged,
-    required this.oilFilterChanged,
-    required this.coolantChanged,
-    required this.brakeFluidChanged,
-    required this.oesterboxOilChanged,
-    required this.differentialOilChanged,
-    required this.beltInspection,
-    required this.batteryTesting,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Receipt")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Previous Oil Change: $previousOilChange"),
-            Text("Current Mileage: $currentMileage"),
-            Text("Next Service Date: $nextServiceDate"),
-            SizedBox(height: 20),
-            Text("Services Done:"),
-            if (oilChanged) Text("- Oil Changed"),
-            if (airFilterChanged) Text("- Air Filter Changed"),
-            if (oilFilterChanged) Text("- Oil Filter Changed"),
-            if (coolantChanged) Text("- Coolant Changed"),
-            if (brakeFluidChanged) Text("- Brake Fluid Changed"),
-            if (oesterboxOilChanged) Text("- Oesterbox Oil Changed"),
-            if (differentialOilChanged) Text("- Differential Oil Changed"),
-            if (beltInspection) Text("- Belt Inspection"),
-            if (batteryTesting) Text("- Battery Testing"),
-          ],
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, {
+    TextInputType? keyboardType,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(),
         ),
       ),
+    );
+  }
+
+  Widget _buildCheckbox(String title, bool value, Function(bool) onChanged) {
+    return CheckboxListTile(
+      title: Text(title),
+      value: value,
+      onChanged: (val) => onChanged(val ?? false),
     );
   }
 }
