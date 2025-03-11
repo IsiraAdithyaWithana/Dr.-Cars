@@ -16,6 +16,10 @@ class _AddServiceState extends State<AddService> {
   final TextEditingController _nextServiceDateController =
       TextEditingController();
 
+  String? oilType;
+  String? gearboxChecked;
+  String? differentialChecked;
+
   // Service selection boolean values
   bool _oilChanged = false;
   bool _airFilterChanged = false;
@@ -61,57 +65,85 @@ class _AddServiceState extends State<AddService> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                "Previous Oil Change:",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              TextField(
-                controller: _previousOilChangeController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: "Enter previous oil change",
-                ),
-              ),
-
-              const SizedBox(height: 10),
-              const Text(
-                "Current Mileage:",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              TextField(
-                controller: _currentMileageController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: "Enter current mileage",
-                ),
-              ),
-
-              const SizedBox(height: 10),
-              const Text(
-                "Next Service Date:",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              TextField(
-                controller: _nextServiceDateController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: "Enter next service date",
-                ),
-              ),
-
-              const SizedBox(height: 20),
-              const Text(
-                "Select Services:",
+                "Service Information",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _previousOilChangeController,
+                decoration: InputDecoration(
+                  labelText: "Enter previous oil change",
+                  labelStyle: TextStyle(color: Colors.black54),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                ),
+                style: TextStyle(color: Colors.black),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _currentMileageController,
+                decoration: InputDecoration(
+                  labelText: "Current Mileage",
+                  labelStyle: TextStyle(color: Colors.black54),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                ),
+                style: TextStyle(color: Colors.black),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Services Done",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
 
               // List of services
-              CheckboxListTile(
-                title: const Text("Oil Changed"),
-                value: _oilChanged,
-                onChanged:
-                    (bool? value) =>
-                        setState(() => _oilChanged = value ?? false),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Oil changed'),
+                    Checkbox(
+                      value: _oilChanged,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          _oilChanged = value!;
+                        });
+                      },
+                    ),
+
+                    SizedBox(width: 10),
+                    DropdownButton<String>(
+                      value: oilType,
+                      hint: Text('Type'),
+                      items:
+                          ['Synthetic', 'Semi-Synthetic', 'Mineral'].map((
+                            String value,
+                          ) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          oilType = newValue;
+                        });
+                      },
+                    ),
+                  ],
+                ),
               ),
+
               CheckboxListTile(
                 title: const Text("Air Filter Changed"),
                 value: _airFilterChanged,
@@ -169,7 +201,21 @@ class _AddServiceState extends State<AddService> {
                     (bool? value) =>
                         setState(() => _batteryTesting = value ?? false),
               ),
-
+              const SizedBox(height: 10),
+              TextField(
+                controller: _nextServiceDateController,
+                decoration: InputDecoration(
+                  labelText: "Enter next service date",
+                  labelStyle: TextStyle(color: Colors.black54),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                ),
+                style: TextStyle(color: Colors.black),
+              ),
               const SizedBox(height: 20),
               // Button to proceed to receipt page
               SizedBox(
@@ -193,7 +239,8 @@ class _AddServiceState extends State<AddService> {
                               currentMileage: _currentMileageController.text,
                               nextServiceDate: _nextServiceDateController.text,
                               servicesSelected: {
-                                "Oil Changed": _oilChanged,
+                                "Oil Changed (${oilType ?? 'N/A'})":
+                                    _oilChanged,
                                 "Air Filter Changed": _airFilterChanged,
                                 "Oil Filter Changed": _oilFilterChanged,
                                 "Coolant Changed": _coolantChanged,
