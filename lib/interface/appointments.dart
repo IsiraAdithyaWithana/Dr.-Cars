@@ -69,13 +69,13 @@ Widget build(BuildContext context) {
       builder: (context, constraints) {
         return Center(
           child: FractionallySizedBox(
-            widthFactor: constraints.maxWidth > 600 ? 0.6 : 0.95, // ✅ Increased width slightly for safety
+            widthFactor: constraints.maxWidth > 600 ? 0.6 : 0.95, //Increased width slightly for safety
             child: Card(
               elevation: 5,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: SingleChildScrollView( // ✅ Allows scrolling to avoid overflow
+                child: SingleChildScrollView( //Allows scrolling to avoid overflow
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -94,7 +94,7 @@ Widget build(BuildContext context) {
                       _buildLabel('Type of Service '),
                      
                        SizedBox(
-                        width: double.infinity, // ✅ Ensures it fits within the container
+                        width: double.infinity, //Ensures it fits within the container
                         child: DropdownButtonFormField<String>(
                           value: _selectedService,
                           items: serviceTypes.map((service) {
@@ -102,11 +102,11 @@ Widget build(BuildContext context) {
                               value: service,
                               child: Container(
                                 constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.of(context).size.width * 0.6, // ✅ Limits dropdown width
+                                  maxWidth: MediaQuery.of(context).size.width * 0.6, // Limits dropdown width
                                 ),
                                 child: Text(
                                   service,
-                                  overflow: TextOverflow.ellipsis, // ✅ Truncates long text
+                                  overflow: TextOverflow.ellipsis, // Truncates long text
                                   maxLines: 1,
                                   softWrap: false,
                                 ),
@@ -118,7 +118,7 @@ Widget build(BuildContext context) {
                               _selectedService = value;
                             });
                           },
-                          isExpanded: true, // ✅ Ensures the dropdown fits inside its container
+                          isExpanded: true, // Ensures the dropdown fits inside its container
                           decoration: InputDecoration(
                             hintText: "SELECT",
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
