@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'main/signin.dart';
 import 'package:dr_cars/interface/appointments.dart';
 import 'package:dr_cars/interface/dashboard.dart';
+import 'package:dr_cars/interface/checkout.dart';
 
 void main() {
   runApp(MyApp());
@@ -18,6 +19,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false, home: AddService());
+    return MaterialApp(debugShowCheckedModeBanner: false, home: CheckoutPage());
   }
 }
