@@ -50,12 +50,34 @@ class ProfileScreen extends StatelessWidget {
                 backgroundColor: Colors.black,
                 minimumSize: Size(double.infinity, 50),
               ),
-              onPressed: () {},
+              onPressed: () {
+                _showPopupMessage(context);
+              },
               child: Text("Continue", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _showPopupMessage(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Success"),
+          content: Text("Your data was saved."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -84,7 +106,7 @@ class ProfileScreen extends StatelessWidget {
             [
               'Car before 2020',
               'Car before 2010',
-              'Cae before 2000',
+              'Car before 2000',
             ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
         onChanged: (value) {},
       ),
