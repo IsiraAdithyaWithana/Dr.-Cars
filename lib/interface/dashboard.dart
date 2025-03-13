@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class MyGarageScreen extends StatelessWidget {
+class DashboardScreen extends StatelessWidget {
   final List<Map<String, dynamic>> cars = [
     {
       'year': 2016,
