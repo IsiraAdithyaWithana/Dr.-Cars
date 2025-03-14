@@ -143,7 +143,7 @@ class DashboardScreen extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
-        selectedItemColor: Colors.red,
+        selectedItemColor: Colors.black,
         unselectedItemColor: Colors.black,
       ),
     );
