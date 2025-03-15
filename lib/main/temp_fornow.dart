@@ -26,7 +26,7 @@ class ForNowTemp extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SettingsScreen()),
+                  MaterialPageRoute(builder: (context) => ProfileScreen()),
                 );
               },
               child: Text('Vehicle Owner'),
