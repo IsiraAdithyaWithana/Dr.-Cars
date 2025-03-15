@@ -17,7 +17,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: 'Arial', // Setting default font
+        
       ),
+      
       home: RatingScreen(),
     );
   }
@@ -74,17 +76,18 @@ class _ReviewScreenState extends State<RatingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: const Color.fromARGB(255, 255, 255, 255)),
           onPressed: () {},
         ),
         title: Center(
           child: Text(
             "Reviews",
             style: TextStyle(
-              color: Colors.black,
+              color: const Color.fromARGB(255, 244, 242, 242),
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),

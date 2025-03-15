@@ -20,10 +20,11 @@ class ServiceRecordsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Service Records'),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 6, 5, 5),
+        foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: const Color.fromARGB(255, 255, 253, 253)),
           onPressed: () {
             Navigator.pop(context);
           },
