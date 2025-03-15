@@ -1,8 +1,12 @@
+import 'package:dr_cars/interface/dashboard.dart';
+import 'package:dr_cars/interface/profile.dart';
 import 'package:flutter/material.dart';
 
 void main() {
   runApp(const MyApp());
 }
+
+int _selectedIndex = 3;
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -197,7 +201,34 @@ class _ReviewScreenState extends State<RatingScreen> {
       ),
 
       // Bottom navigation bar
-      bottomNavigationBar: BottomNavigationBar(
+       bottomNavigationBar: BottomNavigationBar(
+         selectedItemColor: Colors.red,
+         unselectedItemColor: Colors.black,
+         currentIndex: _selectedIndex, // Highlight selected item
+         onTap: (index) {
+         (() {
+         _selectedIndex = index; // Update selected index
+          });
+
+         if (index == 0) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
+      );
+    }
+     if (index == 4) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfileScreen()),
+      );
+    }
+     if (index == 3) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => RatingScreen()),
+      );
+    }
+  },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
@@ -205,11 +236,10 @@ class _ReviewScreenState extends State<RatingScreen> {
             icon: Image.asset('images/logo.png', height: 30),
             label: '',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
-        selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.black,
+       
       ),
     );
   }

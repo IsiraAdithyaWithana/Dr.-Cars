@@ -1,4 +1,5 @@
 import 'package:dr_cars/interface/profile.dart';
+import 'package:dr_cars/interface/rating.dart';
 import 'package:flutter/material.dart';
 
 int _selectedIndex = 0;
@@ -156,6 +157,12 @@ class DashboardScreen extends StatelessWidget {
           MaterialPageRoute(builder: (context) => ProfileScreen()),
       );
     }
+     if (index == 3) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => RatingScreen()),
+      );
+    }
   },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
@@ -164,7 +171,7 @@ class DashboardScreen extends StatelessWidget {
             icon: Image.asset('images/logo.png', height: 30),
             label: '',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
        
