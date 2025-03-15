@@ -1,4 +1,7 @@
+import 'package:dr_cars/interface/profile.dart';
 import 'package:flutter/material.dart';
+
+int _selectedIndex = 0;
 
 class DashboardScreen extends StatelessWidget {
   final List<Map<String, dynamic>> cars = [
@@ -133,6 +136,27 @@ class DashboardScreen extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+         selectedItemColor: Colors.red,
+         unselectedItemColor: Colors.black,
+         currentIndex: _selectedIndex, // Highlight selected item
+         onTap: (index) {
+         (() {
+         _selectedIndex = index; // Update selected index
+          });
+
+         if (index == 0) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
+      );
+    }
+     if (index == 4) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfileScreen()),
+      );
+    }
+  },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
@@ -143,8 +167,7 @@ class DashboardScreen extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black,
+       
       ),
     );
   }

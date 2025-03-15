@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dashboard.dart'; // Import your Dashboard screen
 
+int _selectedIndex = 4;
+
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -55,18 +57,38 @@ class ProfileScreen extends StatelessWidget {
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
+         selectedItemColor: Colors.red,
+         unselectedItemColor: Colors.black,
+         currentIndex: _selectedIndex, // Highlight selected item
+         onTap: (index) {
+         (() {
+         _selectedIndex = index; // Update selected index
+          });
+
+         if (index == 0) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
+      );
+    }
+     if (index == 4) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfileScreen()),
+      );
+    }
+  },
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label:''),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
           BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('images/logo.png')),
+            icon: Image.asset('images/logo.png', height: 30),
             label: '',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
-        selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.black,
+       
       ),
     );
   }

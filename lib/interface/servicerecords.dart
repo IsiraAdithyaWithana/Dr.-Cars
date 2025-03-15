@@ -1,3 +1,4 @@
+import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -157,43 +158,40 @@ class ServiceRecordsPage extends StatelessWidget {
       ),
 
       // Bottom Navigation Bar
-bottomNavigationBar: BottomNavigationBar(
-  type: BottomNavigationBarType.fixed,
-  selectedItemColor: Colors.black,
-  unselectedItemColor: Colors.grey,
-  currentIndex: _selectedIndex, // Highlight selected item
-  onTap: (index) {
-    (() {
-      _selectedIndex = index; // Update selected index
-    });
+        bottomNavigationBar: BottomNavigationBar(
+         selectedItemColor: Colors.red,
+         unselectedItemColor: Colors.black,
+         currentIndex: _selectedIndex, // Highlight selected item
+         onTap: (index) {
+         (() {
+         _selectedIndex = index; // Update selected index
+          });
 
-    if (index == 4) { // Navigate when "User" icon is clicked
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ProfileScreen()),
+         if (index == 0) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
+      );
+    }
+     if (index == 4) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfileScreen()),
       );
     }
   },
-  items: [
-    BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-    BottomNavigationBarItem(
-      icon: FaIcon(FontAwesomeIcons.compass),
-      label: 'Map',
-    ),
-    BottomNavigationBarItem(
-      icon: Image.asset('images/logo.png', width: 40, height: 40),
-      label: '',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.notifications),
-      label: 'Alerts',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.verified_user),
-      label: 'User',
-    ),
-  ],
-),
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+          BottomNavigationBarItem(
+            icon: Image.asset('images/logo.png', height: 30),
+            label: '',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+        ],
+       
+      ),
     );
   }
 }

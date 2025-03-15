@@ -1,6 +1,7 @@
 import 'package:dr_cars/interface/Service%20History.dart';
 import 'package:dr_cars/interface/Settings.dart';
 import 'package:dr_cars/interface/profile.dart';
+import 'package:dr_cars/interface/rating.dart';
 import 'package:dr_cars/interface/servicerecords.dart';
 import 'package:dr_cars/main/welcome.dart';
 import 'package:dr_cars/service/add_service.dart';
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SignInScreen(),
+      home:ServiceHistorypage(),
     );
   }
 }
