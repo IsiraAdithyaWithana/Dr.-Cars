@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "158386662597",
+    "project_id": "dr-cars-4df08",
+    "storage_bucket": "dr-cars-4df08.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:158386662597:android:a5f09312d6f007615214ac",
+        "android_client_info": {
+          "package_name": "com.example.dr_cars"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkBRaVzeq5t6rrEfJ8ksnlVu2mHzui0bY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
