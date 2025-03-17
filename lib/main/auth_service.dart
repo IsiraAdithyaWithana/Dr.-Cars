@@ -16,11 +16,17 @@ class AuthService {
     String contact,
   ) async {
     try {
+      print("Creating user with email: $email");
+
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
 
-      if (userCredential.user != null) {
-        await _firestore.collection("Users").doc(userCredential.user!.uid).set({
+      User? user = userCredential.user;
+
+      if (user != null) {
+        print("User created: ${user.uid}");
+
+        await _firestore.collection("Users").doc(user.uid).set({
           "Name": fullName,
           "Email": email,
           "Username": username,
@@ -28,12 +34,15 @@ class AuthService {
           "Contact": contact,
         });
 
-        return userCredential.user;
+        return user;
+      } else {
+        print("User is null after creation.");
+        return null;
       }
     } catch (e) {
-      throw e;
+      print("Sign-up error: $e");
+      return null;
     }
-    return null;
   }
 
   // Get Current User

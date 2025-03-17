@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/rating.dart';
+import 'package:dr_cars/main/welcome.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -25,11 +26,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _fetchUserData() async {
     User? user = _auth.currentUser;
     if (user != null) {
-      DocumentSnapshot userData =
-          await _firestore.collection("Users").doc(user.uid).get();
-      setState(() {
-        userName = userData["Name"] ?? "User";
-      });
+      try {
+        DocumentSnapshot userData =
+            await _firestore.collection("Users").doc(user.uid).get();
+
+        if (userData.exists) {
+          setState(() {
+            userName = userData["Name"] ?? "User";
+          });
+          print("Fetched username: $userName");
+        } else {
+          print("User document does not exist.");
+        }
+      } catch (e) {
+        print("Error fetching user data: $e");
+      }
+    } else {
+      print("No user is logged in.");
     }
   }
 
@@ -46,153 +59,175 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          SafeArea(
-            child: Padding(
-              padding: EdgeInsets.only(top: 10),
-              child: Image.asset('images/logo.png', height: 80),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(top: 10),
+                child: Image.asset('images/logo.png', height: 80),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Text("Welcome, $userName!", style: TextStyle(fontSize: 24)),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Text(
-              'Your vehicle',
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Welcome, $userName!",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20), // Space between text and button
+                  ElevatedButton(
+                    onPressed: () async {
+                      await FirebaseAuth.instance.signOut(); // Sign out user
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Welcome(),
+                        ), // Go back to Welcome
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red, // Red sign-out button
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: Text(
+                      "Sign Out",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 10),
-                Container(
-                  height: 400,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: cars.length,
-                    itemBuilder: (context, index) {
-                      final car = cars[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Container(
-                          width: 395,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            image: DecorationImage(
-                              image: AssetImage(car['image']),
-                              fit: BoxFit.cover,
-                              colorFilter: ColorFilter.mode(
-                                Colors.black.withOpacity(0.5),
-                                BlendMode.darken,
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Text(
+                'Your vehicle',
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              ),
+            ),
+            SizedBox(height: 10),
+            Container(
+              height: 400,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: cars.length,
+                itemBuilder: (context, index) {
+                  final car = cars[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Container(
+                      width: 395,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        image: DecorationImage(
+                          image: AssetImage(car['image']),
+                          fit: BoxFit.cover,
+                          colorFilter: ColorFilter.mode(
+                            Colors.black.withOpacity(0.5),
+                            BlendMode.darken,
+                          ),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              car['year'].toString(),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
                               ),
                             ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            Text(
+                              car['name'],
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 42,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Spacer(),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  car['year'].toString(),
+                                  '⚙️ ${car['km']} KM',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 22,
+                                    fontWeight: FontWeight.normal,
                                   ),
                                 ),
                                 Text(
-                                  car['name'],
+                                  '🛢 ${car['oil']} OIL',
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 42,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.normal,
                                   ),
-                                ),
-                                Spacer(),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '⚙️ ${car['km']} KM',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.normal,
-                                      ),
-                                    ),
-                                    Text(
-                                      '🛢 ${car['oil']} OIL',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.normal,
-                                      ),
-                                    ),
-                                  ],
                                 ),
                               ],
                             ),
-                          ),
+                          ],
                         ),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    'Upcoming maintenance',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Expanded(
-                  child: ListView(
-                    children: [
-                      ListTile(
-                        title: Text('2016 Corolla 141'),
-                        subtitle: Text('5,301 miles'),
-                        trailing: Icon(Icons.check_circle, color: Colors.blue),
                       ),
-                    ],
-                  ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                'Upcoming maintenance',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ListView(
+              shrinkWrap: true, // Prevent unnecessary scrolling issues
+              physics: NeverScrollableScrollPhysics(), // Disable scrolling
+              children: [
+                ListTile(
+                  title: Text('2016 Corolla 141'),
+                  subtitle: Text('5,301 miles'),
+                  trailing: Icon(Icons.check_circle, color: Colors.blue),
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.black,
         currentIndex: _selectedIndex, // Highlight selected item
         onTap: (index) {
-          (() {
+          setState(() {
             _selectedIndex = index; // Update selected index
           });
 
           if (index == 0) {
-            // Navigate when "User" icon is clicked
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => DashboardScreen()),
             );
           }
           if (index == 4) {
-            // Navigate when "User" icon is clicked
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => ProfileScreen()),
             );
           }
           if (index == 3) {
-            // Navigate when "User" icon is clicked
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => RatingScreen()),
