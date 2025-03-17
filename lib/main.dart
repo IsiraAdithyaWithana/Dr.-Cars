@@ -6,13 +6,16 @@ import 'package:dr_cars/interface/servicerecords.dart';
 import 'package:dr_cars/main/welcome.dart';
 import 'package:dr_cars/service/add_service.dart';
 import 'package:dr_cars/service/service_menu.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'main/signin.dart';
 import 'package:dr_cars/interface/appointments.dart';
 import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/interface/checkout.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -21,9 +24,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: DashboardScreen(),
-    );
+    return MaterialApp(debugShowCheckedModeBanner: false, home: Welcome());
   }
 }

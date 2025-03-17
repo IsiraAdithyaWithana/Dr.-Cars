@@ -1,3 +1,5 @@
+import 'package:dr_cars/interface/dashboard.dart';
+import 'package:dr_cars/main/auth_service.dart';
 import 'package:dr_cars/main/signup_selection.dart';
 import 'package:dr_cars/main/temp_fornow.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:flutter/material.dart';
 class SignInScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
 
   SignInScreen({super.key});
 
@@ -52,11 +55,24 @@ class SignInScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ForNowTemp()),
-                    );
+                  onPressed: () async {
+                    try {
+                      await _authService.signIn(
+                        _emailController.text,
+                        _passwordController.text,
+                      );
+                      // Navigate to HomePage upon successful sign in
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DashboardScreen(),
+                        ),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Sign In Failed: $e")),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,

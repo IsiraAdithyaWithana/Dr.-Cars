@@ -41,8 +41,21 @@ class AuthService {
     return _auth.currentUser;
   }
 
-  // Get User Data from Firestore
-  Future<DocumentSnapshot> getUserData(String uid) async {
-    return await _firestore.collection("Users").doc(uid).get();
+  // Check if user is signed in
+  bool isSignedIn() {
+    return _auth.currentUser != null;
+  }
+
+  // Sign in
+  Future<void> signIn(String email, String password) async {
+    try {
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> signOut() async {
+    await _auth.signOut();
   }
 }
