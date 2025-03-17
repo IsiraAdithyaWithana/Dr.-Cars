@@ -1,10 +1,38 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/rating.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 int _selectedIndex = 0;
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String userName = "Loading...";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      DocumentSnapshot userData =
+          await _firestore.collection("Users").doc(user.uid).get();
+      setState(() {
+        userName = userData["Name"] ?? "User";
+      });
+    }
+  }
+
   final List<Map<String, dynamic>> cars = [
     {
       'year': 2016,
@@ -25,6 +53,10 @@ class DashboardScreen extends StatelessWidget {
               padding: EdgeInsets.only(top: 10),
               child: Image.asset('images/logo.png', height: 80),
             ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Text("Welcome, $userName!", style: TextStyle(fontSize: 24)),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -137,33 +169,36 @@ class DashboardScreen extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-         selectedItemColor: Colors.red,
-         unselectedItemColor: Colors.black,
-         currentIndex: _selectedIndex, // Highlight selected item
-         onTap: (index) {
-         (() {
-         _selectedIndex = index; // Update selected index
+        selectedItemColor: Colors.red,
+        unselectedItemColor: Colors.black,
+        currentIndex: _selectedIndex, // Highlight selected item
+        onTap: (index) {
+          (() {
+            _selectedIndex = index; // Update selected index
           });
 
-         if (index == 0) { // Navigate when "User" icon is clicked
-          Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DashboardScreen()),
-      );
-    }
-     if (index == 4) { // Navigate when "User" icon is clicked
-          Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ProfileScreen()),
-      );
-    }
-     if (index == 3) { // Navigate when "User" icon is clicked
-          Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => RatingScreen()),
-      );
-    }
-  },
+          if (index == 0) {
+            // Navigate when "User" icon is clicked
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => DashboardScreen()),
+            );
+          }
+          if (index == 4) {
+            // Navigate when "User" icon is clicked
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ProfileScreen()),
+            );
+          }
+          if (index == 3) {
+            // Navigate when "User" icon is clicked
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => RatingScreen()),
+            );
+          }
+        },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
@@ -174,7 +209,6 @@ class DashboardScreen extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
-       
       ),
     );
   }
