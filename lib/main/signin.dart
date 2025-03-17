@@ -4,12 +4,21 @@ import 'package:dr_cars/main/signup_selection.dart';
 import 'package:dr_cars/main/temp_fornow.dart';
 import 'package:flutter/material.dart';
 
-class SignInScreen extends StatelessWidget {
+class SignInScreen extends StatefulWidget {
+  SignInScreen({super.key});
+
+  @override
+  State<SignInScreen> createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _emailController = TextEditingController();
+
   final TextEditingController _passwordController = TextEditingController();
+
   final AuthService _authService = AuthService();
 
-  SignInScreen({super.key});
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -55,31 +64,45 @@ class SignInScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      await _authService.signIn(
-                        _emailController.text,
-                        _passwordController.text,
-                      );
-                      // Navigate to HomePage upon successful sign in
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DashboardScreen(),
-                        ),
-                      );
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Sign In Failed: $e")),
-                      );
-                    }
-                  },
+                  onPressed:
+                      isLoading
+                          ? null
+                          : () async {
+                            setState(() {
+                              isLoading = true;
+                            });
+
+                            try {
+                              await _authService.signIn(
+                                _emailController.text,
+                                _passwordController.text,
+                              );
+
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DashboardScreen(),
+                                ),
+                              );
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Sign In Failed: $e")),
+                              );
+
+                              setState(() {
+                                isLoading = false;
+                              });
+                            }
+                          },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
                     minimumSize: Size(double.infinity, 50),
                   ),
-                  child: Text("Continue"),
+                  child:
+                      isLoading
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Text("Continue"),
                 ),
                 SizedBox(height: 20),
                 Text("or"),
