@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 class SignInScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   SignInScreen({super.key});
 
@@ -30,6 +31,18 @@ class SignInScreen extends StatelessWidget {
                   controller: _emailController,
                   decoration: InputDecoration(
                     hintText: "Email",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                  ),
+                ),
+                SizedBox(height: 20),
+                TextField(
+                  controller: _passwordController,
+                  decoration: InputDecoration(
+                    hintText: "Password",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
