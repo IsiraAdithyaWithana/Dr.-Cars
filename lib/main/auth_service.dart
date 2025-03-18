@@ -9,6 +9,7 @@ class AuthService {
 
   Future<User?> signInWithGoogle() async {
     try {
+      String userType = "Vehicle Owner";
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) return null; // User canceled sign-in
 
@@ -33,6 +34,7 @@ class AuthService {
           await _firestore.collection('Users').doc(user.uid).set({
             'Name': user.displayName ?? 'Unknown',
             'Email': user.email,
+            "User Type": userType,
             'createdAt': FieldValue.serverTimestamp(),
           });
         }
