@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/main/auth_service.dart';
 import 'package:dr_cars/main/signup_selection.dart';
+import 'package:dr_cars/service/service_menu.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -14,6 +17,9 @@ class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String userType = "";
 
   bool isLoading = false;
   bool isGoogleLoading = false;
@@ -29,10 +35,40 @@ class _SignInScreenState extends State<SignInScreen> {
         _passwordController.text,
       );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => DashboardScreen()),
-      );
+      Future<void> _fetchUserData() async {
+        User? user = _auth.currentUser;
+        if (user != null) {
+          try {
+            DocumentSnapshot userData =
+                await _firestore.collection("Users").doc(user.uid).get();
+
+            if (userData.exists) {
+              setState(() {
+                userType = userData["User Type"] ?? "User";
+              });
+              print("Fetched usertype: $userType");
+            } else {
+              print("User document does not exist.");
+            }
+          } catch (e) {
+            print("Error fetching user data: $e");
+          }
+        } else {
+          print("No user is logged in.");
+        }
+      }
+
+      if (userType == "Vehicle Owner") {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
