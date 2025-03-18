@@ -1,12 +1,12 @@
-import 'package:dr_cars/interface/dashboard.dart';
-import 'package:dr_cars/interface/profile.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(MyApp());
 }
-
-int _selectedIndex = 3;
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -17,23 +17,56 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: 'Arial', // Setting default font
-        
       ),
-      
       home: RatingScreen(),
     );
   }
 }
 
-class RatingScreen extends StatefulWidget {
-  @override
-  _ReviewScreenState createState() => _ReviewScreenState();
+class Review {
+  final String name;
+  final String date;
+  final int rating;
+  final String feedback;
+  final int helpfulCount;
+
+  Review({
+    required this.name,
+    required this.date,
+    required this.rating,
+    required this.feedback,
+    required this.helpfulCount,
+  });
 }
 
-class _ReviewScreenState extends State<RatingScreen> {
+class RatingScreen extends StatefulWidget {
+  @override
+  _RatingScreenState createState() => _RatingScreenState();
+}
+
+class _RatingScreenState extends State<RatingScreen> {
   int _selectedRating = 0; // Stores the selected star rating
-  final TextEditingController _feedbackController =
-      TextEditingController(); // Controller for feedback input
+  final TextEditingController _feedbackController = TextEditingController();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  void _submitFeedback() async {
+    if (_feedbackController.text.isEmpty) return;
+
+    final feedback = {
+      'name': 'Anonymous', // You can replace this with the user's name
+      'date': DateTime.now().toString(),
+      'rating': _selectedRating,
+      'feedback': _feedbackController.text,
+      'helpfulCount': 0,
+    };
+
+    await _firestore.collection('Feedbacks').add(feedback);
+    _feedbackController.clear();
+    setState(() {
+      _selectedRating = 0;
+    });
+    _showSnackBar();
+  }
 
   void _showSubmitDialog() {
     showDialog(
@@ -45,14 +78,14 @@ class _ReviewScreenState extends State<RatingScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop();
               },
               child: Text("No"),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-                _showSnackBar(); // Show snackbar on confirmation
+                Navigator.of(context).pop();
+                _submitFeedback();
               },
               child: Text("Yes"),
             ),
@@ -80,14 +113,14 @@ class _ReviewScreenState extends State<RatingScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: const Color.fromARGB(255, 255, 255, 255)),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {},
         ),
         title: Center(
           child: Text(
             "Reviews",
             style: TextStyle(
-              color: const Color.fromARGB(255, 244, 242, 242),
+              color: Colors.white,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
@@ -105,21 +138,16 @@ class _ReviewScreenState extends State<RatingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Section title
             Text(
               "Share your feedback",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 18),
-
-            // Rating question
             Text(
               "How was the service at the service center today?",
               style: TextStyle(fontSize: 19, color: Colors.black87),
             ),
             SizedBox(height: 18),
-
-            // Star rating row
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: List.generate(5, (index) {
@@ -127,8 +155,7 @@ class _ReviewScreenState extends State<RatingScreen> {
                   icon: Icon(
                     Icons.star,
                     size: 34,
-                    color:
-                        _selectedRating > index ? Colors.orange : Colors.grey,
+                    color: _selectedRating > index ? Colors.orange : Colors.grey,
                   ),
                   onPressed: () {
                     setState(() {
@@ -139,15 +166,11 @@ class _ReviewScreenState extends State<RatingScreen> {
               }),
             ),
             SizedBox(height: 25),
-
-            // Feedback input label
             Text(
               "Can you tell us more?",
               style: TextStyle(fontSize: 18, color: Colors.black87),
             ),
             SizedBox(height: 18),
-
-            // Feedback input field
             TextField(
               controller: _feedbackController,
               maxLines: 6,
@@ -163,11 +186,8 @@ class _ReviewScreenState extends State<RatingScreen> {
               ),
             ),
             SizedBox(height: 25),
-
-            // Buttons row
             Row(
               children: [
-                // Cancel button
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {},
@@ -182,8 +202,6 @@ class _ReviewScreenState extends State<RatingScreen> {
                   ),
                 ),
                 SizedBox(width: 20),
-
-                // Submit button
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _showSubmitDialog,
@@ -199,50 +217,85 @@ class _ReviewScreenState extends State<RatingScreen> {
                 ),
               ],
             ),
+            SizedBox(height: 25),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: _firestore.collection('feedbacks').snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+
+                  final feedbacks = snapshot.data!.docs;
+
+                  return ListView.builder(
+                    itemCount: feedbacks.length,
+                    itemBuilder: (context, index) {
+                      final feedback = feedbacks[index].data() as Map<String, dynamic>;
+                      return Card(
+                        margin: EdgeInsets.symmetric(vertical: 10),
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    feedback['name'],
+                                    style: TextStyle(
+                                        fontSize: 18, fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    feedback['date'],
+                                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8),
+                              Row(
+                                children: List.generate(5, (index) {
+                                  return Icon(
+                                    Icons.star,
+                                    color: index < feedback['rating'] ? Colors.orange : Colors.grey,
+                                  );
+                                }),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                feedback['feedback'],
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                "${feedback['helpfulCount']} people found this helpful",
+                                style: TextStyle(fontSize: 14, color: Colors.grey),
+                              ),
+                              SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  TextButton(
+                                    onPressed: () {},
+                                    child: Text("Yes"),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {},
+                                    child: Text("No"),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
           ],
         ),
-      ),
-
-      // Bottom navigation bar
-       bottomNavigationBar: BottomNavigationBar(
-         selectedItemColor: Colors.red,
-         unselectedItemColor: Colors.black,
-         currentIndex: _selectedIndex, // Highlight selected item
-         onTap: (index) {
-         (() {
-         _selectedIndex = index; // Update selected index
-          });
-
-         if (index == 0) { // Navigate when "User" icon is clicked
-          Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DashboardScreen()),
-      );
-    }
-     if (index == 4) { // Navigate when "User" icon is clicked
-          Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ProfileScreen()),
-      );
-    }
-     if (index == 3) { // Navigate when "User" icon is clicked
-          Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => RatingScreen()),
-      );
-    }
-  },
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
-          BottomNavigationBarItem(
-            icon: Image.asset('images/logo.png', height: 30),
-            label: '',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
-        ],
-       
       ),
     );
   }
