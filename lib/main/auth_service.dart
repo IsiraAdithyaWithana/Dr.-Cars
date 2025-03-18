@@ -7,6 +7,43 @@ class AuthService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
+  Future<User?> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return null; // User canceled sign-in
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential = await _auth.signInWithCredential(
+        credential,
+      );
+      final User? user = userCredential.user;
+
+      if (user != null) {
+        // 🔹 Check if the user already exists in Firestore
+        final doc = await _firestore.collection('Users').doc(user.uid).get();
+
+        if (!doc.exists) {
+          // 🔹 Store user data in Firestore
+          await _firestore.collection('Users').doc(user.uid).set({
+            'Name': user.displayName ?? 'Unknown',
+            'Email': user.email,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+      return user;
+    } catch (e) {
+      print("Google Sign-In Error: $e");
+      return null;
+    }
+  }
+
   Future<User?> signUp(
     String fullName,
     String email,
@@ -16,6 +53,7 @@ class AuthService {
     String contact,
   ) async {
     try {
+      String userType = "Vehicle Owner";
       print("Creating user with email: $email");
 
       UserCredential userCredential = await _auth
@@ -32,6 +70,7 @@ class AuthService {
           "Username": username,
           "Address": address,
           "Contact": contact,
+          "User Type": userType,
         });
 
         return user;

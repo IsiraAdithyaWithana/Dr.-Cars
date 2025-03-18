@@ -1,7 +1,6 @@
 import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/main/auth_service.dart';
 import 'package:dr_cars/main/signup_selection.dart';
-import 'package:dr_cars/main/temp_fornow.dart';
 import 'package:flutter/material.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -13,12 +12,60 @@ class SignInScreen extends StatefulWidget {
 
 class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _emailController = TextEditingController();
-
   final TextEditingController _passwordController = TextEditingController();
-
   final AuthService _authService = AuthService();
 
   bool isLoading = false;
+  bool isGoogleLoading = false;
+
+  void _handleSignIn() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      await _authService.signIn(
+        _emailController.text,
+        _passwordController.text,
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => DashboardScreen()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Sign In Failed: $e")));
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  void _handleGoogleSignIn() async {
+    setState(() {
+      isGoogleLoading = true;
+    });
+
+    final user = await _authService.signInWithGoogle();
+
+    setState(() {
+      isGoogleLoading = false;
+    });
+
+    if (user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => DashboardScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Google Sign-In Failed")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +100,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 SizedBox(height: 20),
                 TextField(
                   controller: _passwordController,
+                  obscureText: true,
                   decoration: InputDecoration(
                     hintText: "Password",
                     border: OutlineInputBorder(
@@ -64,36 +112,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed:
-                      isLoading
-                          ? null
-                          : () async {
-                            setState(() {
-                              isLoading = true;
-                            });
-
-                            try {
-                              await _authService.signIn(
-                                _emailController.text,
-                                _passwordController.text,
-                              );
-
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => DashboardScreen(),
-                                ),
-                              );
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Sign In Failed: $e")),
-                              );
-
-                              setState(() {
-                                isLoading = false;
-                              });
-                            }
-                          },
+                  onPressed: isLoading ? null : _handleSignIn,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
@@ -101,19 +120,36 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                   child:
                       isLoading
-                          ? CircularProgressIndicator(color: Colors.white)
+                          ? SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
                           : Text("Continue"),
                 ),
                 SizedBox(height: 20),
                 Text("or"),
                 SizedBox(height: 12),
                 ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: Image.asset(
-                    'images/google_ico.png',
-                    height: 24,
-                  ), // Add Google logo to assets
-                  label: Text("Continue with Google"),
+                  onPressed: isGoogleLoading ? null : _handleGoogleSignIn,
+                  icon:
+                      isGoogleLoading
+                          ? SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.black,
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : Image.asset('images/google_ico.png', height: 24),
+                  label:
+                      isGoogleLoading
+                          ? Text("Signing in...")
+                          : Text("Continue with Google"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.black,
