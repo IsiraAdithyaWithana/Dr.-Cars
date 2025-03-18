@@ -19,10 +19,23 @@ class _SignInScreenState extends State<SignInScreen> {
   final AuthService _authService = AuthService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  String userType = "";
 
   bool isLoading = false;
   bool isGoogleLoading = false;
+
+  Future<String> _fetchUserType() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      try {
+        DocumentSnapshot userData =
+            await _firestore.collection("Users").doc(user.uid).get();
+        return userData.exists ? userData["User Type"] ?? "User" : "User";
+      } catch (e) {
+        print("Error fetching user data: $e");
+      }
+    }
+    return "User";
+  }
 
   void _handleSignIn() async {
     setState(() {
@@ -35,40 +48,18 @@ class _SignInScreenState extends State<SignInScreen> {
         _passwordController.text,
       );
 
-      Future<void> _fetchUserData() async {
-        User? user = _auth.currentUser;
-        if (user != null) {
-          try {
-            DocumentSnapshot userData =
-                await _firestore.collection("Users").doc(user.uid).get();
+      String userType = await _fetchUserType();
 
-            if (userData.exists) {
-              setState(() {
-                userType = userData["User Type"] ?? "User";
-              });
-              print("Fetched usertype: $userType");
-            } else {
-              print("User document does not exist.");
-            }
-          } catch (e) {
-            print("Error fetching user data: $e");
-          }
-        } else {
-          print("No user is logged in.");
-        }
-      }
-
-      if (userType == "Vehicle Owner") {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => DashboardScreen()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
-        );
-      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) =>
+                  userType == "Vehicle Owner"
+                      ? DashboardScreen()
+                      : HomeScreen(),
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -87,20 +78,27 @@ class _SignInScreenState extends State<SignInScreen> {
 
     final user = await _authService.signInWithGoogle();
 
-    setState(() {
-      isGoogleLoading = false;
-    });
-
     if (user != null) {
+      String userType = await _fetchUserType();
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => DashboardScreen()),
+        MaterialPageRoute(
+          builder:
+              (context) =>
+                  userType == "Vehicle Owner"
+                      ? DashboardScreen()
+                      : HomeScreen(),
+        ),
       );
     } else {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Google Sign-In Failed")));
     }
+
+    setState(() {
+      isGoogleLoading = false;
+    });
   }
 
   @override
