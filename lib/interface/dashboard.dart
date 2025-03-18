@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/rating.dart';
+import 'package:dr_cars/main/signin.dart';
 import 'package:dr_cars/main/welcome.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -84,7 +85,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Welcome(),
+                          builder: (context) => SignInScreen(),
                         ), // Go back to Welcome
                       );
                     },
