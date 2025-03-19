@@ -12,93 +12,100 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  await FirebaseAuth.instance.signOut(); // Sign out user
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SignInScreen(),
-                    ), // Go back to Welcome
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red, // Red sign-out button
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      body: SingleChildScrollView(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(height: 50),
+                // Centered Logo at the Top
+                SizedBox(
+                  width: double.infinity,
+                  child: Image.asset('images/logo.png', height: 150),
                 ),
-                child: Text(
-                  "Sign Out",
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
-              ),
-              // Centered Logo at the Top
-              SizedBox(
-                width: double.infinity,
-                child: Image.asset('images/logo.png', height: 150),
-              ),
-              const SizedBox(height: 50),
+                const SizedBox(height: 50),
 
-              // Buttons with increased spacing and adjusted size
-              _buildMenuButton(
-                context,
-                text: "Add New",
-                subtext: "Add new vehicles and add services",
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => AddVehicle()),
-                  );
-                },
-              ),
-
-              const SizedBox(height: 24), // Increased spacing
-
-              _buildMenuButton(
-                context,
-                text: "Records",
-                subtext: "For quick view of services (For non users)",
-                onPressed: () async {
-                  bool isAuthenticated = await showDialog(
-                    context: context,
-                    builder: (context) => PasswordDialog(),
-                  );
-
-                  if (isAuthenticated) {
+                // Buttons with increased spacing and adjusted size
+                _buildMenuButton(
+                  context,
+                  text: "Add New",
+                  subtext: "Add new vehicles and add services",
+                  onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => RecordsScreen()),
+                      MaterialPageRoute(builder: (context) => AddVehicle()),
                     );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Wrong password")),
+                  },
+                ),
+
+                const SizedBox(height: 24), // Increased spacing
+
+                _buildMenuButton(
+                  context,
+                  text: "Records",
+                  subtext: "For quick view of services (For non users)",
+                  onPressed: () async {
+                    bool isAuthenticated = await showDialog(
+                      context: context,
+                      builder: (context) => PasswordDialog(),
                     );
-                  }
-                },
-              ),
 
-              const SizedBox(height: 24), // Increased spacing
+                    if (isAuthenticated) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RecordsScreen(),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Wrong password")),
+                      );
+                    }
+                  },
+                ),
 
-              _buildMenuButton(
-                context,
-                text: "Appointments",
-                subtext: "Accept service appointments",
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AppointmentsScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
+                const SizedBox(height: 24), // Increased spacing
+
+                _buildMenuButton(
+                  context,
+                  text: "Appointments",
+                  subtext: "Accept service appointments",
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AppointmentsScreen(),
+                      ),
+                    );
+                  },
+                ),
+
+                SizedBox(height: 100),
+
+                ElevatedButton(
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut(); // Sign out user
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SignInScreen(),
+                      ), // Go back to Welcome
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red, // Red sign-out button
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                  child: Text(
+                    "Sign Out",
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
