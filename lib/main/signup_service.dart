@@ -1,118 +1,84 @@
 import 'package:dr_cars/main/signin.dart';
-import 'package:dr_cars/main/temp_fornow.dart';
 import 'package:flutter/material.dart';
 
-class SignUpService extends StatelessWidget {
+class ServiceCenterRequestScreen extends StatelessWidget {
+  const ServiceCenterRequestScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+      appBar: AppBar(
+        title: Text("Service Center Account Request"),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "How to Request a Service Center Account",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            Text(
+              "To request a service center account, please send an email with the following details:",
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 16),
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  SizedBox(height: 30),
-                  Image.asset('images/bg_removed_logo.png', height: 100),
-                  SizedBox(height: 20),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    'Sign Up as a Service Center',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    "Email To: support@drcars.com",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 20),
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Confirm Password',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Full Name',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Username',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Address',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Contact',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 40),
-                  TextButton(
-                    onPressed: () {
-                      // Navigate to login page
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => SignInScreen()),
-                      );
-                    },
-                    child: Text('Already have an account? Sign In'),
-                  ),
+                  SizedBox(height: 8),
+                  Text("Subject: Service Center Account Request"),
+                  SizedBox(height: 12),
+                  Text("Include the following information in your email:"),
+                  SizedBox(height: 8),
+                  Text("✔ Service Center Name"),
+                  Text("✔ Is the service center registered? (Yes/No)"),
+                  Text("✔ If registered, attach registration documents"),
+                  Text("✔ Service Center Start Date"),
+                  Text("✔ Owner/Manager Name"),
+                  Text("✔ Contact Number & Email"),
+                  Text("✔ Location/Address"),
                 ],
               ),
             ),
-          ),
-
-          // Bottom fixed section
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Text(
-                  'By clicking continue, you agree to our Terms of Service and Privacy Policy',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ForNowTemp()),
-                    );
-                  },
-                  child: Text('Continue'),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50),
-                  ),
-                ),
-              ],
+            SizedBox(height: 16),
+            Text(
+              "Once we receive your request, our team will review your details and get back to you within 48 hours.",
+              style: TextStyle(fontSize: 16, color: Colors.black87),
             ),
-          ),
-        ],
+            SizedBox(height: 24),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SignInScreen()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                child: Text("Back to Home"),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

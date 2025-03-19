@@ -1,6 +1,5 @@
 import 'package:dr_cars/main/signup.dart';
 import 'package:dr_cars/main/signup_service.dart';
-import 'package:dr_cars/main/temp_fornow.dart';
 import 'package:flutter/material.dart';
 
 class SignupSelection extends StatelessWidget {
@@ -36,7 +35,9 @@ class SignupSelection extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SignUpService()),
+                  MaterialPageRoute(
+                    builder: (context) => ServiceCenterRequestScreen(),
+                  ),
                 );
               },
               child: Text('Service Center'),
