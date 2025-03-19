@@ -2,11 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/rating.dart';
 import 'package:dr_cars/main/signin.dart';
-import 'package:dr_cars/main/welcome.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-int _selectedIndex = 0;
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -17,6 +14,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String userName = "Loading...";
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -59,6 +57,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -78,19 +78,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     "Welcome, $userName!",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 20), // Space between text and button
+                  SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () async {
-                      await FirebaseAuth.instance.signOut(); // Sign out user
+                      await FirebaseAuth.instance.signOut();
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => SignInScreen(),
-                        ), // Go back to Welcome
+                        MaterialPageRoute(builder: (context) => SignInScreen()),
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red, // Red sign-out button
+                      backgroundColor: Colors.red,
                       padding: EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical: 12,
@@ -104,85 +102,99 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Text(
-                'Your vehicle',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              ),
+            SizedBox(height: 20),
+            Text(
+              'Your vehicle',
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
+
+            // **Full-width Gray Background Container**
             Container(
-              height: 400,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: cars.length,
-                itemBuilder: (context, index) {
-                  final car = cars[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Container(
-                      width: 395,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        image: DecorationImage(
-                          image: AssetImage(car['image']),
-                          fit: BoxFit.cover,
-                          colorFilter: ColorFilter.mode(
-                            Colors.black.withOpacity(0.5),
-                            BlendMode.darken,
-                          ),
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              car['year'].toString(),
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                              ),
-                            ),
-                            Text(
-                              car['name'],
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 42,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Spacer(),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '⚙️ ${car['km']} KM',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                                ),
-                                Text(
-                                  '🛢 ${car['oil']} OIL',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                                ),
-                              ],
+              width: screenWidth,
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[200], // Light gray background
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children:
+                    cars.map((car) {
+                      return Container(
+                        width: screenWidth * 0.9,
+                        margin: EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 10,
+                              spreadRadius: 2,
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                  );
-                },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(16),
+                              ),
+                              child: Image.asset(
+                                car['image'],
+                                width: screenWidth * 0.9,
+                                height: 200,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    car['year'].toString(),
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    car['name'],
+                                    style: TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        '⚙️ ${car['km']} KM',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
+                                        '🛢 ${car['oil']} OIL',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
               ),
             ),
             SizedBox(height: 20),
@@ -193,46 +205,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
-            ListView(
-              shrinkWrap: true, // Prevent unnecessary scrolling issues
-              physics: NeverScrollableScrollPhysics(), // Disable scrolling
-              children: [
-                ListTile(
-                  title: Text('2016 Corolla 141'),
-                  subtitle: Text('5,301 miles'),
-                  trailing: Icon(Icons.check_circle, color: Colors.blue),
-                ),
-              ],
+            ListTile(
+              title: Text('2016 Corolla 141'),
+              subtitle: Text('5,301 miles'),
+              trailing: Icon(Icons.check_circle, color: Colors.blue),
             ),
           ],
         ),
       ),
+
+      // **Bottom Navigation Bar**
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.black,
-        currentIndex: _selectedIndex, // Highlight selected item
+        currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
-            _selectedIndex = index; // Update selected index
+            _selectedIndex = index;
           });
 
-          if (index == 0) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => DashboardScreen()),
-            );
-          }
-          if (index == 4) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
-            );
-          }
-          if (index == 3) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => RatingScreen()),
-            );
+          switch (index) {
+            case 0:
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => DashboardScreen()),
+              );
+              break;
+            case 3:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RatingScreen()),
+              );
+              break;
+            case 4:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfileScreen()),
+              );
+              break;
           }
         },
         items: [
