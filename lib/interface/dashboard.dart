@@ -90,7 +90,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       padding: EdgeInsets.symmetric(
-                        horizontal: 20,
+                        horizontal: 60,
                         vertical: 12,
                       ),
                     ),
@@ -114,17 +114,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
               width: screenWidth,
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey[200], // Light gray background
-                borderRadius: BorderRadius.circular(16),
+                color: const Color.fromARGB(
+                  255,
+                  255,
+                  255,
+                  255,
+                ), // Light gray background
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Column(
                 children:
                     cars.map((car) {
                       return Container(
-                        width: screenWidth * 0.9,
+                        width: screenWidth * 1,
                         margin: EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: const Color.fromARGB(255, 250, 247, 247),
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
@@ -144,7 +149,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: Image.asset(
                                 car['image'],
                                 width: screenWidth * 0.9,
-                                height: 200,
+                                height: 250,
                                 fit: BoxFit.cover,
                               ),
                             ),
