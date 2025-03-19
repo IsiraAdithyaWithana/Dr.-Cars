@@ -1,8 +1,26 @@
+import 'package:dr_cars/interface/dashboard.dart';
+import 'package:dr_cars/main/auth_service.dart';
 import 'package:dr_cars/main/signin.dart';
-import 'package:dr_cars/main/temp_fornow.dart';
 import 'package:flutter/material.dart';
 
-class SignUpPage extends StatelessWidget {
+class SignUpPage extends StatefulWidget {
+  @override
+  _SignUpPageState createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController contactController = TextEditingController();
+  final AuthService _authService = AuthService();
+
+  bool _isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,6 +41,7 @@ class SignUpPage extends StatelessWidget {
                   ),
                   SizedBox(height: 20),
                   TextField(
+                    controller: emailController,
                     decoration: InputDecoration(
                       labelText: 'Email',
                       border: OutlineInputBorder(),
@@ -30,6 +49,8 @@ class SignUpPage extends StatelessWidget {
                   ),
                   SizedBox(height: 20),
                   TextField(
+                    controller: passwordController,
+                    obscureText: true,
                     decoration: InputDecoration(
                       labelText: 'Password',
                       border: OutlineInputBorder(),
@@ -37,6 +58,8 @@ class SignUpPage extends StatelessWidget {
                   ),
                   SizedBox(height: 20),
                   TextField(
+                    controller: confirmPasswordController,
+                    obscureText: true,
                     decoration: InputDecoration(
                       labelText: 'Confirm Password',
                       border: OutlineInputBorder(),
@@ -44,6 +67,7 @@ class SignUpPage extends StatelessWidget {
                   ),
                   SizedBox(height: 20),
                   TextField(
+                    controller: nameController,
                     decoration: InputDecoration(
                       labelText: 'Full Name',
                       border: OutlineInputBorder(),
@@ -51,6 +75,7 @@ class SignUpPage extends StatelessWidget {
                   ),
                   SizedBox(height: 20),
                   TextField(
+                    controller: usernameController,
                     decoration: InputDecoration(
                       labelText: 'Username',
                       border: OutlineInputBorder(),
@@ -58,6 +83,7 @@ class SignUpPage extends StatelessWidget {
                   ),
                   SizedBox(height: 20),
                   TextField(
+                    controller: addressController,
                     decoration: InputDecoration(
                       labelText: 'Address',
                       border: OutlineInputBorder(),
@@ -65,6 +91,7 @@ class SignUpPage extends StatelessWidget {
                   ),
                   SizedBox(height: 20),
                   TextField(
+                    controller: contactController,
                     decoration: InputDecoration(
                       labelText: 'Contact',
                       border: OutlineInputBorder(),
@@ -73,7 +100,6 @@ class SignUpPage extends StatelessWidget {
                   SizedBox(height: 40),
                   TextButton(
                     onPressed: () {
-                      // Navigate to login page
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => SignInScreen()),
@@ -85,8 +111,6 @@ class SignUpPage extends StatelessWidget {
               ),
             ),
           ),
-
-          // Bottom fixed section
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -98,13 +122,11 @@ class SignUpPage extends StatelessWidget {
                 ),
                 SizedBox(height: 10),
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ForNowTemp()),
-                    );
-                  },
-                  child: Text('Continue'),
+                  onPressed: _isLoading ? null : _signUpUser,
+                  child:
+                      _isLoading
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Text('Continue'),
                   style: ElevatedButton.styleFrom(
                     minimumSize: Size(double.infinity, 50),
                   ),
@@ -115,5 +137,44 @@ class SignUpPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _signUpUser() async {
+    setState(() => _isLoading = true);
+
+    try {
+      print("Attempting to sign up...");
+
+      var user = await _authService.signUp(
+        nameController.text,
+        emailController.text,
+        passwordController.text,
+        usernameController.text,
+        addressController.text,
+        contactController.text,
+      );
+
+      if (user != null) {
+        print("User created successfully: ${user.uid}");
+
+        // Navigate to DashboardScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
+        );
+      } else {
+        print("User creation failed, received null.");
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Sign Up Failed")));
+      }
+    } catch (e) {
+      print("Error during sign-up: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 }

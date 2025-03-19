@@ -1,5 +1,5 @@
+import 'package:dr_cars/service/service_menu.dart';
 import 'package:flutter/material.dart';
-import '../main/main_menu.dart';
 
 class AppointmentsDayScreen extends StatelessWidget {
   final String day;
@@ -26,7 +26,7 @@ class AppointmentsDayScreen extends StatelessWidget {
               // Navigate back to the home screen
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => MainMenu()),
+                MaterialPageRoute(builder: (context) => HomeScreen()),
                 (route) => false,
               );
             },
@@ -64,7 +64,7 @@ class AppointmentsDayScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => MainMenu()),
+                      MaterialPageRoute(builder: (context) => HomeScreen()),
                       (route) => false,
                     );
                   },

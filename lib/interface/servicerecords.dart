@@ -1,4 +1,6 @@
+import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/interface/profile.dart';
+import 'package:dr_cars/interface/rating.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -18,10 +20,11 @@ class ServiceRecordsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Service Records'),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 6, 5, 5),
+        foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: const Color.fromARGB(255, 255, 253, 253)),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -157,43 +160,46 @@ class ServiceRecordsPage extends StatelessWidget {
       ),
 
       // Bottom Navigation Bar
-bottomNavigationBar: BottomNavigationBar(
-  type: BottomNavigationBarType.fixed,
-  selectedItemColor: Colors.black,
-  unselectedItemColor: Colors.grey,
-  currentIndex: _selectedIndex, // Highlight selected item
-  onTap: (index) {
-    (() {
-      _selectedIndex = index; // Update selected index
-    });
+         bottomNavigationBar: BottomNavigationBar(
+         selectedItemColor: Colors.red,
+         unselectedItemColor: Colors.black,
+         currentIndex: _selectedIndex, // Highlight selected item
+         onTap: (index) {
+         (() {
+         _selectedIndex = index; // Update selected index
+          });
 
-    if (index == 4) { // Navigate when "User" icon is clicked
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ProfileScreen()),
+         if (index == 0) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
+      );
+    }
+     if (index == 4) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfileScreen()),
+      );
+    }
+     if (index == 3) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => RatingScreen()),
       );
     }
   },
-  items: [
-    BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-    BottomNavigationBarItem(
-      icon: FaIcon(FontAwesomeIcons.compass),
-      label: 'Map',
-    ),
-    BottomNavigationBarItem(
-      icon: Image.asset('images/logo.png', width: 40, height: 40),
-      label: '',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.notifications),
-      label: 'Alerts',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.verified_user),
-      label: 'User',
-    ),
-  ],
-),
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+          BottomNavigationBarItem(
+            icon: Image.asset('images/logo.png', height: 30),
+            label: '',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+        ],
+       
+      ),
     );
   }
 }

@@ -1,4 +1,8 @@
+import 'package:dr_cars/interface/rating.dart';
 import 'package:flutter/material.dart';
+import 'dashboard.dart'; // Import your Dashboard screen
+
+int _selectedIndex = 4;
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -10,17 +14,11 @@ class ProfileScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.home, color: Colors.black),
           onPressed: () {
-            Navigator.pop(context);
+            _navigateToDashboard(context);
           },
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.home, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
@@ -50,12 +48,82 @@ class ProfileScreen extends StatelessWidget {
                 backgroundColor: Colors.black,
                 minimumSize: Size(double.infinity, 50),
               ),
-              onPressed: () {},
+              onPressed: () {
+                _showPopupMessage(context);
+              },
               child: Text("Continue", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+         selectedItemColor: Colors.red,
+         unselectedItemColor: Colors.black,
+         currentIndex: _selectedIndex, // Highlight selected item
+         onTap: (index) {
+         (() {
+         _selectedIndex = index; // Update selected index
+          });
+
+         if (index == 0) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
+      );
+    }
+     if (index == 4) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfileScreen()),
+      );
+    }
+     if (index == 3) { // Navigate when "User" icon is clicked
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => RatingScreen()),
+      );
+    }
+  },
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label:''),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+          BottomNavigationBarItem(
+            icon: Image.asset('images/logo.png', height: 30),
+            label: '',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+        ],
+       
+      ),
+    );
+  }
+
+  void _showPopupMessage(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Success"),
+          content: Text("Your data was saved."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _navigateToDashboard(BuildContext context) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => DashboardScreen()),
     );
   }
 
@@ -84,7 +152,7 @@ class ProfileScreen extends StatelessWidget {
             [
               'Car before 2020',
               'Car before 2010',
-              'Cae before 2000',
+              'Car before 2000',
             ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
         onChanged: (value) {},
       ),

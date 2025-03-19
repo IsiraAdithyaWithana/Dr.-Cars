@@ -1,3 +1,6 @@
+import 'package:dr_cars/main/signin.dart';
+import 'package:dr_cars/main/welcome.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'records_screen.dart';
 import 'appointments_screen.dart';
@@ -15,6 +18,26 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  await FirebaseAuth.instance.signOut(); // Sign out user
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SignInScreen(),
+                    ), // Go back to Welcome
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red, // Red sign-out button
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                ),
+                child: Text(
+                  "Sign Out",
+                  style: TextStyle(fontSize: 18, color: Colors.white),
+                ),
+              ),
               // Centered Logo at the Top
               SizedBox(
                 width: double.infinity,
