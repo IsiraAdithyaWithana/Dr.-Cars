@@ -4,9 +4,6 @@ import 'package:url_launcher/url_launcher.dart';
 class ServiceCenterRequestScreen extends StatelessWidget {
   const ServiceCenterRequestScreen({super.key});
 
-  final String formUrl =
-      "https://docs.google.com/forms/d/e/1FAIpQLSdvL3gHgFMdLvtMs5luSlnVLcaRFFcMs0GIvj_8pyrb83mgog/viewform?usp=header";
-
   Future<void> _openForm() async {
     final Uri url = Uri.parse(
       "https://docs.google.com/forms/d/e/1FAIpQLSdvL3gHgFMdLvtMs5luSlnVLcaRFFcMs0GIvj_8pyrb83mgog/viewform?usp=header",
