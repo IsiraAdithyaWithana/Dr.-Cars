@@ -7,11 +7,13 @@ class ServiceCenterRequestScreen extends StatelessWidget {
   final String formUrl =
       "https://docs.google.com/forms/d/e/1FAIpQLSdvL3gHgFMdLvtMs5luSlnVLcaRFFcMs0GIvj_8pyrb83mgog/viewform?usp=header";
 
-  void _openForm() async {
-    if (await canLaunchUrl(Uri.parse(formUrl))) {
-      await launchUrl(Uri.parse(formUrl), mode: LaunchMode.externalApplication);
-    } else {
-      debugPrint("Could not open the form");
+  Future<void> _openForm() async {
+    final Uri url = Uri.parse(
+      "https://docs.google.com/forms/d/e/1FAIpQLSdvL3gHgFMdLvtMs5luSlnVLcaRFFcMs0GIvj_8pyrb83mgog/viewform?usp=header",
+    );
+
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      debugPrint("Could not launch URL");
     }
   }
 
