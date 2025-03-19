@@ -170,6 +170,22 @@ Widget build(BuildContext context) {
         );
       },
     ),
+  
+  bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+          BottomNavigationBarItem(
+            icon: Image.asset('images/logo.png', height: 30),
+            label: '',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+        ],
+        selectedItemColor: Colors.red,
+        unselectedItemColor: Colors.black,
+      ),
+  
   );
 }
 
