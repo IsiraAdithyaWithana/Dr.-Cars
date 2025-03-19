@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class AppointmentsPage extends StatefulWidget {
   const AppointmentsPage({Key? key}) : super(key: key);
@@ -149,12 +151,30 @@ Widget build(BuildContext context) {
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                             ),
-                            onPressed: () {
+                            onPressed: () async{
                               if (_selectedModel == null || _selectedBranch == null || _selectedDate == null || _selectedTime == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Please fill all required fields')),
                                 );
                                 return;
+                              }
+                              try {
+                                await FirebaseFirestore.instance.collection('appointments').add({
+                                  'vehicleModel': _selectedModel,
+                                  'serviceType': _selectedService,
+                                  'branch': _selectedBranch,
+                                  'date': _selectedDate!.toIso8601String(),
+                                  'time': _selectedTime!.format(context),
+                                  'timestamp': FieldValue.serverTimestamp(), // Useful for ordering
+                                });
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Appointment booked successfully!')),
+                                );
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error: $e')),
+                                );
                               }
                             },
                             child: const Text('Submit Appointment', style: TextStyle(fontSize: 16, color: Colors.white)),
