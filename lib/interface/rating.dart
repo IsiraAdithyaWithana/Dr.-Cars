@@ -52,24 +52,24 @@ class _RatingScreenState extends State<RatingScreen> {
   final TextEditingController _feedbackController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
- void _submitFeedback() async {
-  if (_feedbackController.text.isEmpty || _selectedRating == 0) return;
+  void _submitFeedback() async {
+    if (_feedbackController.text.isEmpty || _selectedRating == 0) return;
 
-  final feedback = {
-    'name': 'Anonymous', // Replace this with actual user info if needed
-    'date': DateTime.now().toIso8601String(),
-    'rating': _selectedRating,
-    'feedback': _feedbackController.text,
-    'helpfulCount': 0,
-  };
+    final feedback = {
+      'name': 'Anonymous', // Replace this with actual user info if needed
+      'date': DateTime.now().toString(),
+      'rating': _selectedRating,
+      'feedback': _feedbackController.text,
+      'helpfulCount': 0,
+    };
 
-  await _firestore.collection('Feedbacks').add(feedback); // Ensure lowercase 'feedbacks'
-  _feedbackController.clear();
-  setState(() {
-    _selectedRating = 0;
-  });
-  _showSnackBar();
-}
+    await _firestore.collection('Feedbacks').add(feedback); // Ensure lowercase 'feedbacks'
+    _feedbackController.clear();
+    setState(() {
+      _selectedRating = 0;
+    });
+    _showSnackBar();
+  }
 
   void _showSubmitDialog() {
     showDialog(
@@ -112,7 +112,7 @@ class _RatingScreenState extends State<RatingScreen> {
     if (feedbacks.isEmpty) return 0.0;
     int totalRating = 0;
     for (var feedback in feedbacks) {
-      totalRating = feedback['rating'] + totalRating;
+      totalRating = feedback['rating'] + totalRating?? 0; // Add null check
     }
     return totalRating / feedbacks.length;
   }
@@ -120,7 +120,8 @@ class _RatingScreenState extends State<RatingScreen> {
   Map<int, int> _calculateRatingDistribution(List<QueryDocumentSnapshot> feedbacks) {
     Map<int, int> distribution = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
     for (var feedback in feedbacks) {
-      distribution[feedback['rating']] = (distribution[feedback['rating']] ?? 0) + 1;
+      int rating = feedback['rating'] ?? 0; // Add null check
+      distribution[rating] = (distribution[rating] ?? 0) + 1;
     }
     return distribution;
   }
@@ -237,94 +238,106 @@ class _RatingScreenState extends State<RatingScreen> {
                 ),
               ],
             ),
-   Expanded(
-  child: StreamBuilder<QuerySnapshot>(
-    stream: _firestore.collection('Feedbacks').snapshots(),
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return Center(child: CircularProgressIndicator());
-      }
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: _firestore.collection('Feedbacks').snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
 
-      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-        return Center(child: Text("No feedback available"));
-      }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return Center(child: Text("No feedback available"));
+                  }
 
-      final feedbacks = snapshot.data!.docs;
-      final averageRating = _calculateAverageRating(feedbacks);
-      // ignore: unused_local_variable
-      final ratingDistribution = _calculateRatingDistribution(feedbacks);
+                  final feedbacks = snapshot.data!.docs;
+                  final averageRating = _calculateAverageRating(feedbacks);
+                  // ignore: unused_local_variable
+                  final ratingDistribution = _calculateRatingDistribution(feedbacks);
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Average Rating: ${averageRating.toStringAsFixed(1)}",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 10),
-          Text(
-            "Total Feedbacks: ${feedbacks.length}",
-            style: TextStyle(fontSize: 16, color: Colors.black87),
-          ),
-          SizedBox(height: 10),
-          Expanded(
-            child: ListView.builder(
-              itemCount: feedbacks.length,
-              itemBuilder: (context, index) {
-                final feedback = feedbacks[index].data() as Map<String, dynamic>? ?? {};
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Average Rating: ${averageRating.toStringAsFixed(1)}",
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        "Total Feedbacks: ${feedbacks.length}",
+                        style: TextStyle(fontSize: 16, color: Colors.black87),
+                      ),
+                      SizedBox(height: 10),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: feedbacks.length,
+                          itemBuilder: (context, index) {
+                            final feedback = feedbacks[index].data() as Map<String, dynamic>? ?? {};
 
-                return Card(
-                  margin: EdgeInsets.symmetric(vertical: 10),
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              feedback['name'] ?? 'Anonymous',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              feedback['date'] ?? '',
-                              style: TextStyle(fontSize: 14, color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 8),
-                        Row(
-                          children: List.generate(5, (index) {
-                            return Icon(
-                              Icons.star,
-                              color: index < (feedback['rating'] ?? 0) ? Colors.orange : Colors.grey,
+                            return Card(
+                              margin: EdgeInsets.symmetric(vertical: 10),
+                              child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          feedback['name'] ?? 'Anonymous',
+                                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          feedback['date'] ?? '',
+                                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 8),
+                                    Row(
+                                      children: List.generate(5, (index) {
+                                        return Icon(
+                                          Icons.star,
+                                          color: index < (feedback['rating'] ?? 0) ? Colors.orange : Colors.grey,
+                                        );
+                                      }),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      feedback['feedback'] ?? '', // Corrected key here
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      "${feedback['helpfulCount'] ?? 0} people found this helpful",
+                                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        TextButton(
+                                          onPressed: () {},
+                                          child: Text("Yes"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {},
+                                          child: Text("No"),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
                             );
-                          }),
+                          },
                         ),
-                        SizedBox(height: 8),
-                        Text(
-                          feedback['feedback'] ?? '',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          "${feedback['helpfulCount'] ?? 0} people found this helpful",
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
-          ),
-        ],
-      );
-    },
-  ),
-),
-
           ],
         ),
       ),
