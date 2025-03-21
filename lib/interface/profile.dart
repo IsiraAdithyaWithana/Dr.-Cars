@@ -15,12 +15,111 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? selectedBrand;
   String? selectedModel;
   String? selectedType;
+  TextEditingController mileageController = TextEditingController();
+  TextEditingController yearController = TextEditingController();
 
   final Map<String, List<String>> vehicleModels = {
-    'Toyota': ['Corolla', 'Camry', 'RAV4', 'Hilux', 'Land Cruiser'],
-    'Nissan': ['Sunny', 'X-Trail', 'Patrol', 'Navara', 'GT-R'],
-    'Honda': ['Civic', 'Accord', 'CR-V', 'Vezel', 'City'],
-    'Suzuki': ['Alto', 'Swift', 'Dzire', 'Baleno', 'Jimny'],
+    'Toyota': [
+      'Corolla',
+      'Camry',
+      'RAV4',
+      'Highlander',
+      'Aqua',
+      'Axio',
+      'Vitz',
+      'Allion',
+      'Premio',
+      'LandCruiser',
+      'Hilux',
+      'Prius',
+      'Rush',
+    ],
+    'Nissan': [
+      'Sunny',
+      'X-Trail',
+      'Juke',
+      'Note',
+      'Teana',
+      'Skyline',
+      'Patrol',
+      'Navara',
+      'Qashqai',
+      'Murano',
+      'Titan',
+      'Frontier',
+      'Sylphy',
+      'Fairlady Z',
+      'Armada',
+      'Sentra',
+      'Leaf',
+      'GT-R',
+      'Bluebird',
+      'March',
+      'AD Wagon',
+      'Vanette',
+      'Caravan',
+      'Serena',
+      'Primera',
+      'Cedric',
+      'Gloria',
+      'Terrano',
+      'Dualis',
+      'Dayz',
+      'Elgrand',
+      'Lafesta',
+      'Wingroad',
+    ],
+    'Honda': [
+      'Civic',
+      'Accord',
+      'CR-V',
+      'Pilot',
+      'Fit',
+      'Vezel',
+      'Grace',
+      'Freed',
+      'Insight',
+      'HR-V',
+      'BR-V',
+      'Jazz',
+      'City',
+      'Legend',
+      'Odyssey',
+      'Shuttle',
+      'Stepwgn',
+      'Acty',
+      'S660',
+      'NSX',
+      'Integra',
+      'Stream',
+      'Airwave',
+      'CR-Z',
+      'Elysion',
+      'Beat',
+      'Mobilio',
+      'Crossroad',
+    ],
+    'Suzuki': [
+      'Alto',
+      'Wagon R',
+      'Swift',
+      'Dzire',
+      'Baleno',
+      'Ertiga',
+      'Celerio',
+      'S-Presso',
+      'Vitara Brezza',
+      'Grand Vitara',
+      'Ciaz',
+      'Ignis',
+      'XL6',
+      'Jimny',
+      'Fronx',
+      'Maruti 800',
+      'Esteem',
+      'Kizashi',
+      'A-Star',
+    ],
   };
 
   final List<String> vehicleTypes = ['Car', 'SUV', 'Truck', 'Buses', 'Van'];
@@ -52,14 +151,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             SizedBox(height: 20),
 
-            /// **Top Vehicle Selection Fields**
+            // **Vehicle Selection Fields at the Top**
             _buildBrandDropdown(),
             _buildModelDropdown(),
             _buildTypeDropdown(),
 
-            /// **Updated Fields**
-            _buildTextField(label: "Mileage (km)", hintText: "Enter mileage"),
-            _buildTextField(label: "Manufacture Year", hintText: "Enter year"),
+            // **Updated Fields**
+            _buildTextField(
+              controller: mileageController,
+              label: "Mileage (km)",
+              hintText: "Enter mileage",
+            ),
+            _buildTextField(
+              controller: yearController,
+              label: "Manufacture Year",
+              hintText: "Enter year",
+            ),
 
             SizedBox(height: 20),
             ElevatedButton(
@@ -143,10 +250,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildTextField({required String label, required String hintText}) {
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hintText,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextField(
+        controller: controller,
         decoration: InputDecoration(
           labelText: label,
           hintText: hintText,
@@ -174,7 +286,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         onChanged: (value) {
           setState(() {
             selectedBrand = value;
-            selectedModel = null;
+            selectedModel = null; // Reset model when brand changes
           });
         },
         hint: Text("Select a brand"),
