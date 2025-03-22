@@ -135,7 +135,7 @@ class _RatingScreenState extends State<RatingScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {},
+          onPressed: () => Navigator.pop(context),
         ),
         title: Center(
           child: Text(
