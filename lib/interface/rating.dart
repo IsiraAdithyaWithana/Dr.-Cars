@@ -371,7 +371,7 @@ class _RatingScreenState extends State<RatingScreen> {
         },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
           BottomNavigationBarItem(
             icon: Image.asset('images/logo.png', height: 30),
             label: '',

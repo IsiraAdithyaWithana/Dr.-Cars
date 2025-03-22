@@ -252,7 +252,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
           BottomNavigationBarItem(
             icon: Image.asset('images/logo.png', height: 30),
             label: '',
@@ -260,7 +260,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
-      ),
+      ), 
     );
   }
 }
