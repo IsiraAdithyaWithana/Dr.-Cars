@@ -1,3 +1,4 @@
+import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/rating.dart';
 import 'package:flutter/material.dart';
 import 'dashboard.dart'; // Import your Dashboard screen
@@ -199,6 +200,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => DashboardScreen()),
+          );
+          } else if (index == 1) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MapScreen()),
           );
         } else if (index == 3) {
           Navigator.push(
