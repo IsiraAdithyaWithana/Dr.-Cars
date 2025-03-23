@@ -98,7 +98,17 @@ class _MapScreenState extends State<MapScreen> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
+       leading: IconButton(
+         icon: Icon(Icons.arrow_back, color: Colors.white),
+         onPressed: () {
+         Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => DashboardScreen()),
+      );
+    },
+  ),
         title: const Text(" Dr Cars Service Centers"),
+        
       ),
       body: _userLocation == null
           ? const Center(child: CircularProgressIndicator()) // Show loader if location is null

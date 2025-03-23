@@ -1,4 +1,5 @@
 import 'package:dr_cars/interface/dashboard.dart';
+import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -347,16 +348,22 @@ class _RatingScreenState extends State<RatingScreen> {
         currentIndex: _selectedIndex, // Highlight selected item
         onTap: (index) {
           setState(() {
-            _selectedIndex = index; // Update selected index
+            _selectedIndex = index; 
           });
 
-          if (index == 0) { // Navigate when "Home" icon is clicked
+          if (index == 0) { 
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => DashboardScreen()),
             );
           }
-          if (index == 4) { // Navigate when "Profile" icon is clicked
+          if (index == 1) { 
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => MapScreen()),
+            );
+          }
+          if (index == 4) { 
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => ProfileScreen()),
