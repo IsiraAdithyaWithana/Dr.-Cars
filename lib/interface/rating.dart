@@ -157,7 +157,11 @@ class _RatingScreenState extends State<RatingScreen> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {},
-                    child: Text("Cancel", style: TextStyle(fontSize: 20)),
+                    child: Text("Cancel",
+                     style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.black,
+                      )),
                   ),
                 ),
                 SizedBox(width: 20),
@@ -165,7 +169,12 @@ class _RatingScreenState extends State<RatingScreen> {
                   child: ElevatedButton(
                     onPressed: _showSubmitDialog,
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-                    child: Text("Submit", style: TextStyle(fontSize: 20)),
+                    child: Text("Submit",
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      )),
+                    
                   ),
                 ),
               ],
@@ -188,8 +197,15 @@ class _RatingScreenState extends State<RatingScreen> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Average Rating: ${averageRating.toStringAsFixed(1)}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      Text("Average Rating: ${averageRating.toStringAsFixed(1)}",
+                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)
+                       ),
                       SizedBox(height: 10),
+                      Text(
+            "Total Feedbacks: ${feedbacks.length}",
+            style: TextStyle(fontSize: 16, color: Colors.black87),
+          ),
+          SizedBox(height: 10),
                       Expanded(
                         child: ListView.builder(
                           itemCount: feedbacks.length,
