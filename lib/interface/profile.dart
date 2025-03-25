@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/rating.dart';
 import 'package:flutter/material.dart';
@@ -171,13 +172,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             SizedBox(height: 20),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                minimumSize: Size(double.infinity, 50),
-              ),
-              onPressed: () => _showPopupMessage(context),
-              child: Text("Continue", style: TextStyle(color: Colors.white)),
-            ),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.black,
+    minimumSize: Size(double.infinity, 50),
+  ),
+  onPressed: () => _uploadVehicleData(), // Call function to upload data
+  child: Text("Continue", style: TextStyle(color: Colors.white)),
+),
           ],
         ),
       ),
@@ -231,24 +232,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showPopupMessage(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Success"),
-          content: Text("Your data was saved."),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
-  }
+    void _uploadVehicleData() async {
+  if (selectedBrand != null && selectedModel != null && selectedType != null) {
+    try {
+      await FirebaseFirestore.instance.collection('Vehicle').add({
+        'brand': selectedBrand,
+        'model': selectedModel,
+        'type': selectedType,
+        'mileage': int.tryParse(mileageController.text) ?? 0,
+        'manufactureYear': int.tryParse(yearController.text) ?? 0,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
 
+      // Show Success Message
+      _showPopupMessage(context, "Success", "Your data was saved.");
+    } catch (e) {
+      _showPopupMessage(context, "Error", "Failed to save data.");
+    }
+  } else {
+    _showPopupMessage(context, "Warning", "Please fill all fields.");
+  }
+}
+
+void _showPopupMessage(BuildContext context, String title, String message) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text("OK"),
+          ),
+        ],
+      );
+    },
+  );
+}
+void _clearFields() {
+  setState(() {
+    mileageController.clear();
+    yearController.clear();
+    selectedBrand = null;
+    selectedModel = null;
+    selectedType = null;
+  });
+}
   void _navigateToDashboard(BuildContext context) {
     Navigator.pushReplacement(
       context,
