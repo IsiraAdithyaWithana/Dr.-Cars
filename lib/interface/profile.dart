@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/rating.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dashboard.dart'; // Import your Dashboard screen
 
@@ -233,14 +234,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
     void _uploadVehicleData() async {
+  User? user = FirebaseAuth.instance.currentUser;
+  if (user == null) return; // Ensure user is logged in
+
   if (selectedBrand != null && selectedModel != null && selectedType != null) {
     try {
       await FirebaseFirestore.instance.collection('Vehicle').add({
+        'userId': user.uid, // Store user's ID
         'brand': selectedBrand,
         'model': selectedModel,
         'type': selectedType,
         'mileage': int.tryParse(mileageController.text) ?? 0,
         'manufactureYear': int.tryParse(yearController.text) ?? 0,
+        'image': 'images/dashcar.png', // Default image (modify as needed)
         'timestamp': FieldValue.serverTimestamp(),
       });
 

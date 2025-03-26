@@ -18,11 +18,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String userName = "Loading...";
   int _selectedIndex = 0;
+  Map<String, dynamic>? vehicleData;
+  bool isLoading = true;
+  String? errorMessage;
 
   @override
   void initState() {
     super.initState();
     _fetchUserData();
+    _fetchVehicleData();
   }
 
   Future<void> _fetchUserData() async {
@@ -48,15 +52,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  final List<Map<String, dynamic>> cars = [
-    {
-      'year': 2016,
-      'name': 'Corolla 141',
-      'km': '4,020',
-      'oil': '1,291',
-      'image': 'images/dashcar.png',
-    },
-  ];
+  Future<void> _fetchVehicleData() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      try {
+        // Get the first vehicle document for this user
+        QuerySnapshot querySnapshot = await _firestore.collection("Vehicle")
+            .where("userId", isEqualTo: user.uid)
+            .limit(1)
+            .get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          setState(() {
+            vehicleData = querySnapshot.docs.first.data() as Map<String, dynamic>;
+            isLoading = false;
+          });
+        } else {
+          setState(() {
+            isLoading = false;
+            errorMessage = "No vehicle found. Add a vehicle to see details.";
+          });
+        }
+      } catch (e) {
+        setState(() {
+          isLoading = false;
+          errorMessage = "Error loading vehicle data";
+        });
+        print("Error fetching vehicle data: $e");
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,99 +137,116 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             SizedBox(height: 10),
 
-            // **Full-width Gray Background Container**
-            Container(
-              width: screenWidth,
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(
-                  255,
-                  255,
-                  255,
-                  255,
-                ), // Light gray background
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                children:
-                    cars.map((car) {
-                      return Container(
-                        width: screenWidth * 1,
-                        margin: EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 250, 247, 247),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 10,
-                              spreadRadius: 2,
-                            ),
-                          ],
+            // Vehicle Display Section
+            isLoading
+                ? Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: CircularProgressIndicator(),
+                  )
+                : errorMessage != null
+                    ? Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          errorMessage!,
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.red,
+                          ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(16),
-                              ),
-                              child: Image.asset(
-                                car['image'],
-                                width: screenWidth * 0.9,
-                                height: 250,
-                                fit: BoxFit.cover,
-                              ),
+                      )
+                    : vehicleData == null
+                        ? Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text(
+                              "No vehicle data available",
+                              style: TextStyle(fontSize: 18),
                             ),
-                            Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    car['year'].toString(),
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                          )
+                        : Container(
+                            width: screenWidth,
+                            padding: EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              children: [
+                                Container(
+                                  width: screenWidth * 1,
+                                  margin: EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: const Color.fromARGB(255, 250, 247, 247),
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 10,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    car['name'],
-                                    style: TextStyle(
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(height: 10),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        '⚙️ ${car['km']} KM',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(16),
+                                        ),
+                                        child: Image.asset(
+                                          'images/dashcar.png',
+                                          width: screenWidth * 0.9,
+                                          height: 250,
+                                          fit: BoxFit.cover,
                                         ),
                                       ),
-                                      Text(
-                                        '🛢 ${car['oil']} OIL',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
+                                      Padding(
+                                        padding: EdgeInsets.all(12),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              vehicleData!['manufacturer/ear']?.toString() ?? 'Year not specified',
+                                              style: TextStyle(
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Text(
+                                              "${vehicleData!['brand'] ?? 'Brand'} ${vehicleData!['model'] ?? 'Model'}",
+                                              style: TextStyle(
+                                                fontSize: 32,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            SizedBox(height: 10),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  '⚙️ ${vehicleData!['mileage']?.toString() ?? '0'} KM',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  '🛢 ${vehicleData!['type'] ?? 'Type not specified'}',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-              ),
-            ),
+                          ),
             SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -214,8 +256,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             ListTile(
-              title: Text('2016 Corolla 141'),
-              subtitle: Text('5,301 miles'),
+              title: Text(vehicleData != null
+                  ? "${vehicleData!['brand'] ?? ''} ${vehicleData!['model'] ?? ''}"
+                  : 'Vehicle not loaded'),
+              subtitle: Text(vehicleData != null
+                  ? '${vehicleData!['mileage']?.toString() ?? '0'} miles'
+                  : ''),
               trailing: Icon(Icons.check_circle, color: Colors.blue),
             ),
           ],
@@ -239,7 +285,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 MaterialPageRoute(builder: (context) => DashboardScreen()),
               );
               break;
-              case 1:
+            case 1:
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => MapScreen()),
@@ -269,7 +315,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
-      ), 
+      ),
     );
   }
 }
