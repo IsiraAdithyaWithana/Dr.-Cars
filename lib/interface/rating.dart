@@ -1,4 +1,5 @@
 import 'package:dr_cars/interface/dashboard.dart';
+import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -261,37 +262,39 @@ class _RatingScreenState extends State<RatingScreen> {
             _selectedIndex = index; // Update selected index
           });
 
-          if (index == 0) { // Navigate when "Home" icon is clicked
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => DashboardScreen()),
-            );
-          }
-          if (index == 4) { // Navigate when "Profile" icon is clicked
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
-            );
-          }
-          if (index == 3) { // Navigate when "Review" icon is clicked
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => RatingScreen()),
-            );
-          }
-        },
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
-          BottomNavigationBarItem(
-            icon: Image.asset('images/logo.png', height: 30),
-            label: '',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
-        ],
-      ),
+           if (index == 0) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => DashboardScreen()),
+          );
+          } else if (index == 1) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MapScreen()),
+          );
+        } else if (index == 3) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => RatingScreen()),
+          );
+        } else if (index == 4) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ProfileScreen()),
+          );
+        }
+      },
+      items: [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+        BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
+        BottomNavigationBarItem(
+          icon: Image.asset('images/logo.png', height: 30),
+          label: '',
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+      ],
+    ),
     );
-    
   }
 }
