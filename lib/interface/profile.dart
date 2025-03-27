@@ -173,13 +173,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             SizedBox(height: 20),
             ElevatedButton(
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.black,
-    minimumSize: Size(double.infinity, 50),
-  ),
-  onPressed: () => _uploadVehicleData(), // Call function to upload data
-  child: Text("Continue", style: TextStyle(color: Colors.white)),
-),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                minimumSize: Size(double.infinity, 50),
+              ),
+              onPressed:
+                  () => _uploadVehicleData(), // Call function to upload data
+              child: Text("Continue", style: TextStyle(color: Colors.white)),
+            ),
           ],
         ),
       ),
@@ -203,7 +204,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             context,
             MaterialPageRoute(builder: (context) => DashboardScreen()),
           );
-          } else if (index == 1) {
+        } else if (index == 1) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => MapScreen()),
@@ -233,59 +234,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-    void _uploadVehicleData() async {
-  User? user = FirebaseAuth.instance.currentUser;
-  if (user == null) return; // Ensure user is logged in
+  void _uploadVehicleData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return; // Ensure user is logged in
 
-  if (selectedBrand != null && selectedModel != null && selectedType != null) {
-    try {
-      await FirebaseFirestore.instance.collection('Vehicle').add({
-        'userId': user.uid, // Store user's ID
-        'brand': selectedBrand,
-        'model': selectedModel,
-        'type': selectedType,
-        'mileage': int.tryParse(mileageController.text) ?? 0,
-        'manufactureYear': int.tryParse(yearController.text) ?? 0,
-        'image': 'images/dashcar.png', // Default image (modify as needed)
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+    if (selectedBrand != null &&
+        selectedModel != null &&
+        selectedType != null) {
+      try {
+        await FirebaseFirestore.instance.collection('Vehicle').add({
+          'userId': user.uid, // Store user's ID
+          'brand': selectedBrand,
+          'model': selectedModel,
+          'type': selectedType,
+          'mileage': int.tryParse(mileageController.text) ?? 0,
+          'manufactureYear': int.tryParse(yearController.text) ?? 0,
+          'image': 'images/dashcar.png', // Default image (modify as needed)
+          'timestamp': FieldValue.serverTimestamp(),
+        });
 
-      // Show Success Message
-      _showPopupMessage(context, "Success", "Your data was saved.");
-    } catch (e) {
-      _showPopupMessage(context, "Error", "Failed to save data.");
+        // Show Success Message
+        _showPopupMessage(context, "Success", "Your data was saved.");
+      } catch (e) {
+        _showPopupMessage(context, "Error", "Failed to save data.");
+      }
+    } else {
+      _showPopupMessage(context, "Warning", "Please fill all fields.");
     }
-  } else {
-    _showPopupMessage(context, "Warning", "Please fill all fields.");
   }
-}
 
-void _showPopupMessage(BuildContext context, String title, String message) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text("OK"),
-          ),
-        ],
-      );
-    },
-  );
-}
-void _clearFields() {
-  setState(() {
-    mileageController.clear();
-    yearController.clear();
-    selectedBrand = null;
-    selectedModel = null;
-    selectedType = null;
-  });
-}
+  void _showPopupMessage(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _clearFields() {
+    setState(() {
+      mileageController.clear();
+      yearController.clear();
+      selectedBrand = null;
+      selectedModel = null;
+      selectedType = null;
+    });
+  }
+
   void _navigateToDashboard(BuildContext context) {
     Navigator.pushReplacement(
       context,

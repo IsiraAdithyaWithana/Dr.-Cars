@@ -11,8 +11,6 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-
-
 class _DashboardScreenState extends State<DashboardScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -40,15 +38,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           setState(() {
             userName = userData["Name"] ?? "User";
           });
-          print("Fetched username: $userName");
-        } else {
-          print("User document does not exist.");
         }
       } catch (e) {
         print("Error fetching user data: $e");
       }
-    } else {
-      print("No user is logged in.");
     }
   }
 
@@ -56,15 +49,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     User? user = _auth.currentUser;
     if (user != null) {
       try {
-        // Get the first vehicle document for this user
-        QuerySnapshot querySnapshot = await _firestore.collection("Vehicle")
-            .where("userId", isEqualTo: user.uid)
-            .limit(1)
-            .get();
+        QuerySnapshot querySnapshot =
+            await _firestore
+                .collection("Vehicle")
+                .where("userId", isEqualTo: user.uid)
+                .limit(1)
+                .get();
 
         if (querySnapshot.docs.isNotEmpty) {
           setState(() {
-            vehicleData = querySnapshot.docs.first.data() as Map<String, dynamic>;
+            vehicleData =
+                querySnapshot.docs.first.data() as Map<String, dynamic>;
             isLoading = false;
           });
         } else {
@@ -78,9 +73,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           isLoading = false;
           errorMessage = "Error loading vehicle data";
         });
-        print("Error fetching vehicle data: $e");
       }
     }
+  }
+
+  int getNextMaintenanceMileage(int currentMileage) {
+    return ((currentMileage ~/ 5000) + 1) * 5000;
   }
 
   @override
@@ -137,116 +135,113 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             SizedBox(height: 10),
 
-            // Vehicle Display Section
             isLoading
                 ? Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: CircularProgressIndicator(),
-                  )
+                  padding: const EdgeInsets.all(20.0),
+                  child: CircularProgressIndicator(),
+                )
                 : errorMessage != null
-                    ? Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          errorMessage!,
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.red,
-                          ),
+                ? Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    errorMessage!,
+                    style: TextStyle(fontSize: 18, color: Colors.red),
+                  ),
+                )
+                : vehicleData == null
+                ? Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    "No vehicle data available",
+                    style: TextStyle(fontSize: 18),
+                  ),
+                )
+                : Container(
+                  width: screenWidth,
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: screenWidth * 1,
+                        margin: EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 250, 247, 247),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 10,
+                              spreadRadius: 2,
+                            ),
+                          ],
                         ),
-                      )
-                    : vehicleData == null
-                        ? Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Text(
-                              "No vehicle data available",
-                              style: TextStyle(fontSize: 18),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(16),
+                              ),
+                              child: Image.asset(
+                                'images/dashcar.png',
+                                width: screenWidth * 0.9,
+                                height: 250,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          )
-                        : Container(
-                            width: screenWidth,
-                            padding: EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Column(
-                              children: [
-                                Container(
-                                  width: screenWidth * 1,
-                                  margin: EdgeInsets.symmetric(vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: const Color.fromARGB(255, 250, 247, 247),
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 10,
-                                        spreadRadius: 2,
-                                      ),
-                                    ],
+                            Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "${vehicleData!['manufactureYear']?.toString() ?? 'Year not specified'}",
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                  Text(
+                                    "${vehicleData!['brand'] ?? 'Brand'} ${vehicleData!['model'] ?? 'Model'}",
+                                    style: TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(16),
-                                        ),
-                                        child: Image.asset(
-                                          'images/dashcar.png',
-                                          width: screenWidth * 0.9,
-                                          height: 250,
-                                          fit: BoxFit.cover,
+                                      Text(
+                                        '⚙️ ${vehicleData!['mileage']?.toString() ?? '0'} KM',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                      Padding(
-                                        padding: EdgeInsets.all(12),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              vehicleData!['manufacturer/ear']?.toString() ?? 'Year not specified',
-                                              style: TextStyle(
-                                                fontSize: 22,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            Text(
-                                              "${vehicleData!['brand'] ?? 'Brand'} ${vehicleData!['model'] ?? 'Model'}",
-                                              style: TextStyle(
-                                                fontSize: 32,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            SizedBox(height: 10),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Text(
-                                                  '⚙️ ${vehicleData!['mileage']?.toString() ?? '0'} KM',
-                                                  style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  '🛢 ${vehicleData!['type'] ?? 'Type not specified'}',
-                                                  style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
+                                      Text(
+                                        '🛢 ${vehicleData!['type'] ?? 'Type not specified'}',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
             SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -256,19 +251,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             ListTile(
-              title: Text(vehicleData != null
-                  ? "${vehicleData!['brand'] ?? ''} ${vehicleData!['model'] ?? ''}"
-                  : 'Vehicle not loaded'),
-              subtitle: Text(vehicleData != null
-                  ? '${vehicleData!['mileage']?.toString() ?? '0'} miles'
-                  : ''),
-              trailing: Icon(Icons.check_circle, color: Colors.blue),
+              title: Text(
+                vehicleData != null
+                    ? "${vehicleData!['brand'] ?? ''} ${vehicleData!['model'] ?? ''} (${vehicleData!['manufactureYear']?.toString() ?? 'Year not specified'})"
+                    : 'Vehicle not loaded',
+              ),
+              subtitle: Text(
+                vehicleData != null
+                    ? 'Next maintenance at: ${getNextMaintenanceMileage(vehicleData!['mileage'] ?? 0)} KM'
+                    : '',
+              ),
+              trailing: Icon(Icons.build, color: Colors.orange),
             ),
           ],
         ),
       ),
 
-      // **Bottom Navigation Bar**
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.black,
@@ -278,32 +276,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _selectedIndex = index;
           });
 
-          switch (index) {
-            case 0:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => DashboardScreen()),
-              );
-              break;
-            case 1:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => MapScreen()),
-              );
-              break;
-            case 3:
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => RatingScreen()),
-              );
-              break;
-            case 4:
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfileScreen()),
-              );
-              break;
-          }
+          if (index == 1)
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MapScreen()),
+            );
+          if (index == 3)
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => RatingScreen()),
+            );
+          if (index == 4)
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ProfileScreen()),
+            );
         },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
