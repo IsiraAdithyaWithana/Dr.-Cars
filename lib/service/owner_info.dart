@@ -5,8 +5,9 @@ import 'add_service.dart';
 class OwnerInfo extends StatefulWidget {
   final String vehicleNumber;
   final Map<String, dynamic>? vehicleData;
+  final Map<String, dynamic>? userData;
 
-  const OwnerInfo({super.key, required this.vehicleNumber, this.vehicleData});
+  const OwnerInfo({super.key, required this.vehicleNumber, this.vehicleData, this.userData});
 
   @override
   _OwnerInfoPageState createState() => _OwnerInfoPageState();
@@ -19,6 +20,7 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
   final TextEditingController contactController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController vehicleYearController = TextEditingController();
+  final TextEditingController userIdController = TextEditingController();
 
   String? selectedBrand;
   String? selectedModel;
@@ -56,6 +58,13 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
     } else {
       _populateFields(widget.vehicleData!);
     }
+
+
+    if(widget.userData == null){
+      _fetchUserData();
+    } else {
+      _userDetails(widget.userData!);
+    }
   }
 
   Future<void> _fetchVehicleData() async {
@@ -75,15 +84,40 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
   }
 
   void _populateFields(Map<String, dynamic> data) {
+  setState(() {
+    selectedBrand = data['brand'] ?? 'Toyota';
+    selectedModel = data['model'] ?? vehicleModels['Toyota']?[0];
+    if (data['manufactureYear'] != null) {
+      vehicleYearController.text = data['manufactureYear'].toString();
+    } else {
+      vehicleYearController.text = "";
+    }
+    
+    userIdController.text = data['userId'] ?? "";
+  });
+}
+
+  Future<void> _fetchUserData() async {
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userIdController.text)
+        .get();
+
+    if (userDoc.exists) {
+      _userDetails(userDoc.data() as Map<String, dynamic>);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("User not found in database.")),
+      );
+    }
+  }
+
+  void _userDetails(Map<String, dynamic> data){
     setState(() {
-      nameController.text = data['name'] ?? "";
-      usernameController.text = data['username'] ?? "";
-      addressController.text = data['address'] ?? "";
-      contactController.text = data['contact'] ?? "";
-      emailController.text = data['email'] ?? "";
-      selectedBrand = data['brand'] ?? 'Toyota'; // Default to 'Toyota' if null
-      selectedModel = data['model'] ?? vehicleModels['Toyota']?[0]; // Default to first model of selected brand
-      vehicleYearController.text = data['year'] ?? "";
+      nameController.text = data['Name'] ?? "";
+      addressController.text = data['Address'] ?? "";
+      contactController.text = data['Contact'] ?? "";
+      emailController.text = data['Email'] ?? "";
     });
   }
 
@@ -111,7 +145,6 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
             ),
             const SizedBox(height: 20),
             _buildTextField(nameController, "Name", "Name of user"),
-            _buildTextField(usernameController, "User Name", "Username"),
             _buildTextField(addressController, "Address", "Address"),
             _buildTextField(contactController, "Contact", "Contact Number"),
             _buildTextField(emailController, "E-mail", "Email"),
