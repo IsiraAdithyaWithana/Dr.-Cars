@@ -20,6 +20,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? selectedType;
   TextEditingController mileageController = TextEditingController();
   TextEditingController yearController = TextEditingController();
+  TextEditingController vehicleNumberController = TextEditingController();
 
   final Map<String, List<String>> vehicleModels = {
     'Toyota': [
@@ -166,6 +167,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               hintText: "Enter mileage",
             ),
             _buildTextField(
+              controller: vehicleNumberController,
+              label: "Vehicle Number",
+              hintText: "Enter vehicle number",
+            ),
+            _buildTextField(
               controller: yearController,
               label: "Manufacture Year",
               hintText: "Enter year",
@@ -248,7 +254,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           'model': selectedModel,
           'type': selectedType,
           'mileage': int.tryParse(mileageController.text) ?? 0,
+          'vehicleNumber': vehicleNumberController,
           'manufactureYear': int.tryParse(yearController.text) ?? 0,
+          
           'image': 'images/dashcar.png', // Default image (modify as needed)
           'timestamp': FieldValue.serverTimestamp(),
         });
@@ -288,6 +296,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       selectedBrand = null;
       selectedModel = null;
       selectedType = null;
+      vehicleNumberController.clear();
     });
   }
 

@@ -18,7 +18,6 @@ class AddVehicle extends StatelessWidget {
           ),
         ),
         centerTitle: true, // Center the title
-        backgroundColor: Colors.white, // Optional: Set app bar background
         elevation: 0, // Optional: Remove shadow
         iconTheme: IconThemeData(
           color: Colors.black,
@@ -29,7 +28,7 @@ class AddVehicle extends StatelessWidget {
         padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Image.asset('images/logo.png', height: 100),
+            Image.asset('images/bg_removed_logo.png', height: 100),
             SizedBox(height: 30),
             Text(
               "Add a vehicle",
