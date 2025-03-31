@@ -246,17 +246,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (selectedBrand != null &&
         selectedModel != null &&
-        selectedType != null) {
+        selectedType != null &&
+        vehicleNumberController.text.isNotEmpty) {
       try {
-        await FirebaseFirestore.instance.collection('Vehicle').add({
+        await FirebaseFirestore.instance.collection('Vehicle').doc(vehicleNumberController.text).set({
           'userId': user.uid, // Store user's ID
           'brand': selectedBrand,
           'model': selectedModel,
           'type': selectedType,
           'mileage': int.tryParse(mileageController.text) ?? 0,
-          'vehicleNumber': vehicleNumberController,
+          'vehicleNumber': vehicleNumberController.text, // FIXED
           'manufactureYear': int.tryParse(yearController.text) ?? 0,
-          
           'image': 'images/dashcar.png', // Default image (modify as needed)
           'timestamp': FieldValue.serverTimestamp(),
         });
@@ -264,12 +264,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // Show Success Message
         _showPopupMessage(context, "Success", "Your data was saved.");
       } catch (e) {
-        _showPopupMessage(context, "Error", "Failed to save data.");
+        _showPopupMessage(context, "Error", "Failed to save data.\n${e.toString()}");
       }
     } else {
       _showPopupMessage(context, "Warning", "Please fill all fields.");
     }
   }
+
 
   void _showPopupMessage(BuildContext context, String title, String message) {
     showDialog(

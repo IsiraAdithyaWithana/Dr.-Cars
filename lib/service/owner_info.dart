@@ -1,9 +1,12 @@
-import 'package:dr_cars/service/service_menu.dart';
 import 'package:flutter/material.dart';
-import '../service/add_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'add_service.dart';
 
 class OwnerInfo extends StatefulWidget {
-  const OwnerInfo({super.key});
+  final String vehicleNumber;
+  final Map<String, dynamic>? vehicleData;
+
+  const OwnerInfo({super.key, required this.vehicleNumber, this.vehicleData});
 
   @override
   _OwnerInfoPageState createState() => _OwnerInfoPageState();
@@ -15,91 +18,131 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
   final TextEditingController addressController = TextEditingController();
   final TextEditingController contactController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController vehicleYearController = TextEditingController();
 
+  String? selectedBrand;
   String? selectedModel;
-  String? selectedYear;
 
-  final List<String> vehicleModels = [
-    "Toyota",
-    "Honda",
-    "Ford",
-    "BMW",
-    "Tesla",
-  ];
-  final List<String> vehicleYears = ["2025", "2024", "2023", "2022", "2021"];
+  // Map of vehicle brands to their respective models
+  final Map<String, List<String>> vehicleModels = {
+    'Toyota': [
+      'Corolla', 'Camry', 'RAV4', 'Highlander', 'Aqua', 'Axio', 'Vitz',
+      'Allion', 'Premio', 'LandCruiser', 'Hilux', 'Prius', 'Rush',
+    ],
+    'Nissan': [
+      'Sunny', 'X-Trail', 'Juke', 'Note', 'Teana', 'Skyline', 'Patrol',
+      'Navara', 'Qashqai', 'Murano', 'Titan', 'Frontier', 'Sylphy',
+      'Fairlady Z', 'Armada', 'Sentra', 'Leaf', 'GT-R',
+    ],
+    'Honda': [
+      'Civic', 'Accord', 'CR-V', 'Pilot', 'Fit', 'Vezel', 'Grace',
+      'Freed', 'Insight', 'HR-V', 'BR-V', 'Jazz', 'City', 'Legend',
+      'Odyssey', 'Shuttle', 'Stepwgn', 'Acty', 'S660', 'NSX',
+    ],
+    'Suzuki': [
+      'Alto', 'Wagon R', 'Swift', 'Dzire', 'Baleno', 'Ertiga', 'Celerio',
+      'S-Presso', 'Vitara Brezza', 'Grand Vitara', 'Ciaz', 'Ignis', 'XL6',
+      'Jimny', 'Fronx', 'Maruti 800', 'Esteem', 'Kizashi', 'A-Star',
+    ],
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // If vehicleData is not passed, fetch data from Firestore
+    if (widget.vehicleData == null) {
+      _fetchVehicleData();
+    } else {
+      _populateFields(widget.vehicleData!);
+    }
+  }
+
+  Future<void> _fetchVehicleData() async {
+    // Fetch data from Firestore using vehicleNumber
+    DocumentSnapshot vehicleDoc = await FirebaseFirestore.instance
+        .collection('Vehicle')
+        .doc(widget.vehicleNumber)
+        .get();
+
+    if (vehicleDoc.exists) {
+      _populateFields(vehicleDoc.data() as Map<String, dynamic>);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Vehicle not found in database.")),
+      );
+    }
+  }
+
+  void _populateFields(Map<String, dynamic> data) {
+    setState(() {
+      nameController.text = data['name'] ?? "";
+      usernameController.text = data['username'] ?? "";
+      addressController.text = data['address'] ?? "";
+      contactController.text = data['contact'] ?? "";
+      emailController.text = data['email'] ?? "";
+      selectedBrand = data['brand'] ?? 'Toyota'; // Default to 'Toyota' if null
+      selectedModel = data['model'] ?? vehicleModels['Toyota']?[0]; // Default to first model of selected brand
+      vehicleYearController.text = data['year'] ?? "";
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Vehicle Owner Information",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        title: Text(
+          "Vehicle Owner: ${widget.vehicleNumber}",
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        actions: [
-          // Home icon button in the right corner
-          IconButton(
-            icon: const Icon(Icons.home, color: Colors.black),
-            onPressed: () {
-              // Navigate back to the home screen
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
-                (route) => false,
-              );
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Column(
           children: [
-            const SizedBox(height: 20), // Space between app bar and image
+            const SizedBox(height: 20),
             const CircleAvatar(
               radius: 50,
               backgroundImage: AssetImage('images/logo.png'),
             ),
-            const SizedBox(height: 20), // Space between image and form
-
+            const SizedBox(height: 20),
             _buildTextField(nameController, "Name", "Name of user"),
             _buildTextField(usernameController, "User Name", "Username"),
             _buildTextField(addressController, "Address", "Address"),
             _buildTextField(contactController, "Contact", "Contact Number"),
-            _buildTextField(emailController, "E-mail", "email"),
+            _buildTextField(emailController, "E-mail", "Email"),
+            _buildTextField(vehicleYearController, "Vehicle Year", "Year of Manufacture"),
 
-            // Vehicle Model Dropdown
-            _buildDropdownField("Vehicle Model", vehicleModels, selectedModel, (
-              value,
-            ) {
+            // Brand Dropdown
+            _buildDropdownField("Brand", vehicleModels.keys.toList(), selectedBrand, (value) {
               setState(() {
-                selectedModel = value;
+                selectedBrand = value;
+                // Reset the model when brand changes
+                selectedModel = vehicleModels[selectedBrand]?.first;
               });
             }),
 
-            // Vehicle Year Dropdown
-            _buildDropdownField("Vehicle Year", vehicleYears, selectedYear, (
-              value,
-            ) {
-              setState(() {
-                selectedYear = value;
-              });
-            }),
+            // Model Dropdown
+            if (selectedBrand != null) 
+              _buildDropdownField("Model", vehicleModels[selectedBrand] ?? [], selectedModel, (value) {
+                setState(() {
+                  selectedModel = value;
+                });
+              }),
 
-            const SizedBox(height: 20), // Space before button
-            // Continue Button
+            const SizedBox(height: 20),
             SizedBox(
-              width: double.infinity, // Full-width button
-              height: 50, // Adjust height
+              width: double.infinity,
+              height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black, // Black background
+                  backgroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5), // Rounded corners
+                    borderRadius: BorderRadius.circular(5),
                   ),
                 ),
                 onPressed: () {
@@ -110,26 +153,18 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
                 },
                 child: const Text(
                   "Continue",
-                  style: TextStyle(
-                    color: Colors.white, // White text
-                    fontSize: 16, // Adjust font size
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
-            const SizedBox(height: 20), // Space after button
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTextField(
-    TextEditingController controller,
-    String label,
-    String hint,
-  ) {
+  Widget _buildTextField(TextEditingController controller, String label, String hint) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: TextField(
@@ -157,10 +192,9 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
           border: const OutlineInputBorder(),
         ),
         value: selectedValue,
-        items:
-            items.map((String item) {
-              return DropdownMenuItem<String>(value: item, child: Text(item));
-            }).toList(),
+        items: items.map((String item) {
+          return DropdownMenuItem<String>(value: item, child: Text(item));
+        }).toList(),
         onChanged: onChanged,
       ),
     );
