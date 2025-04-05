@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dr_cars/interface/Settings.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/rating.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,7 +21,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? selectedType;
   TextEditingController mileageController = TextEditingController();
   TextEditingController yearController = TextEditingController();
-  TextEditingController vehicleNumberController = TextEditingController();
 
   final Map<String, List<String>> vehicleModels = {
     'Toyota': [
@@ -31,12 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       'Aqua',
       'Axio',
       'Vitz',
-      'Allion',
-      'Premio',
-      'LandCruiser',
-      'Hilux',
       'Prius',
-      'Rush',
     ],
     'Nissan': [
       'Sunny',
@@ -44,85 +39,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
       'Juke',
       'Note',
       'Teana',
-      'Skyline',
-      'Patrol',
-      'Navara',
-      'Qashqai',
-      'Murano',
-      'Titan',
-      'Frontier',
-      'Sylphy',
-      'Fairlady Z',
-      'Armada',
-      'Sentra',
-      'Leaf',
       'GT-R',
-      'Bluebird',
-      'March',
-      'AD Wagon',
-      'Vanette',
-      'Caravan',
-      'Serena',
-      'Primera',
-      'Cedric',
-      'Gloria',
-      'Terrano',
-      'Dualis',
-      'Dayz',
-      'Elgrand',
-      'Lafesta',
-      'Wingroad',
+      'Sentra',
+      'Patrol',
     ],
     'Honda': [
       'Civic',
       'Accord',
       'CR-V',
-      'Pilot',
       'Fit',
       'Vezel',
-      'Grace',
-      'Freed',
-      'Insight',
-      'HR-V',
-      'BR-V',
-      'Jazz',
       'City',
-      'Legend',
       'Odyssey',
-      'Shuttle',
-      'Stepwgn',
-      'Acty',
-      'S660',
-      'NSX',
-      'Integra',
-      'Stream',
-      'Airwave',
-      'CR-Z',
-      'Elysion',
-      'Beat',
-      'Mobilio',
-      'Crossroad',
+      'Freed',
     ],
     'Suzuki': [
       'Alto',
       'Wagon R',
       'Swift',
-      'Dzire',
       'Baleno',
+      'Vitara',
       'Ertiga',
-      'Celerio',
-      'S-Presso',
-      'Vitara Brezza',
-      'Grand Vitara',
-      'Ciaz',
-      'Ignis',
-      'XL6',
       'Jimny',
-      'Fronx',
-      'Maruti 800',
-      'Esteem',
-      'Kizashi',
-      'A-Star',
+      'Ignis',
+    ],
+    'Mazda': [
+      'Mazda3',
+      'Mazda6',
+      'CX-3',
+      'CX-5',
+      'CX-9',
+      'BT-50',
+      'RX-8',
+      'MX-5',
+    ],
+    'BMW': ['320i', 'X1', 'X3', 'X5', 'M3', 'Z4', '530e', '740i'],
+    'Kia': [
+      'Picanto',
+      'Rio',
+      'Sportage',
+      'Seltos',
+      'Sorento',
+      'Cerato',
+      'Stinger',
+      'Carnival',
+    ],
+    'Hyundai': [
+      'i10',
+      'i20',
+      'Elantra',
+      'Tucson',
+      'Santa Fe',
+      'Accent',
+      'Venue',
+      'Creta',
     ],
   };
 
@@ -138,6 +108,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: Icon(Icons.home, color: Colors.black),
           onPressed: () => _navigateToDashboard(context),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings, color: Colors.black),
+            onPressed: () {
+              // Navigate to SettingsScreen
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
@@ -155,21 +137,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             SizedBox(height: 20),
 
-            // **Vehicle Selection Fields at the Top**
             _buildBrandDropdown(),
             _buildModelDropdown(),
             _buildTypeDropdown(),
 
-            // **Updated Fields**
             _buildTextField(
               controller: mileageController,
               label: "Mileage (km)",
               hintText: "Enter mileage",
-            ),
-            _buildTextField(
-              controller: vehicleNumberController,
-              label: "Vehicle Number",
-              hintText: "Enter vehicle number",
             ),
             _buildTextField(
               controller: yearController,
@@ -183,8 +158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 backgroundColor: Colors.black,
                 minimumSize: Size(double.infinity, 50),
               ),
-              onPressed:
-                  () => _uploadVehicleData(), // Call function to upload data
+              onPressed: () => _uploadVehicleData(),
               child: Text("Continue", style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -242,35 +216,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _uploadVehicleData() async {
     User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return; // Ensure user is logged in
+    if (user == null) return;
 
     if (selectedBrand != null &&
         selectedModel != null &&
-        selectedType != null &&
-        vehicleNumberController.text.isNotEmpty) {
+        selectedType != null) {
       try {
-        await FirebaseFirestore.instance.collection('Vehicle').doc(vehicleNumberController.text).set({
-          'userId': user.uid, // Store user's ID
+        await FirebaseFirestore.instance.collection('Vehicle').add({
+          'userId': user.uid,
           'brand': selectedBrand,
           'model': selectedModel,
           'type': selectedType,
           'mileage': int.tryParse(mileageController.text) ?? 0,
-          'vehicleNumber': vehicleNumberController.text, // FIXED
           'manufactureYear': int.tryParse(yearController.text) ?? 0,
-          'image': 'images/dashcar.png', // Default image (modify as needed)
+          'image': 'images/dashcar.png',
           'timestamp': FieldValue.serverTimestamp(),
         });
 
-        // Show Success Message
         _showPopupMessage(context, "Success", "Your data was saved.");
       } catch (e) {
-        _showPopupMessage(context, "Error", "Failed to save data.\n${e.toString()}");
+        _showPopupMessage(context, "Error", "Failed to save data.");
       }
     } else {
       _showPopupMessage(context, "Warning", "Please fill all fields.");
     }
   }
-
 
   void _showPopupMessage(BuildContext context, String title, String message) {
     showDialog(
@@ -288,17 +258,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       },
     );
-  }
-
-  void _clearFields() {
-    setState(() {
-      mileageController.clear();
-      yearController.clear();
-      selectedBrand = null;
-      selectedModel = null;
-      selectedType = null;
-      vehicleNumberController.clear();
-    });
   }
 
   void _navigateToDashboard(BuildContext context) {
@@ -344,7 +303,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         onChanged: (value) {
           setState(() {
             selectedBrand = value;
-            selectedModel = null; // Reset model when brand changes
+            selectedModel = null;
           });
         },
         hint: Text("Select a brand"),
