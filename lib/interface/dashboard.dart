@@ -5,6 +5,7 @@ import 'package:dr_cars/interface/rating.dart';
 import 'package:dr_cars/main/signin.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:dr_cars/interface/obd2.dart';
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -276,21 +277,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _selectedIndex = index;
           });
 
-          if (index == 1)
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => DashboardScreen()),
+            );
+          } else if (index == 1) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => MapScreen()),
             );
-          if (index == 3)
+          } else if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => OBD2Page()),
+            );
+          } else if (index == 3) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => RatingScreen()),
             );
-          if (index == 4)
+          } else if (index == 4) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => ProfileScreen()),
             );
+          }
         },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),

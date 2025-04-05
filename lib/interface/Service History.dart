@@ -1,6 +1,8 @@
 import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/rating.dart';
+import 'package:dr_cars/interface/obd2.dart';
+import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:flutter/material.dart';
 
 int _selectedIndex = 0;
@@ -108,6 +110,18 @@ class ServiceHistorypage extends StatelessWidget {
           MaterialPageRoute(builder: (context) => DashboardScreen()),
       );
     }
+     if (index == 1) { // Navigate to Map screen
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MapScreen()),
+      );
+    }
+     if (index == 2) { // Navigate to OBD2 screen
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => OBD2Page()),
+      );
+    }
      if (index == 4) { // Navigate when "User" icon is clicked
           Navigator.push(
           context,
@@ -123,7 +137,7 @@ class ServiceHistorypage extends StatelessWidget {
   },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
           BottomNavigationBarItem(
             icon: Image.asset('images/logo.png', height: 30),
             label: '',
