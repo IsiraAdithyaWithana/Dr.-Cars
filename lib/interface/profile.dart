@@ -69,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       'Vitara',
       'Ertiga',
       'Jimny',
-      'Ignis',
+      'Estilo',
     ],
     'Mazda': [
       'Mazda3',
