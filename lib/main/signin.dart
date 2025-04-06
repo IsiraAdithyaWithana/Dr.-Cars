@@ -5,6 +5,7 @@ import 'package:dr_cars/main/signup_selection.dart';
 import 'package:dr_cars/service/service_menu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class SignInScreen extends StatefulWidget {
   SignInScreen({super.key});
@@ -28,16 +29,24 @@ class _SignInScreenState extends State<SignInScreen> {
     if (user != null) {
       try {
         DocumentSnapshot userData =
-            await _firestore.collection("Users").doc(user.uid).get();
-        return userData.exists ? userData["User Type"] ?? "User" : "User";
+            await _firestore.collection("users").doc(user.uid).get();
+        return userData.exists ? userData["userType"] ?? "User" : "User";
       } catch (e) {
         print("Error fetching user data: $e");
+        return "User";
       }
     }
     return "User";
   }
 
   void _handleSignIn() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please enter both email and password")),
+      );
+      return;
+    }
+
     setState(() {
       isLoading = true;
     });
@@ -50,6 +59,8 @@ class _SignInScreenState extends State<SignInScreen> {
 
       String userType = await _fetchUserType();
 
+      if (!mounted) return;
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -61,44 +72,63 @@ class _SignInScreenState extends State<SignInScreen> {
         ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Sign In Failed: $e")));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Sign In Failed: ${e.toString()}")),
+      );
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
-  void _handleGoogleSignIn() async {
+  Future<void> _handleGoogleSignIn() async {
+    if (isGoogleLoading) return;
+
     setState(() {
       isGoogleLoading = true;
     });
 
-    final user = await _authService.signInWithGoogle();
+    try {
+      final user = await _authService.signInWithGoogle();
 
-    if (user != null) {
-      String userType = await _fetchUserType();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder:
-              (context) =>
-                  userType == "Vehicle Owner"
-                      ? DashboardScreen()
-                      : HomeScreen(),
-        ),
-      );
-    } else {
+      if (user != null) {
+        String userType = await _fetchUserType();
+
+        if (!mounted) return;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) =>
+                    userType == "Vehicle Owner"
+                        ? DashboardScreen()
+                        : HomeScreen(),
+          ),
+        );
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Google Sign-In was cancelled or failed")),
+        );
+      }
+    } catch (e) {
+      print("Google Sign-In Error: $e");
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Google Sign-In Failed")));
+      ).showSnackBar(SnackBar(content: Text("Failed to sign in with Google")));
+    } finally {
+      if (mounted) {
+        setState(() {
+          isGoogleLoading = false;
+        });
+      }
     }
-
-    setState(() {
-      isGoogleLoading = false;
-    });
   }
 
   @override
@@ -114,11 +144,11 @@ class _SignInScreenState extends State<SignInScreen> {
                 Image.asset('images/logo.png', height: 100),
                 SizedBox(height: 20),
                 Text(
-                  "Create an account",
+                  "Welcome Back",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 8),
-                Text("Enter your email to sign up for this app"),
+                Text("Sign in to continue using the app"),
                 SizedBox(height: 20),
                 TextField(
                   controller: _emailController,
@@ -162,7 +192,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               strokeWidth: 2,
                             ),
                           )
-                          : Text("Continue"),
+                          : Text("Sign In"),
                 ),
                 SizedBox(height: 20),
                 Text("or"),

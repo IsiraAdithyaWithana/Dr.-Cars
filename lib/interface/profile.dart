@@ -111,6 +111,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   final List<String> vehicleTypes = ['Car', 'SUV', 'Truck', 'Buses', 'Van'];
 
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        DocumentSnapshot userData =
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .get();
+
+        if (userData.exists) {
+          setState(() {
+            nameController.text = userData['name'] ?? '';
+            emailController.text = userData['email'] ?? '';
+            vehicleNumberController.text = userData['vehicleNumber'] ?? '';
+            selectedBrand = userData['selectedBrand'];
+            selectedModel = userData['selectedModel'];
+            selectedType = userData['selectedType'];
+            mileageController.text = userData['mileage']?.toString() ?? '';
+            yearController.text = userData['year']?.toString() ?? '';
+            _vehiclePhotoUrl = userData['vehiclePhotoUrl'];
+          });
+        }
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
+    }
+  }
+
   Future<void> _requestPermissions() async {
     try {
       if (await Permission.photos.request().isGranted) {
@@ -221,99 +256,154 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: Stack(
         children: [
-          SingleChildScrollView(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: _showImagePickerOptions,
-                  child: Container(
-                    width: 150,
-                    height: 150,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.grey, width: 2),
-                    ),
-                    child:
-                        _vehiclePhotoUrl != null
-                            ? ClipOval(
-                              child: Image.network(
-                                _vehiclePhotoUrl!,
-                                fit: BoxFit.cover,
+          Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: _showImagePickerOptions,
+                    child: Container(
+                      width: 150,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.grey, width: 2),
+                      ),
+                      child:
+                          _vehiclePhotoUrl != null
+                              ? ClipOval(
+                                child: Image.network(
+                                  _vehiclePhotoUrl!,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                              : Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 50,
+                                    backgroundImage: AssetImage(
+                                      'images/logo.png',
+                                    ),
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.black.withOpacity(0.3),
+                                    ),
+                                    child: Icon(
+                                      Icons.add_photo_alternate,
+                                      color: Colors.white,
+                                      size: 30,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            )
-                            : Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                CircleAvatar(
-                                  radius: 50,
-                                  backgroundImage: AssetImage(
-                                    'images/logo.png',
-                                  ),
-                                ),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.black.withOpacity(0.3),
-                                  ),
-                                  child: Icon(
-                                    Icons.add_photo_alternate,
-                                    color: Colors.white,
-                                    size: 30,
-                                  ),
-                                ),
-                              ],
-                            ),
+                    ),
                   ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  'User Profile',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 20),
-                _buildBrandDropdown(),
-                _buildModelDropdown(),
-                _buildTypeDropdown(),
-                _buildTextField(
-                  controller: vehicleNumberController,
-                  label: "Vehicle Number",
-                  hintText: "Enter vehicle number",
-                ),
-                _buildTextField(
-                  controller: mileageController,
-                  label: "Mileage (km)",
-                  hintText: "Enter mileage",
-                ),
-                _buildTextField(
-                  controller: yearController,
-                  label: "Manufacture Year",
-                  hintText: "Enter year",
-                ),
-                SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: _showImagePickerOptions,
-                  icon: Icon(Icons.add_photo_alternate),
-                  label: Text("Select Vehicle Photo"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  SizedBox(height: 10),
+                  Text(
+                    'User Profile',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    minimumSize: Size(double.infinity, 50),
+                  SizedBox(height: 20),
+                  _buildTextField(
+                    controller: nameController,
+                    label: "Full Name",
+                    hintText: "Enter your full name",
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your name';
+                      }
+                      return null;
+                    },
                   ),
-                  onPressed: _isLoading ? null : () => _saveProfile(),
-                  child: Text(
-                    "Continue",
-                    style: TextStyle(color: Colors.white),
+                  _buildTextField(
+                    controller: emailController,
+                    label: "Email",
+                    hintText: "Enter your email",
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      if (!value.contains('@')) {
+                        return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
                   ),
-                ),
-              ],
+                  _buildBrandDropdown(),
+                  _buildModelDropdown(),
+                  _buildTypeDropdown(),
+                  _buildTextField(
+                    controller: vehicleNumberController,
+                    label: "Vehicle Number",
+                    hintText: "Enter vehicle number",
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter vehicle number';
+                      }
+                      return null;
+                    },
+                  ),
+                  _buildTextField(
+                    controller: mileageController,
+                    label: "Mileage (km)",
+                    hintText: "Enter mileage",
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter mileage';
+                      }
+                      if (int.tryParse(value) == null) {
+                        return 'Please enter a valid number';
+                      }
+                      return null;
+                    },
+                  ),
+                  _buildTextField(
+                    controller: yearController,
+                    label: "Manufacture Year",
+                    hintText: "Enter year",
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter manufacture year';
+                      }
+                      if (int.tryParse(value) == null) {
+                        return 'Please enter a valid year';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    onPressed: _showImagePickerOptions,
+                    icon: Icon(Icons.add_photo_alternate),
+                    label: Text("Select Vehicle Photo"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      minimumSize: Size(double.infinity, 50),
+                    ),
+                    onPressed: _isLoading ? null : () => _saveProfile(),
+                    child: Text(
+                      "Save Profile",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           if (_isLoading)
@@ -398,26 +488,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
             'vehicleNumber': vehicleNumberController.text,
             'selectedBrand': selectedBrand,
             'selectedModel': selectedModel,
+            'selectedType': selectedType,
+            'mileage': int.tryParse(mileageController.text),
+            'year': int.tryParse(yearController.text),
+            'vehiclePhotoUrl': _vehiclePhotoUrl,
+            'updatedAt': FieldValue.serverTimestamp(),
           };
 
           // Update Firestore
           await FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)
-              .update(userData);
+              .set(userData, SetOptions(merge: true));
 
-          _showPopupMessage(
-            context,
-            "Success",
-            "Profile updated successfully!",
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Profile updated successfully!')),
           );
         }
       } catch (e) {
-        _showPopupMessage(
+        ScaffoldMessenger.of(
           context,
-          "Error",
-          "Failed to update profile. Please try again.",
-        );
+        ).showSnackBar(SnackBar(content: Text('Error updating profile: $e')));
       } finally {
         setState(() {
           _isLoading = false;
@@ -455,16 +546,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required TextEditingController controller,
     required String label,
     required String hintText,
+    String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
           hintText: hintText,
           border: OutlineInputBorder(),
         ),
+        validator: validator,
       ),
     );
   }

@@ -42,8 +42,8 @@ class _AuthCheckState extends State<AuthCheck> {
     if (user == null) return "User";
     try {
       DocumentSnapshot userData =
-          await _firestore.collection("Users").doc(user.uid).get();
-      return userData.exists ? userData.get("User Type") ?? "User" : "User";
+          await _firestore.collection("users").doc(user.uid).get();
+      return userData.exists ? userData.get("userType") ?? "User" : "User";
     } catch (e) {
       print("Error fetching user data: $e");
       return "User";

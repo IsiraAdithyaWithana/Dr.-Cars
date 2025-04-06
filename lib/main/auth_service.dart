@@ -5,40 +5,49 @@ import 'package:google_sign_in/google_sign_in.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Future<User?> signInWithGoogle() async {
     try {
-      String userType = "Vehicle Owner";
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return null; // User canceled sign-in
+      // Start the sign-in process
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
+      if (googleUser == null) {
+        return null;
+      }
+
+      // Obtain auth details
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
+
+      // Create credential
+      final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
+      // Sign in with Firebase
       final UserCredential userCredential = await _auth.signInWithCredential(
         credential,
       );
       final User? user = userCredential.user;
 
       if (user != null) {
-        // 🔹 Check if the user already exists in Firestore
-        final doc = await _firestore.collection('Users').doc(user.uid).get();
+        // Check if the user already exists in Firestore
+        final doc = await _firestore.collection('users').doc(user.uid).get();
 
         if (!doc.exists) {
-          // 🔹 Store user data in Firestore
-          await _firestore.collection('Users').doc(user.uid).set({
-            'Name': user.displayName ?? 'Unknown',
-            'Email': user.email,
-            "User Type": userType,
+          // Store user data in Firestore
+          await _firestore.collection('users').doc(user.uid).set({
+            'name': user.displayName ?? 'Unknown',
+            'email': user.email,
+            'userType': 'Vehicle Owner',
             'createdAt': FieldValue.serverTimestamp(),
           });
         }
+        return user;
       }
-      return user;
+      return null;
     } catch (e) {
       print("Google Sign-In Error: $e");
       return null;
@@ -65,13 +74,14 @@ class AuthService {
       if (user != null) {
         print("User created: ${user.uid}");
 
-        await _firestore.collection("Users").doc(user.uid).set({
-          "Name": fullName,
-          "Email": email,
-          "Username": username,
-          "Address": address,
-          "Contact": contact,
-          "User Type": userType,
+        await _firestore.collection("users").doc(user.uid).set({
+          "name": fullName,
+          "email": email,
+          "username": username,
+          "address": address,
+          "contact": contact,
+          "userType": userType,
+          "createdAt": FieldValue.serverTimestamp(),
         });
 
         return user;
@@ -81,7 +91,7 @@ class AuthService {
       }
     } catch (e) {
       print("Sign-up error: $e");
-      return null;
+      rethrow; // Rethrow the error to handle it in the UI
     }
   }
 
@@ -105,6 +115,7 @@ class AuthService {
   }
 
   Future<void> signOut() async {
+    await _googleSignIn.signOut();
     await _auth.signOut();
   }
 }

@@ -11,9 +11,8 @@ class MapScreen extends StatefulWidget {
   _MapScreenState createState() => _MapScreenState();
 }
 
- int _selectedIndex = 1;
-
 class _MapScreenState extends State<MapScreen> {
+  int _selectedIndex = 1;
   LocationData? _userLocation;
   final Location _location = Location();
 
@@ -23,31 +22,36 @@ class _MapScreenState extends State<MapScreen> {
       "name": "Colombo Service Center",
       "lat": 6.9271,
       "lng": 79.8612,
-      "description": "Located in the heart of Colombo, providing 24/7 customer support."
+      "description":
+          "Located in the heart of Colombo, providing 24/7 customer support.",
     },
     {
       "name": "Kandy Service Center",
       "lat": 7.2906,
       "lng": 80.6337,
-      "description": "Situated near the Kandy Lake, offering maintenance services."
+      "description":
+          "Situated near the Kandy Lake, offering maintenance services.",
     },
     {
       "name": "Galle Service Center",
       "lat": 6.0535,
       "lng": 80.2210,
-      "description": "A modern facility near Galle Fort, specializing in quick repairs."
+      "description":
+          "A modern facility near Galle Fort, specializing in quick repairs.",
     },
     {
       "name": "Jaffna Service Center",
       "lat": 9.6615,
       "lng": 80.0255,
-      "description": "Serving the northern region with dedicated support services."
+      "description":
+          "Serving the northern region with dedicated support services.",
     },
     {
       "name": "Anuradhapura Service Center",
       "lat": 8.3114,
       "lng": 80.4037,
-      "description": "Located close to heritage sites, ensuring reliable service."
+      "description":
+          "Located close to heritage sites, ensuring reliable service.",
     },
   ];
 
@@ -98,72 +102,88 @@ class _MapScreenState extends State<MapScreen> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-       leading: IconButton(
-         icon: Icon(Icons.arrow_back, color: Colors.white),
-         onPressed: () {
-         Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => DashboardScreen()),
-      );
-    },
-  ),
-        title: const Text(" Dr Cars Service Centers"),
-        
-      ),
-      body: _userLocation == null
-          ? const Center(child: CircularProgressIndicator()) // Show loader if location is null
-          : FlutterMap(
-              options: MapOptions(
-                center: LatLng(_userLocation!.latitude!, _userLocation!.longitude!),
-                zoom: 9.0, // Adjusted zoom
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                  subdomains: ['a', 'b', 'c'],
-                ),
-                MarkerLayer(
-  markers: [
-    // User's Current Location Marker
-    Marker(
-      point: LatLng(_userLocation!.latitude!, _userLocation!.longitude!),
-      width: 50,
-      height: 50,
-      child: const Icon(Icons.person_pin_circle, color: Colors.blue, size: 50),
-    ),
-
-    // Service Center Markers with Clickable Dialog
-    for (var center in serviceCenters)
-      Marker(
-        point: LatLng(center["lat"], center["lng"]),
-        width: 40,
-        height: 40,
-        child: GestureDetector(
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: Text(center["name"]),
-                  content: Text(center["description"]),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("Close"),
-                    ),
-                  ],
-                );
-              },
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => DashboardScreen()),
             );
           },
-          child: const Icon(Icons.location_on, color: Colors.red, size: 40),
         ),
+        title: const Text(" Dr Cars Service Centers"),
       ),
-  ],
-),
+      body:
+          _userLocation == null
+              ? const Center(
+                child: CircularProgressIndicator(),
+              ) // Show loader if location is null
+              : FlutterMap(
+                options: MapOptions(
+                  initialCenter: LatLng(
+                    _userLocation!.latitude!,
+                    _userLocation!.longitude!,
+                  ),
+                  initialZoom: 9.0,
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    subdomains: ['a', 'b', 'c'],
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      // User's Current Location Marker
+                      Marker(
+                        point: LatLng(
+                          _userLocation!.latitude!,
+                          _userLocation!.longitude!,
+                        ),
+                        width: 50,
+                        height: 50,
+                        child: const Icon(
+                          Icons.person_pin_circle,
+                          color: Colors.blue,
+                          size: 50,
+                        ),
+                      ),
 
-              ],
-            ),
+                      // Service Center Markers with Clickable Dialog
+                      for (var center in serviceCenters)
+                        Marker(
+                          point: LatLng(center["lat"], center["lng"]),
+                          width: 40,
+                          height: 40,
+                          child: GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text(center["name"]),
+                                    content: Text(center["description"]),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text("Close"),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            child: const Icon(
+                              Icons.location_on,
+                              color: Colors.red,
+                              size: 40,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
         child: const Icon(Icons.my_location, color: Colors.white),
@@ -174,13 +194,16 @@ class _MapScreenState extends State<MapScreen> {
           });
         },
       ),
-      
+
       // **Bottom Navigation Bar**
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.black,
         currentIndex: _selectedIndex,
         onTap: (index) {
+          if (index == _selectedIndex)
+            return; // Don't navigate if already on the same screen
+
           setState(() {
             _selectedIndex = index;
           });
@@ -192,11 +215,8 @@ class _MapScreenState extends State<MapScreen> {
                 MaterialPageRoute(builder: (context) => DashboardScreen()),
               );
               break;
-              case 1:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => MapScreen()),
-              );
+            case 1:
+              // Already on map screen, no need to navigate
               break;
             case 3:
               Navigator.push(
@@ -222,7 +242,7 @@ class _MapScreenState extends State<MapScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
-      ), 
+      ),
     );
   }
 }
