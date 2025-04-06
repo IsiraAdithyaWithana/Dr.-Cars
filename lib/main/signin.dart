@@ -96,10 +96,12 @@ class _SignInScreenState extends State<SignInScreen> {
       final user = await _authService.signInWithGoogle();
 
       if (user != null) {
+        // Fetch user type after successful sign in
         String userType = await _fetchUserType();
 
         if (!mounted) return;
 
+        // Navigate based on user type
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -113,15 +115,21 @@ class _SignInScreenState extends State<SignInScreen> {
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Google Sign-In was cancelled or failed")),
+          SnackBar(
+            content: Text("Google Sign-In was cancelled"),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } catch (e) {
       print("Google Sign-In Error: $e");
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Failed to sign in with Google")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to sign in with Google: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() {
