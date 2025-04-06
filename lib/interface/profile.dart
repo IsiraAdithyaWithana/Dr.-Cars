@@ -106,6 +106,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   final List<String> vehicleTypes = ['Car', 'SUV', 'Truck', 'Buses', 'Van'];
 
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        DocumentSnapshot userData =
+            await FirebaseFirestore.instance
+                .collection('Users')
+                .doc(user.uid)
+                .get();
+
+        if (userData.exists) {
+          setState(() {
+            nameController.text = userData['name'] ?? '';
+            emailController.text = userData['email'] ?? '';
+            vehicleNumberController.text = userData['vehicleNumber'] ?? '';
+            selectedBrand = userData['selectedBrand'];
+            selectedModel = userData['selectedModel'];
+            selectedType = userData['vehicleType'];
+            mileageController.text = userData['mileage']?.toString() ?? '';
+            yearController.text = userData['year']?.toString() ?? '';
+            _vehiclePhotoUrl = userData['vehiclePhotoUrl'];
+          });
+        }
+      }
+    } catch (e) {
+      print("Error loading user data: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading profile data')));
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   void _showImagePickerOptions() {
     showModalBottomSheet(
       context: context,
@@ -139,6 +185,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           onPressed: () => _navigateToDashboard(context),
         ),
         actions: [
+          IconButton(
+            icon: Icon(Icons.refresh, color: Colors.black),
+            onPressed: _loadUserData,
+          ),
           IconButton(
             icon: Icon(Icons.settings, color: Colors.black),
             onPressed: () {

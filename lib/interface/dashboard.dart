@@ -75,7 +75,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           print("Vehicle document does not exist");
           setState(() {
             isLoading = false;
-            errorMessage = "No vehicle data found";
+            errorMessage =
+                "No vehicle data found. Please add your vehicle in the profile section.";
           });
         }
       } catch (e) {
