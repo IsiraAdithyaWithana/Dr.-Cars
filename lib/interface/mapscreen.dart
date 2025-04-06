@@ -11,8 +11,9 @@ class MapScreen extends StatefulWidget {
   _MapScreenState createState() => _MapScreenState();
 }
 
+int _selectedIndex = 1;
+
 class _MapScreenState extends State<MapScreen> {
-  int _selectedIndex = 1;
   LocationData? _userLocation;
   final Location _location = Location();
 
@@ -120,11 +121,11 @@ class _MapScreenState extends State<MapScreen> {
               ) // Show loader if location is null
               : FlutterMap(
                 options: MapOptions(
-                  initialCenter: LatLng(
+                  center: LatLng(
                     _userLocation!.latitude!,
                     _userLocation!.longitude!,
                   ),
-                  initialZoom: 9.0,
+                  zoom: 9.0, // Adjusted zoom
                 ),
                 children: [
                   TileLayer(
@@ -201,9 +202,6 @@ class _MapScreenState extends State<MapScreen> {
         unselectedItemColor: Colors.black,
         currentIndex: _selectedIndex,
         onTap: (index) {
-          if (index == _selectedIndex)
-            return; // Don't navigate if already on the same screen
-
           setState(() {
             _selectedIndex = index;
           });
@@ -216,7 +214,10 @@ class _MapScreenState extends State<MapScreen> {
               );
               break;
             case 1:
-              // Already on map screen, no need to navigate
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => MapScreen()),
+              );
               break;
             case 3:
               Navigator.push(
