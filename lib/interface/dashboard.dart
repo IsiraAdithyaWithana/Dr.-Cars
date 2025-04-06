@@ -5,10 +5,13 @@ import 'package:dr_cars/interface/rating.dart';
 import 'package:dr_cars/main/signin.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:dr_cars/interface/obd2.dart';
 
 class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
+
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  _DashboardScreenState createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
@@ -19,6 +22,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, dynamic>? vehicleData;
   bool isLoading = true;
   String? errorMessage;
+  String? _vehicleImageUrl;
 
   @override
   void initState() {
@@ -38,9 +42,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
           setState(() {
             userName = userData["Name"] ?? "User";
           });
+        } else {
+          print("User document does not exist");
+          setState(() {
+            userName = "User";
+          });
         }
       } catch (e) {
         print("Error fetching user data: $e");
+        setState(() {
+          userName = "User";
+          errorMessage = "Failed to load user data: $e";
+        });
       }
     }
   }
@@ -49,29 +62,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
     User? user = _auth.currentUser;
     if (user != null) {
       try {
-        QuerySnapshot querySnapshot =
-            await _firestore
-                .collection("Vehicle")
-                .where("userId", isEqualTo: user.uid)
-                .limit(1)
-                .get();
+        DocumentSnapshot vehicleDoc =
+            await _firestore.collection("Users").doc(user.uid).get();
 
-        if (querySnapshot.docs.isNotEmpty) {
+        if (vehicleDoc.exists) {
           setState(() {
-            vehicleData =
-                querySnapshot.docs.first.data() as Map<String, dynamic>;
+            vehicleData = vehicleDoc.data() as Map<String, dynamic>;
+            _vehicleImageUrl = vehicleData?['vehiclePhotoUrl'];
             isLoading = false;
           });
         } else {
+          print("Vehicle document does not exist");
           setState(() {
             isLoading = false;
-            errorMessage = "No vehicle found. Add a vehicle to see details.";
+            errorMessage = "No vehicle data found";
           });
         }
       } catch (e) {
+        print("Error fetching vehicle data: $e");
         setState(() {
           isLoading = false;
-          errorMessage = "Error loading vehicle data";
+          errorMessage = "Failed to load vehicle data: $e";
         });
       }
     }
@@ -86,6 +97,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -134,7 +150,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
-
             isLoading
                 ? Padding(
                   padding: const EdgeInsets.all(20.0),
@@ -186,12 +201,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               borderRadius: BorderRadius.vertical(
                                 top: Radius.circular(16),
                               ),
-                              child: Image.asset(
-                                'images/dashcar.png',
-                                width: screenWidth * 0.9,
-                                height: 250,
-                                fit: BoxFit.cover,
-                              ),
+                              child:
+                                  _vehicleImageUrl != null
+                                      ? Image.network(
+                                        _vehicleImageUrl!,
+                                        width: screenWidth * 0.9,
+                                        height: 250,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (
+                                          context,
+                                          error,
+                                          stackTrace,
+                                        ) {
+                                          return Image.asset(
+                                            'images/dashcar.png',
+                                            width: screenWidth * 0.9,
+                                            height: 250,
+                                            fit: BoxFit.cover,
+                                          );
+                                        },
+                                      )
+                                      : Image.asset(
+                                        'images/dashcar.png',
+                                        width: screenWidth * 0.9,
+                                        height: 250,
+                                        fit: BoxFit.cover,
+                                      ),
                             ),
                             Padding(
                               padding: EdgeInsets.all(12),
@@ -199,14 +234,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "${vehicleData!['manufactureYear']?.toString() ?? 'Year not specified'}",
+                                    "${vehicleData!['year']?.toString() ?? 'Year not specified'}",
                                     style: TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   Text(
-                                    "${vehicleData!['brand'] ?? 'Brand'} ${vehicleData!['model'] ?? 'Model'}",
+                                    "${vehicleData!['selectedBrand'] ?? 'Brand'} ${vehicleData!['selectedModel'] ?? 'Model'}",
                                     style: TextStyle(
                                       fontSize: 32,
                                       fontWeight: FontWeight.bold,
@@ -225,7 +260,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '🛢 ${vehicleData!['type'] ?? 'Type not specified'}',
+                                        '🛢 ${vehicleData!['selectedType'] ?? 'Type not specified'}',
                                         style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w600,
@@ -233,6 +268,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                     ],
                                   ),
+                                  if (vehicleData!['vehicleNumber'] != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Text(
+                                        '🚗 ${vehicleData!['vehicleNumber']}',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
                                 ],
                               ),
                             ),
@@ -253,12 +299,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ListTile(
               title: Text(
                 vehicleData != null
-                    ? "${vehicleData!['brand'] ?? ''} ${vehicleData!['model'] ?? ''} (${vehicleData!['manufactureYear']?.toString() ?? 'Year not specified'})"
+                    ? "${vehicleData!['selectedBrand'] ?? ''} ${vehicleData!['selectedModel'] ?? ''} (${vehicleData!['year']?.toString() ?? 'Year not specified'})"
                     : 'Vehicle not loaded',
               ),
               subtitle: Text(
                 vehicleData != null
-                    ? 'Next maintenance at: ${getNextMaintenanceMileage(vehicleData!['mileage'] ?? 0)} KM'
+                    ? 'Next maintenance at: ${getNextMaintenanceMileage(int.tryParse(vehicleData!['mileage']?.toString() ?? '0') ?? 0)} KM'
                     : '',
               ),
               trailing: Icon(Icons.build, color: Colors.orange),
@@ -266,31 +312,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
-
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.black,
         currentIndex: _selectedIndex,
         onTap: (index) {
+          if (index == _selectedIndex)
+            return; // Don't navigate if already on the same screen
+
           setState(() {
             _selectedIndex = index;
           });
 
-          if (index == 1)
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => MapScreen()),
-            );
-          if (index == 3)
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => RatingScreen()),
-            );
-          if (index == 4)
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
-            );
+          switch (index) {
+            case 0:
+              // Already on dashboard
+              break;
+            case 1:
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => MapScreen()),
+              );
+              break;
+            case 2:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => OBD2Page()),
+              );
+              break;
+            case 3:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RatingScreen()),
+              );
+              break;
+            case 4:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfileScreen()),
+              );
+              break;
+          }
         },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),

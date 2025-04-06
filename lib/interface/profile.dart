@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dr_cars/interface/Settings.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/rating.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'dashboard.dart'; // Import your Dashboard screen
+import 'dashboard.dart';
+import 'package:dr_cars/interface/obd2.dart';
 
 int _selectedIndex = 4;
 
@@ -15,12 +17,18 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController vehicleNumberController = TextEditingController();
   String? selectedBrand;
   String? selectedModel;
   String? selectedType;
   TextEditingController mileageController = TextEditingController();
   TextEditingController yearController = TextEditingController();
-  TextEditingController vehicleNumberController = TextEditingController();
+
+  bool _isLoading = false;
+  String? _vehiclePhotoUrl;
 
   final Map<String, List<String>> vehicleModels = {
     'Toyota': [
@@ -31,12 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       'Aqua',
       'Axio',
       'Vitz',
-      'Allion',
-      'Premio',
-      'LandCruiser',
-      'Hilux',
       'Prius',
-      'Rush',
     ],
     'Nissan': [
       'Sunny',
@@ -44,89 +47,86 @@ class _ProfileScreenState extends State<ProfileScreen> {
       'Juke',
       'Note',
       'Teana',
-      'Skyline',
-      'Patrol',
-      'Navara',
-      'Qashqai',
-      'Murano',
-      'Titan',
-      'Frontier',
-      'Sylphy',
-      'Fairlady Z',
-      'Armada',
-      'Sentra',
-      'Leaf',
       'GT-R',
-      'Bluebird',
-      'March',
-      'AD Wagon',
-      'Vanette',
-      'Caravan',
-      'Serena',
-      'Primera',
-      'Cedric',
-      'Gloria',
-      'Terrano',
-      'Dualis',
-      'Dayz',
-      'Elgrand',
-      'Lafesta',
-      'Wingroad',
+      'Sentra',
+      'Patrol',
     ],
     'Honda': [
       'Civic',
       'Accord',
       'CR-V',
-      'Pilot',
       'Fit',
       'Vezel',
-      'Grace',
-      'Freed',
-      'Insight',
-      'HR-V',
-      'BR-V',
-      'Jazz',
       'City',
-      'Legend',
       'Odyssey',
-      'Shuttle',
-      'Stepwgn',
-      'Acty',
-      'S660',
-      'NSX',
-      'Integra',
-      'Stream',
-      'Airwave',
-      'CR-Z',
-      'Elysion',
-      'Beat',
-      'Mobilio',
-      'Crossroad',
+      'Freed',
     ],
     'Suzuki': [
       'Alto',
       'Wagon R',
       'Swift',
-      'Dzire',
       'Baleno',
+      'Vitara',
       'Ertiga',
-      'Celerio',
-      'S-Presso',
-      'Vitara Brezza',
-      'Grand Vitara',
-      'Ciaz',
-      'Ignis',
-      'XL6',
       'Jimny',
-      'Fronx',
-      'Maruti 800',
-      'Esteem',
-      'Kizashi',
-      'A-Star',
+      'Ignis',
+    ],
+    'Mazda': [
+      'Mazda3',
+      'Mazda6',
+      'CX-3',
+      'CX-5',
+      'CX-9',
+      'BT-50',
+      'RX-8',
+      'MX-5',
+    ],
+    'BMW': ['320i', 'X1', 'X3', 'X5', 'M3', 'Z4', '530e', '740i'],
+    'Kia': [
+      'Picanto',
+      'Rio',
+      'Sportage',
+      'Seltos',
+      'Sorento',
+      'Cerato',
+      'Stinger',
+      'Carnival',
+    ],
+    'Hyundai': [
+      'i10',
+      'i20',
+      'Elantra',
+      'Tucson',
+      'Santa Fe',
+      'Accent',
+      'Venue',
+      'Creta',
     ],
   };
 
   final List<String> vehicleTypes = ['Car', 'SUV', 'Truck', 'Buses', 'Van'];
+
+  void _showImagePickerOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  ();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -138,57 +138,131 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: Icon(Icons.home, color: Colors.black),
           onPressed: () => _navigateToDashboard(context),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings, color: Colors.black),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsScreen()),
+              );
+            },
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: AssetImage('images/logo.png'),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'User Profile',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-
-            // **Vehicle Selection Fields at the Top**
-            _buildBrandDropdown(),
-            _buildModelDropdown(),
-            _buildTypeDropdown(),
-
-            // **Updated Fields**
-            _buildTextField(
-              controller: mileageController,
-              label: "Mileage (km)",
-              hintText: "Enter mileage",
-            ),
-            _buildTextField(
-              controller: vehicleNumberController,
-              label: "Vehicle Number",
-              hintText: "Enter vehicle number",
-            ),
-            _buildTextField(
-              controller: yearController,
-              label: "Manufacture Year",
-              hintText: "Enter year",
-            ),
-
-            SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                minimumSize: Size(double.infinity, 50),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: _showImagePickerOptions,
+                    child: Container(
+                      width: 150,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.grey, width: 2),
+                      ),
+                      child:
+                          _vehiclePhotoUrl != null
+                              ? ClipOval(
+                                child: Image.network(
+                                  _vehiclePhotoUrl!,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                              : Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 50,
+                                    backgroundImage: AssetImage(
+                                      'images/logo.png',
+                                    ),
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.black.withOpacity(0.3),
+                                    ),
+                                    child: Icon(
+                                      Icons.add_photo_alternate,
+                                      color: Colors.white,
+                                      size: 30,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'User Profile',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20),
+                  _buildBrandDropdown(),
+                  _buildModelDropdown(),
+                  _buildTypeDropdown(),
+                  _buildTextField(
+                    controller: vehicleNumberController,
+                    label: "Vehicle Number",
+                    hintText: "Enter vehicle number",
+                  ),
+                  _buildTextField(
+                    controller: mileageController,
+                    label: "Mileage (km)",
+                    hintText: "Enter mileage",
+                  ),
+                  _buildTextField(
+                    controller: yearController,
+                    label: "Manufacture Year",
+                    hintText: "Enter year",
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    onPressed: _showImagePickerOptions,
+                    icon: Icon(Icons.add_photo_alternate),
+                    label: Text("Select Vehicle Photo"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      minimumSize: Size(double.infinity, 50),
+                    ),
+                    onPressed: _isLoading ? null : () => _saveProfile(),
+                    child: Text(
+                      "Continue",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
               ),
-              onPressed:
-                  () => _uploadVehicleData(), // Call function to upload data
-              child: Text("Continue", style: TextStyle(color: Colors.white)),
             ),
-          ],
-        ),
+          ),
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+            ),
+        ],
       ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
@@ -215,6 +289,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             context,
             MaterialPageRoute(builder: (context) => MapScreen()),
           );
+        } else if (index == 2) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => OBD2Page()),
+          );
         } else if (index == 3) {
           Navigator.push(
             context,
@@ -240,37 +319,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _uploadVehicleData() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return; // Ensure user is logged in
+  Future<void> _saveProfile() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
 
-    if (selectedBrand != null &&
-        selectedModel != null &&
-        selectedType != null &&
-        vehicleNumberController.text.isNotEmpty) {
       try {
-        await FirebaseFirestore.instance.collection('Vehicle').doc(vehicleNumberController.text).set({
-          'userId': user.uid, // Store user's ID
-          'brand': selectedBrand,
-          'model': selectedModel,
-          'type': selectedType,
-          'mileage': int.tryParse(mileageController.text) ?? 0,
-          'vehicleNumber': vehicleNumberController.text, // FIXED
-          'manufactureYear': int.tryParse(yearController.text) ?? 0,
-          'image': 'images/dashcar.png', // Default image (modify as needed)
-          'timestamp': FieldValue.serverTimestamp(),
-        });
+        User? user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          // Create user data map
+          Map<String, dynamic> userData = {
+            'name': nameController.text,
+            'email': emailController.text,
+            'vehicleNumber': vehicleNumberController.text,
+            'selectedBrand': selectedBrand,
+            'selectedModel': selectedModel,
+            'vehicleType': selectedType,
+            'mileage': mileageController.text,
+            'year': yearController.text,
+            'vehiclePhotoUrl': _vehiclePhotoUrl,
+            'lastUpdated': FieldValue.serverTimestamp(),
+          };
 
-        // Show Success Message
-        _showPopupMessage(context, "Success", "Your data was saved.");
+          // Update Firestore with consistent collection name
+          await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(user.uid)
+              .update(userData);
+
+          _showPopupMessage(
+            context,
+            "Success",
+            "Profile updated successfully!",
+          );
+        } else {
+          throw Exception("User not authenticated");
+        }
       } catch (e) {
-        _showPopupMessage(context, "Error", "Failed to save data.\n${e.toString()}");
+        print("Error updating profile: $e");
+        _showPopupMessage(
+          context,
+          "Error",
+          "Failed to update profile: ${e.toString()}",
+        );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
-    } else {
-      _showPopupMessage(context, "Warning", "Please fill all fields.");
     }
   }
-
 
   void _showPopupMessage(BuildContext context, String title, String message) {
     showDialog(
@@ -290,17 +389,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _clearFields() {
-    setState(() {
-      mileageController.clear();
-      yearController.clear();
-      selectedBrand = null;
-      selectedModel = null;
-      selectedType = null;
-      vehicleNumberController.clear();
-    });
-  }
-
   void _navigateToDashboard(BuildContext context) {
     Navigator.pushReplacement(
       context,
@@ -315,13 +403,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
           hintText: hintText,
           border: OutlineInputBorder(),
         ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter $label';
+          }
+          return null;
+        },
       ),
     );
   }
@@ -344,7 +438,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         onChanged: (value) {
           setState(() {
             selectedBrand = value;
-            selectedModel = null; // Reset model when brand changes
+            selectedModel = null;
           });
         },
         hint: Text("Select a brand"),
