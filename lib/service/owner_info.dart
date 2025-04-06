@@ -7,7 +7,12 @@ class OwnerInfo extends StatefulWidget {
   final Map<String, dynamic>? vehicleData;
   final Map<String, dynamic>? userData;
 
-  const OwnerInfo({super.key, required this.vehicleNumber, this.vehicleData, this.userData});
+  const OwnerInfo({
+    super.key,
+    required this.vehicleNumber,
+    this.vehicleData,
+    this.userData,
+  });
 
   @override
   _OwnerInfoPageState createState() => _OwnerInfoPageState();
@@ -28,40 +33,98 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
   // Map of vehicle brands to their respective models
   final Map<String, List<String>> vehicleModels = {
     'Toyota': [
-      'Corolla', 'Camry', 'RAV4', 'Highlander', 'Aqua', 'Axio', 'Vitz',
-      'Allion', 'Premio', 'LandCruiser', 'Hilux', 'Prius', 'Rush',
+      'Corolla',
+      'Camry',
+      'RAV4',
+      'Highlander',
+      'Aqua',
+      'Axio',
+      'Vitz',
+      'Allion',
+      'Premio',
+      'LandCruiser',
+      'Hilux',
+      'Prius',
+      'Rush',
     ],
     'Nissan': [
-      'Sunny', 'X-Trail', 'Juke', 'Note', 'Teana', 'Skyline', 'Patrol',
-      'Navara', 'Qashqai', 'Murano', 'Titan', 'Frontier', 'Sylphy',
-      'Fairlady Z', 'Armada', 'Sentra', 'Leaf', 'GT-R',
+      'Sunny',
+      'X-Trail',
+      'Juke',
+      'Note',
+      'Teana',
+      'Skyline',
+      'Patrol',
+      'Navara',
+      'Qashqai',
+      'Murano',
+      'Titan',
+      'Frontier',
+      'Sylphy',
+      'Fairlady Z',
+      'Armada',
+      'Sentra',
+      'Leaf',
+      'GT-R',
     ],
     'Honda': [
-      'Civic', 'Accord', 'CR-V', 'Pilot', 'Fit', 'Vezel', 'Grace',
-      'Freed', 'Insight', 'HR-V', 'BR-V', 'Jazz', 'City', 'Legend',
-      'Odyssey', 'Shuttle', 'Stepwgn', 'Acty', 'S660', 'NSX',
+      'Civic',
+      'Accord',
+      'CR-V',
+      'Pilot',
+      'Fit',
+      'Vezel',
+      'Grace',
+      'Freed',
+      'Insight',
+      'HR-V',
+      'BR-V',
+      'Jazz',
+      'City',
+      'Legend',
+      'Odyssey',
+      'Shuttle',
+      'Stepwgn',
+      'Acty',
+      'S660',
+      'NSX',
     ],
     'Suzuki': [
-      'Alto', 'Wagon R', 'Swift', 'Dzire', 'Baleno', 'Ertiga', 'Celerio',
-      'S-Presso', 'Vitara Brezza', 'Grand Vitara', 'Ciaz', 'Ignis', 'XL6',
-      'Jimny', 'Fronx', 'Maruti 800', 'Esteem', 'Kizashi', 'A-Star',
+      'Alto',
+      'Wagon R',
+      'Swift',
+      'Dzire',
+      'Baleno',
+      'Ertiga',
+      'Celerio',
+      'S-Presso',
+      'Vitara Brezza',
+      'Grand Vitara',
+      'Ciaz',
+      'Ignis',
+      'XL6',
+      'Jimny',
+      'Fronx',
+      'Maruti 800',
+      'Esteem',
+      'Kizashi',
+      'A-Star',
     ],
   };
 
   @override
   void initState() {
     super.initState();
-    
+
     // If vehicleData is not passed, fetch data from Firestore
     if (widget.vehicleData == null) {
       _fetchVehicleData();
     } else {
       _populateFields(widget.vehicleData!);
+      _fetchUserData();
     }
 
-
-    if(widget.userData == null){
-      _fetchUserData();
+    if (widget.userData == null) {
     } else {
       _userDetails(widget.userData!);
     }
@@ -69,10 +132,11 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
 
   Future<void> _fetchVehicleData() async {
     // Fetch data from Firestore using vehicleNumber
-    DocumentSnapshot vehicleDoc = await FirebaseFirestore.instance
-        .collection('Vehicle')
-        .doc(widget.vehicleNumber)
-        .get();
+    DocumentSnapshot vehicleDoc =
+        await FirebaseFirestore.instance
+            .collection('Vehicle')
+            .doc(widget.vehicleNumber)
+            .get();
 
     if (vehicleDoc.exists) {
       _populateFields(vehicleDoc.data() as Map<String, dynamic>);
@@ -84,24 +148,25 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
   }
 
   void _populateFields(Map<String, dynamic> data) {
-  setState(() {
-    selectedBrand = data['brand'] ?? 'Toyota';
-    selectedModel = data['model'] ?? vehicleModels['Toyota']?[0];
-    if (data['manufactureYear'] != null) {
-      vehicleYearController.text = data['manufactureYear'].toString();
-    } else {
-      vehicleYearController.text = "";
-    }
-    
-    userIdController.text = data['userId'] ?? "";
-  });
-}
+    setState(() {
+      selectedBrand = data['brand'] ?? 'Toyota';
+      selectedModel = data['model'] ?? vehicleModels['Toyota']?[0];
+      if (data['manufactureYear'] != null) {
+        vehicleYearController.text = data['manufactureYear'].toString();
+      } else {
+        vehicleYearController.text = "";
+      }
+
+      userIdController.text = data['userId'] ?? "";
+    });
+  }
 
   Future<void> _fetchUserData() async {
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(userIdController.text)
-        .get();
+    DocumentSnapshot userDoc =
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(userIdController.text)
+            .get();
 
     if (userDoc.exists) {
       _userDetails(userDoc.data() as Map<String, dynamic>);
@@ -112,7 +177,7 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
     }
   }
 
-  void _userDetails(Map<String, dynamic> data){
+  void _userDetails(Map<String, dynamic> data) {
     setState(() {
       nameController.text = data['Name'] ?? "";
       addressController.text = data['Address'] ?? "";
@@ -148,24 +213,38 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
             _buildTextField(addressController, "Address", "Address"),
             _buildTextField(contactController, "Contact", "Contact Number"),
             _buildTextField(emailController, "E-mail", "Email"),
-            _buildTextField(vehicleYearController, "Vehicle Year", "Year of Manufacture"),
+            _buildTextField(
+              vehicleYearController,
+              "Vehicle Year",
+              "Year of Manufacture",
+            ),
 
             // Brand Dropdown
-            _buildDropdownField("Brand", vehicleModels.keys.toList(), selectedBrand, (value) {
-              setState(() {
-                selectedBrand = value;
-                // Reset the model when brand changes
-                selectedModel = vehicleModels[selectedBrand]?.first;
-              });
-            }),
+            _buildDropdownField(
+              "Brand",
+              vehicleModels.keys.toList(),
+              selectedBrand,
+              (value) {
+                setState(() {
+                  selectedBrand = value;
+                  // Reset the model when brand changes
+                  selectedModel = vehicleModels[selectedBrand]?.first;
+                });
+              },
+            ),
 
             // Model Dropdown
-            if (selectedBrand != null) 
-              _buildDropdownField("Model", vehicleModels[selectedBrand] ?? [], selectedModel, (value) {
-                setState(() {
-                  selectedModel = value;
-                });
-              }),
+            if (selectedBrand != null)
+              _buildDropdownField(
+                "Model",
+                vehicleModels[selectedBrand] ?? [],
+                selectedModel,
+                (value) {
+                  setState(() {
+                    selectedModel = value;
+                  });
+                },
+              ),
 
             const SizedBox(height: 20),
             SizedBox(
@@ -186,7 +265,11 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
                 },
                 child: const Text(
                   "Continue",
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -197,7 +280,11 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, String hint) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    String hint,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: TextField(
@@ -225,9 +312,10 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
           border: const OutlineInputBorder(),
         ),
         value: selectedValue,
-        items: items.map((String item) {
-          return DropdownMenuItem<String>(value: item, child: Text(item));
-        }).toList(),
+        items:
+            items.map((String item) {
+              return DropdownMenuItem<String>(value: item, child: Text(item));
+            }).toList(),
         onChanged: onChanged,
       ),
     );
