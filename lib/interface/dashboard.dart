@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/rating.dart';
+import 'package:dr_cars/interface/service_history.dart';
 import 'package:dr_cars/main/signin.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -297,18 +298,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
-            ListTile(
-              title: Text(
-                vehicleData != null
-                    ? "${vehicleData!['selectedBrand'] ?? ''} ${vehicleData!['selectedModel'] ?? ''} (${vehicleData!['year']?.toString() ?? 'Year not specified'})"
-                    : 'Vehicle not loaded',
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ServiceHistoryPage()),
+                );
+              },
+              child: ListTile(
+                title: Text(
+                  vehicleData != null
+                      ? "${vehicleData!['selectedBrand'] ?? ''} ${vehicleData!['selectedModel'] ?? ''} (${vehicleData!['year']?.toString() ?? 'Year not specified'})"
+                      : 'Vehicle not loaded',
+                ),
+                subtitle: Text(
+                  vehicleData != null
+                      ? 'Next maintenance at: ${getNextMaintenanceMileage(int.tryParse(vehicleData!['mileage']?.toString() ?? '0') ?? 0)} KM'
+                      : '',
+                ),
+                trailing: Icon(Icons.build, color: Colors.orange),
               ),
-              subtitle: Text(
-                vehicleData != null
-                    ? 'Next maintenance at: ${getNextMaintenanceMileage(int.tryParse(vehicleData!['mileage']?.toString() ?? '0') ?? 0)} KM'
-                    : '',
-              ),
-              trailing: Icon(Icons.build, color: Colors.orange),
             ),
           ],
         ),
