@@ -9,7 +9,7 @@ import 'package:dr_cars/interface/dashboard.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -17,14 +17,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: AuthCheck(), // Auto-redirects user
-    );
+    return MaterialApp(debugShowCheckedModeBanner: false, home: AuthCheck());
   }
 }
 
 class AuthCheck extends StatefulWidget {
+  const AuthCheck({super.key});
+
   @override
   _AuthCheckState createState() => _AuthCheckState();
 }
@@ -32,50 +31,56 @@ class AuthCheck extends StatefulWidget {
 class _AuthCheckState extends State<AuthCheck> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
-  
+
   @override
   void initState() {
     super.initState();
     _checkUser();
   }
 
-  Future <void> _fetchUserType(user) async {
+  Future<String> _fetchUserType(User? user) async {
+    if (user == null) return "User";
     try {
-        DocumentSnapshot userData =
-            await _firestore.collection("Users").doc(user?.uid).get();
-        return userData.exists ? userData["User Type"] ?? "User" : "User";
-      } catch (e) {
-        print("Error fetching user data: $e");
-      }
+      DocumentSnapshot userData =
+          await _firestore.collection("Users").doc(user.uid).get();
+      return userData.exists ? userData.get("User Type") ?? "User" : "User";
+    } catch (e) {
+      print("Error fetching user data: $e");
+      return "User";
+    }
   }
 
   void _checkUser() async {
     User? user = auth.currentUser;
     // Wait a bit for smooth transition
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
 
-    Future<void> userType = _fetchUserType(user);
+    if (!mounted) return;
 
     if (user != null) {
-      // User is logged in, go to Dashboard
+      String userType = await _fetchUserType(user);
+      if (!mounted) return;
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => userType == "Vehicle Owner"?DashboardScreen():HomeScreen()),
+        MaterialPageRoute(
+          builder:
+              (context) =>
+                  userType == "Vehicle Owner"
+                      ? const DashboardScreen()
+                      : const HomeScreen(),
+        ),
       );
     } else {
-      // No user, go to Welcome
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Welcome()),
+        MaterialPageRoute(builder: (context) => const Welcome()),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(child: CircularProgressIndicator()), // Show loading
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
-

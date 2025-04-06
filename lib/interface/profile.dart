@@ -8,9 +8,9 @@ import 'dashboard.dart';
 import 'package:dr_cars/interface/obd2.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
+import 'package:image_picker/image_picker.dart';
 
 int _selectedIndex = 4;
 
@@ -132,17 +132,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _pickImage() async {
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        allowMultiple: false,
-      );
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
-      if (result != null) {
+      if (image != null) {
         setState(() {
           _isLoading = true;
         });
 
-        final file = File(result.files.single.path!);
+        final file = File(image.path);
         final user = FirebaseAuth.instance.currentUser;
 
         if (user != null) {
@@ -237,33 +235,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.grey, width: 2),
                     ),
-                    child: _vehiclePhotoUrl != null
-                        ? ClipOval(
-                            child: Image.network(
-                              _vehiclePhotoUrl!,
-                              fit: BoxFit.cover,
+                    child:
+                        _vehiclePhotoUrl != null
+                            ? ClipOval(
+                              child: Image.network(
+                                _vehiclePhotoUrl!,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                            : Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                CircleAvatar(
+                                  radius: 50,
+                                  backgroundImage: AssetImage(
+                                    'images/logo.png',
+                                  ),
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.black.withOpacity(0.3),
+                                  ),
+                                  child: Icon(
+                                    Icons.add_photo_alternate,
+                                    color: Colors.white,
+                                    size: 30,
+                                  ),
+                                ),
+                              ],
                             ),
-                          )
-                        : Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              CircleAvatar(
-                                radius: 50,
-                                backgroundImage: AssetImage('images/logo.png'),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.black.withOpacity(0.3),
-                                ),
-                                child: Icon(
-                                  Icons.add_photo_alternate,
-                                  color: Colors.white,
-                                  size: 30,
-                                ),
-                              ),
-                            ],
-                          ),
                   ),
                 ),
                 SizedBox(height: 10),
@@ -307,8 +308,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     minimumSize: Size(double.infinity, 50),
                   ),
                   onPressed: _isLoading ? null : () => _saveProfile(),
-                  child:
-                      Text("Continue", style: TextStyle(color: Colors.white)),
+                  child: Text(
+                    "Continue",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ],
             ),
@@ -475,11 +478,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           border: OutlineInputBorder(),
         ),
         value: selectedBrand,
-        items: vehicleModels.keys
-            .map(
-              (brand) => DropdownMenuItem(value: brand, child: Text(brand)),
-            )
-            .toList(),
+        items:
+            vehicleModels.keys
+                .map(
+                  (brand) => DropdownMenuItem(value: brand, child: Text(brand)),
+                )
+                .toList(),
         onChanged: (value) {
           setState(() {
             selectedBrand = value;
@@ -500,13 +504,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           border: OutlineInputBorder(),
         ),
         value: selectedModel,
-        items: (selectedBrand != null && vehicleModels[selectedBrand] != null)
-            ? vehicleModels[selectedBrand]!
-                .map(
-                  (model) => DropdownMenuItem(value: model, child: Text(model)),
-                )
-                .toList()
-            : [],
+        items:
+            (selectedBrand != null && vehicleModels[selectedBrand] != null)
+                ? vehicleModels[selectedBrand]!
+                    .map(
+                      (model) =>
+                          DropdownMenuItem(value: model, child: Text(model)),
+                    )
+                    .toList()
+                : [],
         onChanged: (value) {
           setState(() {
             selectedModel = value;
@@ -528,9 +534,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           border: OutlineInputBorder(),
         ),
         value: selectedType,
-        items: vehicleTypes
-            .map((type) => DropdownMenuItem(value: type, child: Text(type)))
-            .toList(),
+        items:
+            vehicleTypes
+                .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+                .toList(),
         onChanged: (value) {
           setState(() {
             selectedType = value;
