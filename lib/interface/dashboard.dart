@@ -260,7 +260,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '🛢 ${vehicleData!['selectedType'] ?? 'Type not specified'}',
+                                        '🚗 ${vehicleData!['vehicleType'] ?? 'Type not specified'}',
                                         style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w600,
