@@ -7,6 +7,7 @@ import 'package:dr_cars/main/signin.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dr_cars/interface/obd2.dart';
+import 'package:dr_cars/interface/servicerecords.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -302,7 +303,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ServiceHistorypage()),
+                  MaterialPageRoute(builder: (context) => ServiceRecordsPage()),
                 );
               },
               child: ListTile(

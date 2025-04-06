@@ -29,6 +29,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   bool _isLoading = false;
   String? _vehiclePhotoUrl;
+  bool _isInitialSetup = true;
+  bool _isExpanded = false;
 
   final Map<String, List<String>> vehicleModels = {
     'Toyota': [
@@ -126,8 +128,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 .doc(user.uid)
                 .get();
 
-        if (userData.exists) {
+        if (userData.exists && userData['vehicleNumber'] != null) {
           setState(() {
+            _isInitialSetup = false;
             nameController.text = userData['name'] ?? '';
             emailController.text = userData['email'] ?? '';
             vehicleNumberController.text = userData['vehicleNumber'] ?? '';
@@ -204,104 +207,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           SingleChildScrollView(
             padding: EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: _showImagePickerOptions,
-                    child: Container(
-                      width: 150,
-                      height: 150,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey, width: 2),
-                      ),
-                      child:
-                          _vehiclePhotoUrl != null
-                              ? ClipOval(
-                                child: Image.network(
-                                  _vehiclePhotoUrl!,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                              : Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  CircleAvatar(
-                                    radius: 50,
-                                    backgroundImage: AssetImage(
-                                      'images/logo.png',
-                                    ),
-                                  ),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.black.withOpacity(0.3),
-                                    ),
-                                    child: Icon(
-                                      Icons.add_photo_alternate,
-                                      color: Colors.white,
-                                      size: 30,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'User Profile',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 20),
-                  _buildBrandDropdown(),
-                  _buildModelDropdown(),
-                  _buildTypeDropdown(),
-                  _buildTextField(
-                    controller: vehicleNumberController,
-                    label: "Vehicle Number",
-                    hintText: "Enter vehicle number",
-                  ),
-                  _buildTextField(
-                    controller: mileageController,
-                    label: "Mileage (km)",
-                    hintText: "Enter mileage",
-                  ),
-                  _buildTextField(
-                    controller: yearController,
-                    label: "Manufacture Year",
-                    hintText: "Enter year",
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: _showImagePickerOptions,
-                    icon: Icon(Icons.add_photo_alternate),
-                    label: Text("Select Vehicle Photo"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      minimumSize: Size(double.infinity, 50),
-                    ),
-                    onPressed: _isLoading ? null : () => _saveProfile(),
-                    child: Text(
-                      "Continue",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            child:
+                _isInitialSetup
+                    ? _buildInitialSetupForm()
+                    : _buildVehiclePanel(),
           ),
           if (_isLoading)
             Container(
@@ -315,6 +224,161 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
       bottomNavigationBar: _buildBottomNavBar(),
+    );
+  }
+
+  Widget _buildVehiclePanel() {
+    return Column(
+      children: [
+        Card(
+          elevation: 2,
+          child: ExpansionTile(
+            leading: CircleAvatar(
+              backgroundImage:
+                  _vehiclePhotoUrl != null
+                      ? NetworkImage(_vehiclePhotoUrl!)
+                      : AssetImage('images/logo.png') as ImageProvider,
+              radius: 25,
+            ),
+            title: Text(
+              '${selectedBrand ?? ''} ${selectedModel ?? ''}',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(vehicleNumberController.text),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoRow('Vehicle Type', selectedType ?? ''),
+                    _buildInfoRow('Mileage', '${mileageController.text} km'),
+                    _buildInfoRow('Year', yearController.text),
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _isInitialSetup = true;
+                        });
+                      },
+                      child: Text('Edit Vehicle Information'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        minimumSize: Size(double.infinity, 40),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[600],
+            ),
+          ),
+          Text(value, style: TextStyle(fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInitialSetupForm() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          GestureDetector(
+            onTap: _showImagePickerOptions,
+            child: Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.grey, width: 2),
+              ),
+              child:
+                  _vehiclePhotoUrl != null
+                      ? ClipOval(
+                        child: Image.network(
+                          _vehiclePhotoUrl!,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                      : Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          CircleAvatar(
+                            radius: 50,
+                            backgroundImage: AssetImage('images/logo.png'),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black.withOpacity(0.3),
+                            ),
+                            child: Icon(
+                              Icons.add_photo_alternate,
+                              color: Colors.white,
+                              size: 30,
+                            ),
+                          ),
+                        ],
+                      ),
+            ),
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Vehicle Information Setup',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 20),
+          _buildBrandDropdown(),
+          _buildModelDropdown(),
+          _buildTypeDropdown(),
+          _buildTextField(
+            controller: vehicleNumberController,
+            label: "Vehicle Number",
+            hintText: "Enter vehicle number",
+          ),
+          _buildTextField(
+            controller: mileageController,
+            label: "Mileage (km)",
+            hintText: "Enter mileage",
+          ),
+          _buildTextField(
+            controller: yearController,
+            label: "Manufacture Year",
+            hintText: "Enter year",
+          ),
+          SizedBox(height: 20),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              minimumSize: Size(double.infinity, 50),
+            ),
+            onPressed: _isLoading ? null : () => _saveProfile(),
+            child: Text(
+              "Save Vehicle Information",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
