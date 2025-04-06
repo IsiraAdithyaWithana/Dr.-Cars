@@ -5,7 +5,6 @@ import 'package:dr_cars/main/signup_selection.dart';
 import 'package:dr_cars/service/service_menu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class SignInScreen extends StatefulWidget {
   SignInScreen({super.key});
@@ -29,24 +28,16 @@ class _SignInScreenState extends State<SignInScreen> {
     if (user != null) {
       try {
         DocumentSnapshot userData =
-            await _firestore.collection("users").doc(user.uid).get();
-        return userData.exists ? userData["userType"] ?? "User" : "User";
+            await _firestore.collection("Users").doc(user.uid).get();
+        return userData.exists ? userData["User Type"] ?? "User" : "User";
       } catch (e) {
         print("Error fetching user data: $e");
-        return "User";
       }
     }
     return "User";
   }
 
   void _handleSignIn() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please enter both email and password")),
-      );
-      return;
-    }
-
     setState(() {
       isLoading = true;
     });
@@ -59,8 +50,6 @@ class _SignInScreenState extends State<SignInScreen> {
 
       String userType = await _fetchUserType();
 
-      if (!mounted) return;
-
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -72,71 +61,44 @@ class _SignInScreenState extends State<SignInScreen> {
         ),
       );
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Sign In Failed: ${e.toString()}")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Sign In Failed: $e")));
     } finally {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
-  Future<void> _handleGoogleSignIn() async {
-    if (isGoogleLoading) return;
-
+  void _handleGoogleSignIn() async {
     setState(() {
       isGoogleLoading = true;
     });
 
-    try {
-      final user = await _authService.signInWithGoogle();
+    final user = await _authService.signInWithGoogle();
 
-      if (user != null) {
-        // Fetch user type after successful sign in
-        String userType = await _fetchUserType();
-
-        if (!mounted) return;
-
-        // Navigate based on user type
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) =>
-                    userType == "Vehicle Owner"
-                        ? DashboardScreen()
-                        : HomeScreen(),
-          ),
-        );
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Google Sign-In was cancelled"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      print("Google Sign-In Error: $e");
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Failed to sign in with Google: ${e.toString()}"),
-          backgroundColor: Colors.red,
+    if (user != null) {
+      String userType = await _fetchUserType();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) =>
+                  userType == "Vehicle Owner"
+                      ? DashboardScreen()
+                      : HomeScreen(),
         ),
       );
-    } finally {
-      if (mounted) {
-        setState(() {
-          isGoogleLoading = false;
-        });
-      }
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Google Sign-In Failed")));
     }
+
+    setState(() {
+      isGoogleLoading = false;
+    });
   }
 
   @override
@@ -152,11 +114,11 @@ class _SignInScreenState extends State<SignInScreen> {
                 Image.asset('images/logo.png', height: 100),
                 SizedBox(height: 20),
                 Text(
-                  "Welcome Back",
+                  "Create an account",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 8),
-                Text("Sign in to continue using the app"),
+                Text("Enter your email to sign up for this app"),
                 SizedBox(height: 20),
                 TextField(
                   controller: _emailController,
@@ -200,7 +162,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               strokeWidth: 2,
                             ),
                           )
-                          : Text("Sign In"),
+                          : Text("Continue"),
                 ),
                 SizedBox(height: 20),
                 Text("or"),
