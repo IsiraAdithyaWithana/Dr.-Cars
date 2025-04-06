@@ -6,6 +6,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dashboard.dart';
 import 'package:dr_cars/interface/obd2.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:async';
 
 int _selectedIndex = 4;
 
@@ -17,11 +22,18 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController vehicleNumberController = TextEditingController();
   String? selectedBrand;
   String? selectedModel;
   String? selectedType;
   TextEditingController mileageController = TextEditingController();
   TextEditingController yearController = TextEditingController();
+  File? _imageFile;
+  bool _isLoading = false;
+  String? _vehiclePhotoUrl;
 
   final Map<String, List<String>> vehicleModels = {
     'Toyota': [
@@ -99,6 +111,94 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   final List<String> vehicleTypes = ['Car', 'SUV', 'Truck', 'Buses', 'Van'];
 
+  Future<void> _requestPermissions() async {
+    try {
+      if (await Permission.photos.request().isGranted) {
+        return;
+      }
+
+      var status = await Permission.photos.request();
+      if (status.isDenied) {
+        _showPopupMessage(
+          context,
+          "Permission Required",
+          "Photo library access is required to pick images. Please enable it in settings.",
+        );
+      }
+    } catch (e) {
+      print("Error requesting permissions: $e");
+    }
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+      );
+
+      if (result != null) {
+        setState(() {
+          _isLoading = true;
+        });
+
+        final file = File(result.files.single.path!);
+        final user = FirebaseAuth.instance.currentUser;
+
+        if (user != null) {
+          // Upload to Firebase Storage
+          final storageRef = FirebaseStorage.instance
+              .ref()
+              .child('vehicle_photos')
+              .child('${user.uid}.jpg');
+
+          await storageRef.putFile(file);
+          final downloadUrl = await storageRef.getDownloadURL();
+
+          // Update Firestore
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .update({'vehiclePhotoUrl': downloadUrl});
+
+          setState(() {
+            _vehiclePhotoUrl = downloadUrl;
+          });
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking image: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showImagePickerOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,7 +213,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           IconButton(
             icon: Icon(Icons.settings, color: Colors.black),
             onPressed: () {
-              // Navigate to SettingsScreen
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => SettingsScreen()),
@@ -122,48 +221,108 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: AssetImage('images/logo.png'),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                GestureDetector(
+                  onTap: _showImagePickerOptions,
+                  child: Container(
+                    width: 150,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.grey, width: 2),
+                    ),
+                    child: _vehiclePhotoUrl != null
+                        ? ClipOval(
+                            child: Image.network(
+                              _vehiclePhotoUrl!,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              CircleAvatar(
+                                radius: 50,
+                                backgroundImage: AssetImage('images/logo.png'),
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.black.withOpacity(0.3),
+                                ),
+                                child: Icon(
+                                  Icons.add_photo_alternate,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'User Profile',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 20),
+                _buildBrandDropdown(),
+                _buildModelDropdown(),
+                _buildTypeDropdown(),
+                _buildTextField(
+                  controller: vehicleNumberController,
+                  label: "Vehicle Number",
+                  hintText: "Enter vehicle number",
+                ),
+                _buildTextField(
+                  controller: mileageController,
+                  label: "Mileage (km)",
+                  hintText: "Enter mileage",
+                ),
+                _buildTextField(
+                  controller: yearController,
+                  label: "Manufacture Year",
+                  hintText: "Enter year",
+                ),
+                SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: _showImagePickerOptions,
+                  icon: Icon(Icons.add_photo_alternate),
+                  label: Text("Select Vehicle Photo"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    minimumSize: Size(double.infinity, 50),
+                  ),
+                  onPressed: _isLoading ? null : () => _saveProfile(),
+                  child:
+                      Text("Continue", style: TextStyle(color: Colors.white)),
+                ),
+              ],
             ),
-            SizedBox(height: 10),
-            Text(
-              'User Profile',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-
-            _buildBrandDropdown(),
-            _buildModelDropdown(),
-            _buildTypeDropdown(),
-
-            _buildTextField(
-              controller: mileageController,
-              label: "Mileage (km)",
-              hintText: "Enter mileage",
-            ),
-            _buildTextField(
-              controller: yearController,
-              label: "Manufacture Year",
-              hintText: "Enter year",
-            ),
-
-            SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                minimumSize: Size(double.infinity, 50),
+          ),
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
               ),
-              onPressed: () => _uploadVehicleData(),
-              child: Text("Continue", style: TextStyle(color: Colors.white)),
             ),
-          ],
-        ),
+        ],
       ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
@@ -220,31 +379,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _uploadVehicleData() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+  Future<void> _saveProfile() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
 
-    if (selectedBrand != null &&
-        selectedModel != null &&
-        selectedType != null) {
       try {
-        await FirebaseFirestore.instance.collection('Vehicle').add({
-          'userId': user.uid,
-          'brand': selectedBrand,
-          'model': selectedModel,
-          'type': selectedType,
-          'mileage': int.tryParse(mileageController.text) ?? 0,
-          'manufactureYear': int.tryParse(yearController.text) ?? 0,
-          'image': 'images/dashcar.png',
-          'timestamp': FieldValue.serverTimestamp(),
-        });
+        User? user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          // Create user data map
+          Map<String, dynamic> userData = {
+            'name': nameController.text,
+            'email': emailController.text,
+            'vehicleNumber': vehicleNumberController.text,
+            'selectedBrand': selectedBrand,
+            'selectedModel': selectedModel,
+          };
 
-        _showPopupMessage(context, "Success", "Your data was saved.");
+          // Update Firestore
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .update(userData);
+
+          _showPopupMessage(
+            context,
+            "Success",
+            "Profile updated successfully!",
+          );
+        }
       } catch (e) {
-        _showPopupMessage(context, "Error", "Failed to save data.");
+        _showPopupMessage(
+          context,
+          "Error",
+          "Failed to update profile. Please try again.",
+        );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
-    } else {
-      _showPopupMessage(context, "Warning", "Please fill all fields.");
     }
   }
 
@@ -300,12 +475,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           border: OutlineInputBorder(),
         ),
         value: selectedBrand,
-        items:
-            vehicleModels.keys
-                .map(
-                  (brand) => DropdownMenuItem(value: brand, child: Text(brand)),
-                )
-                .toList(),
+        items: vehicleModels.keys
+            .map(
+              (brand) => DropdownMenuItem(value: brand, child: Text(brand)),
+            )
+            .toList(),
         onChanged: (value) {
           setState(() {
             selectedBrand = value;
@@ -326,15 +500,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           border: OutlineInputBorder(),
         ),
         value: selectedModel,
-        items:
-            (selectedBrand != null && vehicleModels[selectedBrand] != null)
-                ? vehicleModels[selectedBrand]!
-                    .map(
-                      (model) =>
-                          DropdownMenuItem(value: model, child: Text(model)),
-                    )
-                    .toList()
-                : [],
+        items: (selectedBrand != null && vehicleModels[selectedBrand] != null)
+            ? vehicleModels[selectedBrand]!
+                .map(
+                  (model) => DropdownMenuItem(value: model, child: Text(model)),
+                )
+                .toList()
+            : [],
         onChanged: (value) {
           setState(() {
             selectedModel = value;
@@ -356,10 +528,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           border: OutlineInputBorder(),
         ),
         value: selectedType,
-        items:
-            vehicleTypes
-                .map((type) => DropdownMenuItem(value: type, child: Text(type)))
-                .toList(),
+        items: vehicleTypes
+            .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+            .toList(),
         onChanged: (value) {
           setState(() {
             selectedType = value;
