@@ -78,12 +78,10 @@ class _SignInScreenState extends State<SignInScreen> {
       isGoogleLoading = true;
     });
 
-    final user =
-        await _authService.signInWithGoogle(); // use "user" as in your code
+    final user = await _authService.signInWithGoogle();
 
     if (user != null) {
       if (user["newUser"] == true) {
-        // Redirect to profile completion page for new Google users
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -96,7 +94,6 @@ class _SignInScreenState extends State<SignInScreen> {
           ),
         );
       } else {
-        // Existing user — check their user type
         String userType = await _fetchUserType();
 
         Navigator.pushReplacement(
@@ -164,7 +161,7 @@ class _SignInScreenState extends State<SignInScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('images/logo.png', height: 100),
+                Image.asset('images/bg_removed_logo.png', height: 100),
                 SizedBox(height: 20),
                 Text(
                   "Log in to Dr. Cars",

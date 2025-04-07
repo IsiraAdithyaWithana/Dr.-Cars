@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
                 // Centered Logo at the Top
                 SizedBox(
                   width: double.infinity,
-                  child: Image.asset('images/logo.png', height: 150),
+                  child: Image.asset('images/bg_removed_logo.png', height: 150),
                 ),
                 const SizedBox(height: 50),
 
