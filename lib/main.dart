@@ -17,10 +17,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: AuthCheck(), // Auto-redirects user
-    );
+    return MaterialApp(debugShowCheckedModeBanner: false, home: AuthCheck());
   }
 }
 
@@ -46,7 +43,7 @@ class _AuthCheckState extends State<AuthCheck> {
       return userData.exists ? userData["User Type"] ?? "User" : "User";
     } catch (e) {
       print("Error fetching user data: $e");
-      return "User"; // Default fallback
+      return "User";
     }
   }
 
@@ -77,8 +74,6 @@ class _AuthCheckState extends State<AuthCheck> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(child: CircularProgressIndicator()), // Show loading
-    );
+    return Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
