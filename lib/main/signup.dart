@@ -19,6 +19,10 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController contactController = TextEditingController();
   final AuthService _authService = AuthService();
 
+  final _formKey = GlobalKey<FormState>();
+  bool _showPassword = false;
+  bool _showConfirmPassword = false;
+
   bool _isLoading = false;
 
   @override
@@ -29,85 +33,165 @@ class _SignUpPageState extends State<SignUpPage> {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  SizedBox(height: 30),
-                  Image.asset('images/bg_removed_logo.png', height: 100),
-                  SizedBox(height: 20),
-                  Text(
-                    'Sign Up as a Vehicle Owner',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    controller: emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    SizedBox(height: 30),
+                    Image.asset('images/bg_removed_logo.png', height: 100),
+                    SizedBox(height: 20),
+                    Text(
+                      'Sign Up as a Vehicle Owner',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    controller: passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
+                    SizedBox(height: 20),
+                    TextFormField(
+                      controller: emailController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty)
+                          return 'Email is required';
+                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value))
+                          return 'Enter a valid email';
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    controller: confirmPasswordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: 'Confirm Password',
-                      border: OutlineInputBorder(),
+                    SizedBox(height: 20),
+                    TextFormField(
+                      controller: passwordController,
+                      obscureText: !_showPassword,
+                      validator: (value) {
+                        if (value == null || value.isEmpty)
+                          return 'Password is required';
+                        if (value.length < 6) return 'Minimum 6 characters';
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        border: OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _showPassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _showPassword = !_showPassword;
+                            });
+                          },
+                        ),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: 'Full Name',
-                      border: OutlineInputBorder(),
+                    SizedBox(height: 20),
+                    TextFormField(
+                      controller: confirmPasswordController,
+                      obscureText: !_showConfirmPassword,
+                      validator: (value) {
+                        if (value == null || value.isEmpty)
+                          return 'Please confirm password';
+                        if (value != passwordController.text)
+                          return 'Passwords do not match';
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        border: OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _showConfirmPassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _showConfirmPassword = !_showConfirmPassword;
+                            });
+                          },
+                        ),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    controller: usernameController,
-                    decoration: InputDecoration(
-                      labelText: 'Username',
-                      border: OutlineInputBorder(),
+                    SizedBox(height: 20),
+                    TextFormField(
+                      controller: nameController,
+                      validator:
+                          (value) =>
+                              value!.isEmpty ? 'Full name is required' : null,
+                      decoration: InputDecoration(
+                        labelText: 'Full Name',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    controller: addressController,
-                    decoration: InputDecoration(
-                      labelText: 'Address',
-                      border: OutlineInputBorder(),
+                    SizedBox(height: 20),
+                    TextFormField(
+                      controller: usernameController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Username is required';
+                        }
+
+                        final regex = RegExp(r'^[a-z0-9._]+$');
+                        if (!regex.hasMatch(value)) {
+                          return 'Only lowercase letters, numbers, . or _ allowed';
+                        }
+
+                        if (value.contains(' ')) {
+                          return 'No spaces allowed';
+                        }
+
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Username',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    controller: contactController,
-                    decoration: InputDecoration(
-                      labelText: 'Contact',
-                      border: OutlineInputBorder(),
+
+                    SizedBox(height: 20),
+                    TextFormField(
+                      controller: addressController,
+                      validator:
+                          (value) =>
+                              value!.isEmpty ? 'Address is required' : null,
+                      decoration: InputDecoration(
+                        labelText: 'Address',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 40),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => SignInScreen()),
-                      );
-                    },
-                    child: Text('Already have an account? Sign In'),
-                  ),
-                ],
+                    SizedBox(height: 20),
+                    TextFormField(
+                      controller: contactController,
+                      validator:
+                          (value) =>
+                              value!.isEmpty
+                                  ? 'Contact number is required'
+                                  : null,
+                      decoration: InputDecoration(
+                        labelText: 'Contact',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 40),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SignInScreen(),
+                          ),
+                        );
+                      },
+                      child: Text('Already have an account? Sign In'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -140,39 +224,41 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   Future<void> _signUpUser() async {
-    setState(() => _isLoading = true);
+    if (!_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
 
-    try {
-      var user = await _authService.signUp(
-        nameController.text,
-        emailController.text,
-        passwordController.text,
-        usernameController.text,
-        addressController.text,
-        contactController.text,
-      );
-
-      if (user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => DashboardScreen()),
+      try {
+        var user = await _authService.signUp(
+          nameController.text,
+          emailController.text,
+          passwordController.text,
+          usernameController.text,
+          addressController.text,
+          contactController.text,
         );
-      } else {
+
+        if (user != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => DashboardScreen()),
+          );
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("Sign Up Failed")));
+        }
+      } catch (e) {
+        String errorMessage = e.toString().replaceFirst(
+          RegExp(r'^Exception[:]? ?'),
+          '',
+        );
+
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Sign Up Failed")));
+        ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      } finally {
+        setState(() => _isLoading = false);
       }
-    } catch (e) {
-      String errorMessage = e.toString().replaceFirst(
-        RegExp(r'^Exception[:]? ?'),
-        '',
-      );
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage)));
-    } finally {
-      setState(() => _isLoading = false);
     }
   }
 }
