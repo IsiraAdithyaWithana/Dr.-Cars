@@ -224,7 +224,7 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   Future<void> _signUpUser() async {
-    if (!_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
       try {

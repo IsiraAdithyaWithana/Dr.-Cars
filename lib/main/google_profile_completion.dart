@@ -25,26 +25,58 @@ class _GoogleProfileCompletionPageState
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController contactController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
+  bool _showPassword = false;
+  bool _showConfirmPassword = false;
   bool _isLoading = false;
 
   Future<void> _submitProfile() async {
-    if (usernameController.text.isEmpty ||
+    final username = usernameController.text.trim();
+    final password = passwordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
+
+    // Username format check
+    final validUsername = RegExp(r'^[a-z0-9._]+$');
+    if (!validUsername.hasMatch(username)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Username must be lowercase with no spaces")),
+      );
+      return;
+    }
+
+    // Check for empty fields
+    if (username.isEmpty ||
         addressController.text.isEmpty ||
-        contactController.text.isEmpty) {
+        contactController.text.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Please fill in all fields")));
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Password must be at least 6 characters")),
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Passwords do not match")));
+      return;
+    }
+
+    setState(() => _isLoading = true);
 
     try {
-      final username = usernameController.text.trim();
-
+      // Check if username is already taken
       final existing =
           await FirebaseFirestore.instance
               .collection("Users")
@@ -59,6 +91,7 @@ class _GoogleProfileCompletionPageState
         return;
       }
 
+      // Save user to Firestore
       await FirebaseFirestore.instance.collection("Users").doc(username).set({
         "Name": widget.name,
         "Email": widget.email,
@@ -70,6 +103,25 @@ class _GoogleProfileCompletionPageState
         "createdAt": FieldValue.serverTimestamp(),
       });
 
+      // Link email/password to Google account
+      final credential = EmailAuthProvider.credential(
+        email: widget.email,
+        password: password,
+      );
+
+      try {
+        await FirebaseAuth.instance.currentUser?.linkWithCredential(credential);
+        print("Password linked to Google account.");
+      } catch (e) {
+        print("Password linking failed: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Warning: Failed to link password to account"),
+          ),
+        );
+      }
+
+      // Navigate to dashboard
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => DashboardScreen()),
@@ -79,9 +131,7 @@ class _GoogleProfileCompletionPageState
         context,
       ).showSnackBar(SnackBar(content: Text("Error saving profile: $e")));
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -116,6 +166,46 @@ class _GoogleProfileCompletionPageState
                     decoration: const InputDecoration(
                       labelText: 'Username',
                       border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: !_showPassword,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _showPassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() => _showPassword = !_showPassword);
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: confirmPasswordController,
+                    obscureText: !_showConfirmPassword,
+                    decoration: InputDecoration(
+                      labelText: 'Confirm Password',
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _showConfirmPassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(
+                            () => _showConfirmPassword = !_showConfirmPassword,
+                          );
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),

@@ -15,11 +15,12 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final TextEditingController _emailOrUsernameController =
+      TextEditingController();
 
   bool isLoading = false;
   bool isGoogleLoading = false;
@@ -44,14 +45,35 @@ class _SignInScreenState extends State<SignInScreen> {
       isLoading = true;
     });
 
+    final input = _emailOrUsernameController.text.trim();
+    final password = _passwordController.text;
+
     try {
-      await _authService.signIn(
-        _emailController.text,
-        _passwordController.text,
-      );
+      String email;
 
+      if (input.contains('@')) {
+        // It's an email
+        email = input;
+      } else {
+        // It's a username — find email from Firestore
+        final userDoc =
+            await FirebaseFirestore.instance
+                .collection("Users")
+                .doc(input) // username = doc ID
+                .get();
+
+        if (!userDoc.exists) {
+          throw Exception("No user found with that username");
+        }
+
+        email = userDoc["Email"];
+      }
+
+      // Sign in using email + password
+      await _authService.signIn(email, password);
+
+      // Redirect based on user type
       String userType = await _fetchUserType();
-
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -63,9 +85,13 @@ class _SignInScreenState extends State<SignInScreen> {
         ),
       );
     } catch (e) {
+      String errorMessage = e.toString().replaceFirst(
+        RegExp(r'^Exception: '),
+        '',
+      );
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Sign In Failed: $e")));
+      ).showSnackBar(SnackBar(content: Text("Sign In Failed: $errorMessage")));
     } finally {
       setState(() {
         isLoading = false;
@@ -119,7 +145,7 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   void _ResetPassword() async {
-    final email = _emailController.text.trim();
+    final email = _emailOrUsernameController.text.trim();
 
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -171,9 +197,9 @@ class _SignInScreenState extends State<SignInScreen> {
                 Text("Enter your email to sign up for this app"),
                 SizedBox(height: 20),
                 TextField(
-                  controller: _emailController,
+                  controller: _emailOrUsernameController,
                   decoration: InputDecoration(
-                    hintText: "Email",
+                    hintText: "Email or Username",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
