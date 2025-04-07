@@ -104,6 +104,24 @@ class AuthService {
     }
   }
 
+  Future<void> resetPassword(String email) async {
+    try {
+      final query =
+          await FirebaseFirestore.instance
+              .collection("Users")
+              .where("Email", isEqualTo: email.trim())
+              .get();
+
+      if (query.docs.isEmpty) {
+        throw Exception("No user found with this email");
+      }
+
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email.trim());
+    } catch (e) {
+      throw e;
+    }
+  }
+
   Future<void> signOut() async {
     await _auth.signOut();
   }

@@ -22,6 +22,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   bool isLoading = false;
   bool isGoogleLoading = false;
+  bool isResettingPassword = false;
 
   Future<String> _fetchUserType() async {
     User? user = _auth.currentUser;
@@ -101,6 +102,39 @@ class _SignInScreenState extends State<SignInScreen> {
     });
   }
 
+  void _ResetPassword() async {
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please enter your email to reset password")),
+      );
+      return;
+    }
+
+    setState(() {
+      isResettingPassword = true;
+    });
+
+    try {
+      await _authService.resetPassword(email);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Password reset link sent to your email")),
+      );
+    } catch (e) {
+      String errorMessage = e.toString();
+      errorMessage = errorMessage.replaceFirst(RegExp(r'^Exception[:]? ?'), '');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to send reset email: $errorMessage")),
+      );
+    } finally {
+      setState(() {
+        isResettingPassword = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,7 +148,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 Image.asset('images/logo.png', height: 100),
                 SizedBox(height: 20),
                 Text(
-                  "Create an account",
+                  "Log in to Dr. Cars",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 8),
@@ -164,9 +198,23 @@ class _SignInScreenState extends State<SignInScreen> {
                           )
                           : Text("Continue"),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child:
+                      isResettingPassword
+                          ? SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : TextButton(
+                            onPressed: _ResetPassword,
+                            child: Text("Forgot Password?"),
+                          ),
+                ),
                 Text("or"),
-                SizedBox(height: 12),
+                SizedBox(height: 40),
                 ElevatedButton.icon(
                   onPressed: isGoogleLoading ? null : _handleGoogleSignIn,
                   icon:

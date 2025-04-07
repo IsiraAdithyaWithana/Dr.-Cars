@@ -32,38 +32,42 @@ class AuthCheck extends StatefulWidget {
 class _AuthCheckState extends State<AuthCheck> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
-  
+
   @override
   void initState() {
     super.initState();
     _checkUser();
   }
 
-  Future <void> _fetchUserType(user) async {
+  Future<String> _fetchUserType(User user) async {
     try {
-        DocumentSnapshot userData =
-            await _firestore.collection("Users").doc(user?.uid).get();
-        return userData.exists ? userData["User Type"] ?? "User" : "User";
-      } catch (e) {
-        print("Error fetching user data: $e");
-      }
+      DocumentSnapshot userData =
+          await _firestore.collection("Users").doc(user.uid).get();
+      return userData.exists ? userData["User Type"] ?? "User" : "User";
+    } catch (e) {
+      print("Error fetching user data: $e");
+      return "User"; // Default fallback
+    }
   }
 
   void _checkUser() async {
     User? user = auth.currentUser;
-    // Wait a bit for smooth transition
     await Future.delayed(Duration(seconds: 2));
 
-    Future<void> userType = _fetchUserType(user);
-
     if (user != null) {
-      // User is logged in, go to Dashboard
+      String userType = await _fetchUserType(user);
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => userType == "Vehicle Owner"?DashboardScreen():HomeScreen()),
+        MaterialPageRoute(
+          builder:
+              (context) =>
+                  userType == "Vehicle Owner"
+                      ? DashboardScreen()
+                      : HomeScreen(),
+        ),
       );
     } else {
-      // No user, go to Welcome
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => Welcome()),
@@ -78,4 +82,3 @@ class _AuthCheckState extends State<AuthCheck> {
     );
   }
 }
-
