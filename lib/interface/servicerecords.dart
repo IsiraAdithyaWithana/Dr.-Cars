@@ -20,12 +20,15 @@ class ServiceRecordsPage extends StatefulWidget {
 
 class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _currentMileageController = TextEditingController();
-  final TextEditingController _serviceMileageController = TextEditingController();
-  final TextEditingController _serviceProviderController = TextEditingController();
+  final TextEditingController _currentMileageController =
+      TextEditingController();
+  final TextEditingController _serviceMileageController =
+      TextEditingController();
+  final TextEditingController _serviceProviderController =
+      TextEditingController();
   final TextEditingController _serviceCostController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
-  
+
   String? _selectedServiceType;
   String? _selectedOilType;
   DateTime? _selectedDate;
@@ -123,12 +126,13 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                   border: OutlineInputBorder(),
                   hintText: 'Select service type',
                 ),
-                items: _serviceTypes.map((String service) {
-                  return DropdownMenuItem<String>(
-                    value: service,
-                    child: Text(service),
-                  );
-                }).toList(),
+                items:
+                    _serviceTypes.map((String service) {
+                      return DropdownMenuItem<String>(
+                        value: service,
+                        child: Text(service),
+                      );
+                    }).toList(),
                 onChanged: (String? newValue) {
                   setState(() {
                     _selectedServiceType = newValue;
@@ -150,7 +154,10 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                   children: [
                     Text(
                       'Oil Type',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
@@ -159,19 +166,21 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                         border: OutlineInputBorder(),
                         hintText: 'Select oil type',
                       ),
-                      items: _oilTypes.map((String oil) {
-                        return DropdownMenuItem<String>(
-                          value: oil,
-                          child: Text(oil),
-                        );
-                      }).toList(),
+                      items:
+                          _oilTypes.map((String oil) {
+                            return DropdownMenuItem<String>(
+                              value: oil,
+                              child: Text(oil),
+                            );
+                          }).toList(),
                       onChanged: (String? newValue) {
                         setState(() {
                           _selectedOilType = newValue;
                         });
                       },
                       validator: (value) {
-                        if (_selectedServiceType == 'Oil Filter Change' && (value == null || value.isEmpty)) {
+                        if (_selectedServiceType == 'Oil Filter Change' &&
+                            (value == null || value.isEmpty)) {
                           return 'Please select an oil type';
                         }
                         return null;
