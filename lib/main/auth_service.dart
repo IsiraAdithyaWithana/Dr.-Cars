@@ -6,14 +6,14 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<User?> signInWithGoogle() async {
+  Future<Map<String, dynamic>?> signInWithGoogle() async {
     try {
-      String userType = "Vehicle Owner";
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return null; // User canceled sign-in
+      if (googleUser == null) return null; // Sign-in cancelled
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
+
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -25,20 +25,24 @@ class AuthService {
       final User? user = userCredential.user;
 
       if (user != null) {
-        // 🔹 Check if the user already exists in Firestore
+        // Check if user already exists in Firestore
         final doc = await _firestore.collection('Users').doc(user.uid).get();
 
         if (!doc.exists) {
-          // 🔹 Store user data in Firestore
-          await _firestore.collection('Users').doc(user.uid).set({
-            'Name': user.displayName ?? 'Unknown',
-            'Email': user.email,
-            "User Type": userType,
-            'createdAt': FieldValue.serverTimestamp(),
-          });
+          // First-time Google user
+          return {
+            "newUser": true,
+            "uid": user.uid,
+            "name": user.displayName ?? "",
+            "email": user.email ?? "",
+          };
         }
+
+        // Returning existing user
+        return {"newUser": false, "uid": user.uid};
       }
-      return user;
+
+      return null;
     } catch (e) {
       print("Google Sign-In Error: $e");
       return null;
