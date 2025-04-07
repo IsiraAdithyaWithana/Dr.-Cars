@@ -5,6 +5,7 @@ import 'package:dr_cars/main/signup_selection.dart';
 import 'package:dr_cars/service/service_menu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:dr_cars/main/google_profile_completion.dart';
 
 class SignInScreen extends StatefulWidget {
   SignInScreen({super.key});
@@ -77,20 +78,38 @@ class _SignInScreenState extends State<SignInScreen> {
       isGoogleLoading = true;
     });
 
-    final user = await _authService.signInWithGoogle();
+    final user =
+        await _authService.signInWithGoogle(); // use "user" as in your code
 
     if (user != null) {
-      String userType = await _fetchUserType();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder:
-              (context) =>
-                  userType == "Vehicle Owner"
-                      ? DashboardScreen()
-                      : HomeScreen(),
-        ),
-      );
+      if (user["newUser"] == true) {
+        // Redirect to profile completion page for new Google users
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => GoogleProfileCompletionPage(
+                  uid: user["uid"],
+                  name: user["name"],
+                  email: user["email"],
+                ),
+          ),
+        );
+      } else {
+        // Existing user — check their user type
+        String userType = await _fetchUserType();
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) =>
+                    userType == "Vehicle Owner"
+                        ? DashboardScreen()
+                        : HomeScreen(),
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(
         context,
