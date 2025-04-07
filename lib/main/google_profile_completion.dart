@@ -43,17 +43,33 @@ class _GoogleProfileCompletionPageState
     });
 
     try {
-      await FirebaseFirestore.instance.collection("Users").doc(widget.uid).set({
+      final username = usernameController.text.trim();
+
+      final existing =
+          await FirebaseFirestore.instance
+              .collection("Users")
+              .doc(username)
+              .get();
+
+      if (existing.exists) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Username already taken")));
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      await FirebaseFirestore.instance.collection("Users").doc(username).set({
         "Name": widget.name,
         "Email": widget.email,
-        "Username": usernameController.text.trim(),
+        "Username": username,
         "Address": addressController.text.trim(),
         "Contact": contactController.text.trim(),
         "User Type": "Vehicle Owner",
+        "uid": FirebaseAuth.instance.currentUser?.uid,
         "createdAt": FieldValue.serverTimestamp(),
       });
 
-      // Navigate to dashboard
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => DashboardScreen()),
