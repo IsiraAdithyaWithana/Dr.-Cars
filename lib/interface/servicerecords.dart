@@ -91,7 +91,7 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Current Mileage.
+              // Current Mileage
               Text(
                 'Current Mileage',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
