@@ -38,7 +38,6 @@ class _GoogleProfileCompletionPageState
     final password = passwordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
 
-    // Username format check
     final validUsername = RegExp(r'^[a-z0-9._]+$');
     if (!validUsername.hasMatch(username)) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -47,7 +46,6 @@ class _GoogleProfileCompletionPageState
       return;
     }
 
-    // Check for empty fields
     if (username.isEmpty ||
         addressController.text.isEmpty ||
         contactController.text.isEmpty ||
@@ -76,7 +74,6 @@ class _GoogleProfileCompletionPageState
     setState(() => _isLoading = true);
 
     try {
-      // Check if username is already taken
       final existing =
           await FirebaseFirestore.instance
               .collection("Users")
@@ -91,7 +88,6 @@ class _GoogleProfileCompletionPageState
         return;
       }
 
-      // Save user to Firestore
       await FirebaseFirestore.instance.collection("Users").doc(username).set({
         "Name": widget.name,
         "Email": widget.email,
@@ -103,7 +99,6 @@ class _GoogleProfileCompletionPageState
         "createdAt": FieldValue.serverTimestamp(),
       });
 
-      // Link email/password to Google account
       final credential = EmailAuthProvider.credential(
         email: widget.email,
         password: password,
@@ -121,7 +116,6 @@ class _GoogleProfileCompletionPageState
         );
       }
 
-      // Navigate to dashboard
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => DashboardScreen()),

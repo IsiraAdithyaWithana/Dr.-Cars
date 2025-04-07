@@ -9,7 +9,7 @@ class AuthService {
   Future<Map<String, dynamic>?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return null; // Sign-in cancelled
+      if (googleUser == null) return null;
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
@@ -25,11 +25,9 @@ class AuthService {
       final User? user = userCredential.user;
 
       if (user != null) {
-        // Check if user already exists in Firestore
         final doc = await _firestore.collection('Users').doc(user.uid).get();
 
         if (!doc.exists) {
-          // First-time Google user
           return {
             "newUser": true,
             "uid": user.uid,
@@ -38,7 +36,6 @@ class AuthService {
           };
         }
 
-        // Returning existing user
         return {"newUser": false, "uid": user.uid};
       }
 
@@ -60,7 +57,6 @@ class AuthService {
     try {
       String userType = "Vehicle Owner";
 
-      // Check if username already exists
       final existing = await _firestore.collection("Users").doc(username).get();
       if (existing.exists) {
         throw Exception("Username already taken. Please choose another.");
@@ -105,17 +101,14 @@ class AuthService {
     }
   }
 
-  // Get Current User
   User? getCurrentUser() {
     return _auth.currentUser;
   }
 
-  // Check if user is signed in
   bool isSignedIn() {
     return _auth.currentUser != null;
   }
 
-  // Sign in
   Future<void> signIn(String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);

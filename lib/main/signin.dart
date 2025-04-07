@@ -52,14 +52,12 @@ class _SignInScreenState extends State<SignInScreen> {
       String email;
 
       if (input.contains('@')) {
-        // It's an email
         email = input;
       } else {
-        // It's a username — find email from Firestore
         final userDoc =
             await FirebaseFirestore.instance
                 .collection("Users")
-                .doc(input) // username = doc ID
+                .doc(input)
                 .get();
 
         if (!userDoc.exists) {
@@ -69,10 +67,8 @@ class _SignInScreenState extends State<SignInScreen> {
         email = userDoc["Email"];
       }
 
-      // Sign in using email + password
       await _authService.signIn(email, password);
 
-      // Redirect based on user type
       String userType = await _fetchUserType();
       Navigator.pushReplacement(
         context,
