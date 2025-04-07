@@ -35,12 +35,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _fetchUserData() async {
     User? user = _auth.currentUser;
+
     if (user != null) {
       try {
-        DocumentSnapshot userData =
-            await _firestore.collection("Users").doc(user.uid).get();
+        QuerySnapshot result =
+            await _firestore
+                .collection("Users")
+                .where("uid", isEqualTo: user.uid)
+                .limit(1)
+                .get();
 
-        if (userData.exists) {
+        if (result.docs.isNotEmpty) {
+          final userData = result.docs.first;
+
           setState(() {
             userName = userData["Name"] ?? "User";
           });
