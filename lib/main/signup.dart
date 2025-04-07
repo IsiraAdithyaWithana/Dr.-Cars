@@ -143,8 +143,6 @@ class _SignUpPageState extends State<SignUpPage> {
     setState(() => _isLoading = true);
 
     try {
-      print("Attempting to sign up...");
-
       var user = await _authService.signUp(
         nameController.text,
         emailController.text,
@@ -155,24 +153,24 @@ class _SignUpPageState extends State<SignUpPage> {
       );
 
       if (user != null) {
-        print("User created successfully: ${user.uid}");
-
-        // Navigate to DashboardScreen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => DashboardScreen()),
         );
       } else {
-        print("User creation failed, received null.");
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("Sign Up Failed")));
       }
     } catch (e) {
-      print("Error during sign-up: $e");
+      String errorMessage = e.toString().replaceFirst(
+        RegExp(r'^Exception[:]? ?'),
+        '',
+      );
+
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
     } finally {
       setState(() => _isLoading = false);
     }

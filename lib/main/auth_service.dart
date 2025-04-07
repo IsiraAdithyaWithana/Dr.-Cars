@@ -59,7 +59,6 @@ class AuthService {
   ) async {
     try {
       String userType = "Vehicle Owner";
-      print("Creating user with email: $email");
 
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
@@ -67,8 +66,6 @@ class AuthService {
       User? user = userCredential.user;
 
       if (user != null) {
-        print("User created: ${user.uid}");
-
         await _firestore.collection("Users").doc(user.uid).set({
           "Name": fullName,
           "Email": email,
@@ -80,12 +77,25 @@ class AuthService {
 
         return user;
       } else {
-        print("User is null after creation.");
         return null;
       }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        // Fetch what method this email uses
+        List<String> methods = await _auth.fetchSignInMethodsForEmail(email);
+
+        if (methods.contains('google.com')) {
+          throw Exception(
+            "This email is already registered with Google. Please sign in using Google first to link your email.",
+          );
+        } else {
+          throw Exception("This email is already in use.");
+        }
+      } else {
+        throw Exception(e.message ?? "Unknown error");
+      }
     } catch (e) {
-      print("Sign-up error: $e");
-      return null;
+      throw Exception("Sign-up error: $e");
     }
   }
 
