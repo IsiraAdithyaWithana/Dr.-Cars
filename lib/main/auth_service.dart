@@ -60,19 +60,27 @@ class AuthService {
     try {
       String userType = "Vehicle Owner";
 
+      // Check if username already exists
+      final existing = await _firestore.collection("Users").doc(username).get();
+      if (existing.exists) {
+        throw Exception("Username already taken. Please choose another.");
+      }
+
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
 
       User? user = userCredential.user;
 
       if (user != null) {
-        await _firestore.collection("Users").doc(user.uid).set({
+        await _firestore.collection("Users").doc(username).set({
           "Name": fullName,
           "Email": email,
           "Username": username,
           "Address": address,
           "Contact": contact,
           "User Type": userType,
+          "uid": user.uid,
+          "createdAt": FieldValue.serverTimestamp(),
         });
 
         return user;
@@ -81,12 +89,10 @@ class AuthService {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
-        // Fetch what method this email uses
         List<String> methods = await _auth.fetchSignInMethodsForEmail(email);
-
         if (methods.contains('google.com')) {
           throw Exception(
-            "This email is already registered with Google. Please sign in using Google first to link your email.",
+            "This email is already registered with Google. Please sign in using Google first.",
           );
         } else {
           throw Exception("This email is already in use.");
