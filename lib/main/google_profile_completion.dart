@@ -73,9 +73,6 @@ class _GoogleProfileCompletionPageState
         setState(() => _isLoading = false);
         return;
       }
-      if{
-        
-      }
 
       await FirebaseFirestore.instance.collection("Users").doc(widget.uid).set({
         "Name": widget.name,
