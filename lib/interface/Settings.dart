@@ -88,7 +88,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               'darkMode': _darkMode,
               'language': _selectedLanguage,
             });
-        _showSnackBar('Settings updated successfully');
+        _showSnackBar('Settings Updated Successfully');
       }
     } catch (e) {
       _showSnackBar('Error updating settings');
