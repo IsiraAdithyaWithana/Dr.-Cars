@@ -116,28 +116,29 @@ class _RatingScreenState extends State<RatingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        title: Center(
-          child: Text("Reviews", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        ),
+  return Scaffold(
+    appBar: AppBar(
+      automaticallyImplyLeading: false, // This removes the back arrow
+      backgroundColor: Colors.black,
+      foregroundColor: Colors.white,
+      title: Center(
+        child: Text("Reviews", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Share your feedback", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            SizedBox(height: 18),
-            Text("How was the service at the service center today?", style: TextStyle(fontSize: 19, color: Colors.black87)),
-            SizedBox(height: 18),
-            Row(
-              children: List.generate(5, (index) {
-                return IconButton(
-                  icon: Icon(Icons.star, size: 34, color: _selectedRating > index ? Colors.orange : Colors.grey),
-                  onPressed: () => setState(() => _selectedRating = index + 1),
+    ),
+    body: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Share your feedback", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          SizedBox(height: 18),
+          Text("How was the service at the service center today?", style: TextStyle(fontSize: 19, color: Colors.black87)),
+          SizedBox(height: 18),
+          Row(
+            children: List.generate(5, (index) {
+              return IconButton(
+                icon: Icon(Icons.star, size: 34, color: _selectedRating > index ? Colors.orange : Colors.grey),
+                onPressed: () => setState(() => _selectedRating = index + 1),
                 );
               }),
             ),
