@@ -56,6 +56,11 @@ class _GoogleProfileCompletionPageState
       ).showSnackBar(SnackBar(content: Text("Please fill in all fields")));
       return;
     }
+    if{
+
+    } else{
+      
+    }
 
     setState(() => _isLoading = true);
     try {
