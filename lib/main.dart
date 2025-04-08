@@ -38,22 +38,11 @@ class _AuthCheckState extends State<AuthCheck> {
 
   Future<String> _fetchUserType(User user) async {
     try {
-      final result =
-          await _firestore
-              .collection("Users")
-              .where("uid", isEqualTo: user.uid)
-              .limit(1)
-              .get();
-
-      if (result.docs.isNotEmpty) {
-        final userData = result.docs.first;
-        return userData["User Type"] ?? "User";
-      } else {
-        print("User document not found for UID: ${user.uid}");
-        return "User";
-      }
+      DocumentSnapshot userData =
+          await _firestore.collection("Users").doc(user.uid).get();
+      return userData.exists ? userData["User Type"] ?? "User" : "User";
     } catch (e) {
-      print("Error fetching user type: $e");
+      print("Error fetching user data: $e");
       return "User";
     }
   }

@@ -74,28 +74,14 @@ class _GoogleProfileCompletionPageState
     setState(() => _isLoading = true);
 
     try {
-      final existing =
-          await FirebaseFirestore.instance
-              .collection("Users")
-              .doc(username)
-              .get();
-
-      if (existing.exists) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Username already taken")));
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      await FirebaseFirestore.instance.collection("Users").doc(username).set({
+      await FirebaseFirestore.instance.collection("Users").doc(widget.uid).set({
         "Name": widget.name,
         "Email": widget.email,
         "Username": username,
         "Address": addressController.text.trim(),
         "Contact": contactController.text.trim(),
         "User Type": "Vehicle Owner",
-        "uid": FirebaseAuth.instance.currentUser?.uid,
+        "uid": widget.uid,
         "createdAt": FieldValue.serverTimestamp(),
       });
 

@@ -68,15 +68,13 @@ class AuthService {
       User? user = userCredential.user;
 
       if (user != null) {
-        await _firestore.collection("Users").doc(username).set({
+        await _firestore.collection("Users").doc(user.uid).set({
           "Name": fullName,
           "Email": email,
           "Username": username,
           "Address": address,
           "Contact": contact,
           "User Type": userType,
-          "uid": user.uid,
-          "createdAt": FieldValue.serverTimestamp(),
         });
 
         return user;
