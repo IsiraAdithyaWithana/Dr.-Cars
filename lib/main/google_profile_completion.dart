@@ -28,6 +28,7 @@ class _GoogleProfileCompletionPageState
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   bool _showPassword = false;
   bool _showConfirmPassword = false;
@@ -37,14 +38,6 @@ class _GoogleProfileCompletionPageState
     final username = usernameController.text.trim();
     final password = passwordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
-
-    final validUsername = RegExp(r'^[a-z0-9._]+$');
-    if (!validUsername.hasMatch(username)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Username must be lowercase with no spaces")),
-      );
-      return;
-    }
 
     if (username.isEmpty ||
         addressController.text.isEmpty ||
@@ -122,88 +115,118 @@ class _GoogleProfileCompletionPageState
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  const SizedBox(height: 30),
-                  Image.asset('images/bg_removed_logo.png', height: 100),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Complete Your Profile',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 20),
-                  Text("Name: ${widget.name}", style: TextStyle(fontSize: 16)),
-                  const SizedBox(height: 10),
-                  Text(
-                    "Email: ${widget.email}",
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: usernameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Username',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: passwordController,
-                    obscureText: !_showPassword,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      border: const OutlineInputBorder(),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _showPassword
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() => _showPassword = !_showPassword);
-                        },
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    const SizedBox(height: 30),
+                    Image.asset('images/bg_removed_logo.png', height: 100),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Complete Your Profile',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: confirmPasswordController,
-                    obscureText: !_showConfirmPassword,
-                    decoration: InputDecoration(
-                      labelText: 'Confirm Password',
-                      border: const OutlineInputBorder(),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _showConfirmPassword
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(
-                            () => _showConfirmPassword = !_showConfirmPassword,
-                          );
-                        },
+                    const SizedBox(height: 20),
+                    Text(
+                      "Name: ${widget.name}",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Email: ${widget.email}",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: usernameController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty)
+                          return 'Email is required';
+                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value))
+                          return 'Enter a valid email';
+                        return null;
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Username',
+                        border: OutlineInputBorder(),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: addressController,
-                    decoration: const InputDecoration(
-                      labelText: 'Address',
-                      border: OutlineInputBorder(),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: passwordController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty)
+                          return 'Password is required';
+                        if (value.length < 6) return 'Minimum 6 characters';
+                        return null;
+                      },
+                      obscureText: !_showPassword,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        border: const OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _showPassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() => _showPassword = !_showPassword);
+                          },
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: contactController,
-                    decoration: const InputDecoration(
-                      labelText: 'Contact',
-                      border: OutlineInputBorder(),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: confirmPasswordController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty)
+                          return 'Please confirm password';
+                        if (value != passwordController.text)
+                          return 'Passwords do not match';
+                        return null;
+                      },
+                      obscureText: !_showConfirmPassword,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        border: const OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _showConfirmPassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(
+                              () =>
+                                  _showConfirmPassword = !_showConfirmPassword,
+                            );
+                          },
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: addressController,
+                      decoration: const InputDecoration(
+                        labelText: 'Address',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: contactController,
+                      decoration: const InputDecoration(
+                        labelText: 'Contact',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
