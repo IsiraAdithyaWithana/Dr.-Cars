@@ -674,7 +674,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("Successfully Deleted Account!"),
-            backgroundColor: Colors.green,
+            backgroundColor: const Color.fromARGB(255, 77, 176, 80),
           ),
         );
 
