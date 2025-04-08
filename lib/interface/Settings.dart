@@ -568,7 +568,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Image.asset('images/logo.png', height: 100),
                 SizedBox(height: 16),
                 Text('Dr. Cars v1.0.0'),
-                Text('© 2024 Dr. Cars. All rights reserved.'),
+                Text('© 2025 Dr. Cars. All rights reserved.'),
               ],
             ),
             actions: [

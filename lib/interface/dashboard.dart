@@ -32,6 +32,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _fetchVehicleData();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _fetchVehicleData(); // Refresh vehicle data when returning to dashboard
+  }
+
   Future<void> _fetchUserData() async {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -64,7 +70,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (user != null) {
       try {
         DocumentSnapshot vehicleDoc =
-            await _firestore.collection("Users").doc(user.uid).get();
+            await _firestore.collection("Vehicle").doc(user.uid).get();
 
         if (vehicleDoc.exists) {
           setState(() {
