@@ -673,7 +673,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Navigator.pop(context); // Close the dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Successfully deleted account!"),
+            content: Text("Successfully Deleted Account!"),
             backgroundColor: Colors.green,
           ),
         );
