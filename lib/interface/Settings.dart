@@ -689,7 +689,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Error deleting account: $e"),
-          backgroundColor: const Color.fromARGB(255, 247, 64, 32),
+          backgroundColor: const Color.fromARGB(255, 242, 55, 22),
         ),
       );
     }
