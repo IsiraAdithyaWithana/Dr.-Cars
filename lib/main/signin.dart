@@ -21,6 +21,7 @@ class _SignInScreenState extends State<SignInScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _emailOrUsernameController =
       TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   bool isLoading = false;
   bool isGoogleLoading = false;
@@ -179,124 +180,145 @@ class _SignInScreenState extends State<SignInScreen> {
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset('images/bg_removed_logo.png', height: 100),
-                SizedBox(height: 20),
-                Text(
-                  "Log in to Dr. Cars",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 8),
-                Text("Enter your email to sign up for this app"),
-                SizedBox(height: 20),
-                TextField(
-                  controller: _emailOrUsernameController,
-                  decoration: InputDecoration(
-                    hintText: "Email or Username",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[200],
+          child: Form(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset('images/bg_removed_logo.png', height: 100),
+                  SizedBox(height: 20),
+                  Text(
+                    "Log in to Dr. Cars",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
-                ),
-                SizedBox(height: 20),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    hintText: "Password",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                  ),
-                ),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: isLoading ? null : _handleSignIn,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    minimumSize: Size(double.infinity, 50),
-                  ),
-                  child:
-                      isLoading
-                          ? SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                          : Text("Continue"),
-                ),
-                SizedBox(height: 10),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child:
-                      isResettingPassword
-                          ? SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                          : TextButton(
-                            onPressed: _ResetPassword,
-                            child: Text("Forgot Password?"),
-                          ),
-                ),
-                Text("or"),
-                SizedBox(height: 40),
-                ElevatedButton.icon(
-                  onPressed: isGoogleLoading ? null : _handleGoogleSignIn,
-                  icon:
-                      isGoogleLoading
-                          ? SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.black,
-                              strokeWidth: 2,
-                            ),
-                          )
-                          : Image.asset('images/google_ico.png', height: 24),
-                  label:
-                      isGoogleLoading
-                          ? Text("Signing in...")
-                          : Text("Continue with Google"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    minimumSize: Size(double.infinity, 50),
-                    side: BorderSide(color: Colors.black),
-                  ),
-                ),
-                SizedBox(height: 20),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SignupSelection(),
+                  SizedBox(height: 8),
+                  Text("Enter your email to sign up for this app"),
+                  SizedBox(height: 20),
+                  TextFormField(
+                    controller: _emailOrUsernameController,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter email or username';
+                      }
+
+                      final input = value.trim();
+
+                      final isEmail = input.contains('@');
+                      final isValidUsername = RegExp(
+                        r'^[a-z0-9._]+$',
+                      ).hasMatch(input);
+
+                      if (!isEmail && !isValidUsername) {
+                        return 'Enter a valid email or username';
+                      }
+
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      hintText: "Email or Username",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    );
-                  },
-                  child: Text('Create an account'),
-                ),
-                SizedBox(height: 20),
-                Text(
-                  'By clicking continue, you agree to our Terms of Service and Privacy Policy',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      hintText: "Password",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: isLoading ? null : _handleSignIn,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      minimumSize: Size(double.infinity, 50),
+                    ),
+                    child:
+                        isLoading
+                            ? SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                            : Text("Continue"),
+                  ),
+                  SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child:
+                        isResettingPassword
+                            ? SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                            : TextButton(
+                              onPressed: _ResetPassword,
+                              child: Text("Forgot Password?"),
+                            ),
+                  ),
+                  Text("or"),
+                  SizedBox(height: 40),
+                  ElevatedButton.icon(
+                    onPressed: isGoogleLoading ? null : _handleGoogleSignIn,
+                    icon:
+                        isGoogleLoading
+                            ? SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.black,
+                                strokeWidth: 2,
+                              ),
+                            )
+                            : Image.asset('images/google_ico.png', height: 24),
+                    label:
+                        isGoogleLoading
+                            ? Text("Signing in...")
+                            : Text("Continue with Google"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      minimumSize: Size(double.infinity, 50),
+                      side: BorderSide(color: Colors.black),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SignupSelection(),
+                        ),
+                      );
+                    },
+                    child: Text('Create an account'),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'By clicking continue, you agree to our Terms of Service and Privacy Policy',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -37,20 +37,11 @@ class _GoogleProfileCompletionPageState
   Future<void> _submitProfile() async {
     final username = usernameController.text.trim();
     final password = passwordController.text.trim();
-    final confirmPassword = confirmPasswordController.text.trim();
 
-    if (username.isEmpty ||
-        addressController.text.isEmpty ||
-        contactController.text.isEmpty ||
-        password.isEmpty ||
-        confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Please fill in all fields")));
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
+
     try {
       final querySnapshot =
           await FirebaseFirestore.instance
@@ -82,6 +73,7 @@ class _GoogleProfileCompletionPageState
         email: widget.email,
         password: password,
       );
+
       try {
         await FirebaseAuth.instance.currentUser?.linkWithCredential(credential);
         print("Password linked to Google account.");
@@ -145,9 +137,10 @@ class _GoogleProfileCompletionPageState
                       controller: usernameController,
                       validator: (value) {
                         if (value == null || value.isEmpty)
-                          return 'Email is required';
-                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value))
-                          return 'Enter a valid email';
+                          return 'Username is required';
+                        if (!RegExp(r'^[a-z0-9._]+$').hasMatch(value)) {
+                          return 'Only lowercase letters, numbers, . or _ allowed';
+                        }
                         return null;
                       },
                       decoration: const InputDecoration(
@@ -155,6 +148,7 @@ class _GoogleProfileCompletionPageState
                         border: OutlineInputBorder(),
                       ),
                     ),
+
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: passwordController,
