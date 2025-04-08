@@ -122,30 +122,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     try {
       User? user = FirebaseAuth.instance.currentUser;
+
       if (user != null) {
-        DocumentSnapshot userData =
+        final userDoc =
             await FirebaseFirestore.instance
                 .collection('Users')
                 .doc(user.uid)
                 .get();
 
-        if (userData.exists && userData['vehicleNumber'] != null) {
+        final vehicleDoc =
+            await FirebaseFirestore.instance
+                .collection('Vehicle')
+                .doc(user.uid)
+                .get();
+
+        if (userDoc.exists) {
+          nameController.text = userDoc['Name'] ?? '';
+          emailController.text = userDoc['Email'] ?? '';
+        }
+
+        if (vehicleDoc.exists) {
           setState(() {
             _isInitialSetup = false;
-            nameController.text = userData['name'] ?? '';
-            emailController.text = userData['email'] ?? '';
-            vehicleNumberController.text = userData['vehicleNumber'] ?? '';
-            selectedBrand = userData['selectedBrand'];
-            selectedModel = userData['selectedModel'];
-            selectedType = userData['vehicleType'];
-            mileageController.text = userData['mileage']?.toString() ?? '';
-            yearController.text = userData['year']?.toString() ?? '';
-            _vehiclePhotoUrl = userData['vehiclePhotoUrl'];
+            vehicleNumberController.text = vehicleDoc['vehicleNumber'] ?? '';
+            selectedBrand = vehicleDoc['selectedBrand'];
+            selectedModel = vehicleDoc['selectedModel'];
+            selectedType = vehicleDoc['vehicleType'];
+            mileageController.text = vehicleDoc['mileage']?.toString() ?? '';
+            yearController.text = vehicleDoc['year']?.toString() ?? '';
+            _vehiclePhotoUrl = vehicleDoc['vehiclePhotoUrl'];
           });
         }
       }
     } catch (e) {
-      print("Error loading user data: $e");
+      print("Error loading user/vehicle data: $e");
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error loading profile data')));
@@ -420,7 +430,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ],
                   ),
-                  Icon(Icons.arrow_forward_ios, color: Colors.black87, size: 16),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.black87,
+                    size: 16,
+                  ),
                 ],
               ),
             ),
@@ -518,10 +532,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       try {
         User? user = FirebaseAuth.instance.currentUser;
         if (user != null) {
-          // Create user data map
-          Map<String, dynamic> userData = {
-            'name': nameController.text,
-            'email': emailController.text,
+          Map<String, dynamic> vehicleData = {
+            'uid': user.uid,
             'vehicleNumber': vehicleNumberController.text,
             'selectedBrand': selectedBrand,
             'selectedModel': selectedModel,
@@ -532,26 +544,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
             'lastUpdated': FieldValue.serverTimestamp(),
           };
 
-          // Update Firestore with consistent collection name
           await FirebaseFirestore.instance
-              .collection('Users')
+              .collection('Vehicle')
               .doc(user.uid)
-              .update(userData);
+              .set(vehicleData, SetOptions(merge: true));
 
           _showPopupMessage(
             context,
             "Success",
-            "Profile updated successfully!",
+            "Vehicle information saved successfully!",
           );
+
+          setState(() => _isInitialSetup = false);
         } else {
           throw Exception("User not authenticated");
         }
       } catch (e) {
-        print("Error updating profile: $e");
+        print("Error saving vehicle info: $e");
         _showPopupMessage(
           context,
           "Error",
-          "Failed to update profile: ${e.toString()}",
+          "Failed to save vehicle data: ${e.toString()}",
         );
       } finally {
         setState(() {
