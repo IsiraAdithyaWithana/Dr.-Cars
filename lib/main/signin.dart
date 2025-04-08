@@ -49,25 +49,26 @@ class _SignInScreenState extends State<SignInScreen> {
     final password = _passwordController.text;
 
     try {
-      String email;
+      String emailToUse;
 
       if (input.contains('@')) {
-        email = input;
+        emailToUse = input;
       } else {
-        final userDoc =
+        final query =
             await FirebaseFirestore.instance
                 .collection("Users")
-                .doc(input)
+                .where("Username", isEqualTo: input)
+                .limit(1)
                 .get();
 
-        if (!userDoc.exists) {
+        if (query.docs.isEmpty) {
           throw Exception("No user found with that username");
         }
 
-        email = userDoc["Email"];
+        emailToUse = query.docs.first["Email"];
       }
 
-      await _authService.signIn(email, password);
+      await _authService.signIn(emailToUse, password);
 
       String userType = await _fetchUserType();
       Navigator.pushReplacement(
@@ -81,13 +82,13 @@ class _SignInScreenState extends State<SignInScreen> {
         ),
       );
     } catch (e) {
-      String errorMessage = e.toString().replaceFirst(
-        RegExp(r'^Exception: '),
-        '',
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Sign In Failed: ${e.toString().replaceFirst('Exception: ', '')}",
+          ),
+        ),
       );
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Sign In Failed: $errorMessage")));
     } finally {
       setState(() {
         isLoading = false;
