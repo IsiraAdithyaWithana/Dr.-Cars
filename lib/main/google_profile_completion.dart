@@ -72,8 +72,22 @@ class _GoogleProfileCompletionPageState
     }
 
     setState(() => _isLoading = true);
-
     try {
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection("Users")
+              .where("Username", isEqualTo: username)
+              .limit(1)
+              .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Username already taken")));
+        setState(() => _isLoading = false);
+        return;
+      }
+
       await FirebaseFirestore.instance.collection("Users").doc(widget.uid).set({
         "Name": widget.name,
         "Email": widget.email,
@@ -89,7 +103,6 @@ class _GoogleProfileCompletionPageState
         email: widget.email,
         password: password,
       );
-
       try {
         await FirebaseAuth.instance.currentUser?.linkWithCredential(credential);
         print("Password linked to Google account.");

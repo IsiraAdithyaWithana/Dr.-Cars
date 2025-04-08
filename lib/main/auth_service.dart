@@ -62,6 +62,17 @@ class AuthService {
         throw Exception("Username already taken. Please choose another.");
       }
 
+      final usernameCheck =
+          await _firestore
+              .collection("Users")
+              .where("Username", isEqualTo: username)
+              .limit(1)
+              .get();
+
+      if (usernameCheck.docs.isNotEmpty) {
+        throw Exception("Username already taken. Please choose another.");
+      }
+
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
 

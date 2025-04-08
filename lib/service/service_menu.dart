@@ -19,14 +19,11 @@ class HomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(height: 50),
-                // Centered Logo at the Top
                 SizedBox(
                   width: double.infinity,
                   child: Image.asset('images/bg_removed_logo.png', height: 150),
                 ),
                 const SizedBox(height: 50),
-
-                // Buttons with increased spacing and adjusted size
                 _buildMenuButton(
                   context,
                   text: "Add New",
@@ -38,9 +35,7 @@ class HomeScreen extends StatelessWidget {
                     );
                   },
                 ),
-
-                const SizedBox(height: 24), // Increased spacing
-
+                const SizedBox(height: 24),
                 _buildMenuButton(
                   context,
                   text: "Records",
@@ -50,7 +45,6 @@ class HomeScreen extends StatelessWidget {
                       context: context,
                       builder: (context) => PasswordDialog(),
                     );
-
                     if (isAuthenticated) {
                       Navigator.push(
                         context,
@@ -65,9 +59,7 @@ class HomeScreen extends StatelessWidget {
                     }
                   },
                 ),
-
-                const SizedBox(height: 24), // Increased spacing
-
+                const SizedBox(height: 24),
                 _buildMenuButton(
                   context,
                   text: "Appointments",
@@ -81,21 +73,17 @@ class HomeScreen extends StatelessWidget {
                     );
                   },
                 ),
-
                 SizedBox(height: 100),
-
                 ElevatedButton(
                   onPressed: () async {
-                    await FirebaseAuth.instance.signOut(); // Sign out user
+                    await FirebaseAuth.instance.signOut();
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => SignInScreen(),
-                      ), // Go back to Welcome
+                      MaterialPageRoute(builder: (context) => SignInScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red, // Red sign-out button
+                    backgroundColor: Colors.red,
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
                   child: Text(
@@ -111,7 +99,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Custom Button Widget with Fixed Size
   Widget _buildMenuButton(
     BuildContext context, {
     required String text,
@@ -119,8 +106,8 @@ class HomeScreen extends StatelessWidget {
     required VoidCallback onPressed,
   }) {
     return SizedBox(
-      width: 300, // Reduced button width
-      height: 90, // Increased button height
+      width: 300,
+      height: 90,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
@@ -130,8 +117,7 @@ class HomeScreen extends StatelessWidget {
         ),
         onPressed: onPressed,
         child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.spaceBetween, // Ensures text spacing
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               text,
@@ -145,7 +131,6 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// Password Dialog for Records Screen
 class PasswordDialog extends StatefulWidget {
   const PasswordDialog({super.key});
 
