@@ -91,7 +91,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _showSnackBar('Settings Updated Successfully');
       }
     } catch (e) {
-      _showSnackBar('Error updating settings');
+      _showSnackBar('Error Updating Settings');
     } finally {
       setState(() => _isLoading = false);
     }
