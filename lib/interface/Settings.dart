@@ -224,7 +224,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   _buildSettingItem(
                     Icons.logout,
-                    "Log out",
+                    "Log Out",
                     context,
                     onTap: () => _showLogoutDialog(context),
                   ),
