@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/rating.dart';
-import 'package:dr_cars/interface/service History.dart';
 import 'package:dr_cars/main/signin.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -35,19 +34,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _fetchUserData() async {
     User? user = _auth.currentUser;
-
     if (user != null) {
       try {
-        QuerySnapshot result =
-            await _firestore
-                .collection("Users")
-                .where("uid", isEqualTo: user.uid)
-                .limit(1)
-                .get();
+        DocumentSnapshot userData =
+            await _firestore.collection("Users").doc(user.uid).get();
 
-        if (result.docs.isNotEmpty) {
-          final userData = result.docs.first;
-
+        if (userData.exists) {
           setState(() {
             userName = userData["Name"] ?? "User";
           });
