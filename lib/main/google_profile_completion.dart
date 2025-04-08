@@ -57,20 +57,6 @@ class _GoogleProfileCompletionPageState
       return;
     }
 
-    if (password.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Password must be at least 6 characters")),
-      );
-      return;
-    }
-
-    if (password != confirmPassword) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Passwords do not match")));
-      return;
-    }
-
     setState(() => _isLoading = true);
     try {
       final querySnapshot =
