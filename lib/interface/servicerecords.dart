@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/rating.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -63,11 +65,44 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
     }
   }
 
-  void _saveServiceRecord() {
+  Future<void> _saveServiceRecord() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: Save the service record to Firestore
-      // After saving, navigate back to Service History page
-      Navigator.pop(context);
+      try {
+        User? user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          Map<String, dynamic> serviceData = {
+            'userId': user.uid,
+            'currentMileage': _currentMileageController.text,
+            'serviceType': _selectedServiceType,
+            'date': _selectedDate,
+            'serviceMileage': _serviceMileageController.text,
+            'serviceProvider': _serviceProviderController.text,
+            'notes': _notesController.text,
+            'createdAt': FieldValue.serverTimestamp(),
+          };
+
+          if (_selectedServiceType == 'Oil Filter Change') {
+            serviceData['oilType'] = _selectedOilType;
+          }
+
+          await FirebaseFirestore.instance
+              .collection('service_records')
+              .add(serviceData);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Service record saved successfully')),
+          );
+
+          Navigator.pop(context);
+        } else {
+          throw Exception('User not authenticated');
+        }
+      } catch (e) {
+        print('Error saving service record: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving service record: $e')),
+        );
+      }
     }
   }
 

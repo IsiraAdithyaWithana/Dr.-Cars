@@ -1,12 +1,159 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/profile.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 int _selectedIndex = 3;
 
-class ServiceHistorypage extends StatelessWidget {
+class ServiceHistorypage extends StatefulWidget {
   const ServiceHistorypage({super.key});
+
+  @override
+  State<ServiceHistorypage> createState() => _ServiceHistorypageState();
+}
+
+class _ServiceHistorypageState extends State<ServiceHistorypage> {
+  final TextEditingController _searchController = TextEditingController();
+  String? _selectedFilter;
+  DateTime? _selectedDate;
+  List<Map<String, dynamic>> _serviceRecords = [];
+  bool _isLoading = true;
+
+  final List<String> _serviceTypes = [
+    'Oil Filter Change',
+    'Air Filter Change',
+    'Battery Performance Check',
+    'Brake Inspection',
+    'Coolant Change/Check',
+    'Tyre Pressure Check',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadServiceRecords();
+  }
+
+  Future<void> _loadServiceRecords() async {
+    setState(() => _isLoading = true);
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        QuerySnapshot snapshot = await FirebaseFirestore.instance
+            .collection('service_records')
+            .where('userId', isEqualTo: user.uid)
+            .orderBy('createdAt', descending: true)
+            .get();
+
+        setState(() {
+          _serviceRecords = snapshot.docs
+              .map((doc) => doc.data() as Map<String, dynamic>)
+              .toList();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print("Error loading service records: $e");
+      setState(() => _isLoading = false);
+    }
+  }
+
+  List<Map<String, dynamic>> _getFilteredRecords() {
+    return _serviceRecords.where((record) {
+      bool matchesSearch = true;
+      bool matchesFilter = true;
+      bool matchesDate = true;
+
+      if (_searchController.text.isNotEmpty) {
+        matchesSearch = record['serviceProvider']
+            .toString()
+            .toLowerCase()
+            .contains(_searchController.text.toLowerCase());
+      }
+
+      if (_selectedFilter != null) {
+        matchesFilter = record['serviceType'] == _selectedFilter;
+      }
+
+      if (_selectedDate != null) {
+        DateTime recordDate = (record['date'] as Timestamp).toDate();
+        matchesDate = recordDate.year == _selectedDate!.year &&
+            recordDate.month == _selectedDate!.month &&
+            recordDate.day == _selectedDate!.day;
+      }
+
+      return matchesSearch && matchesFilter && matchesDate;
+    }).toList();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  void _showRecordDetails(Map<String, dynamic> record) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Service Details'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDetailRow('Service Type', record['serviceType']),
+              _buildDetailRow('Date', (record['date'] as Timestamp).toDate().toString().split(' ')[0]),
+              _buildDetailRow('Current Mileage', '${record['currentMileage']} KM'),
+              _buildDetailRow('Service Mileage', '${record['serviceMileage']} KM'),
+              _buildDetailRow('Service Provider', record['serviceProvider']),
+              if (record['serviceType'] == 'Oil Filter Change')
+                _buildDetailRow('Oil Type', record['oilType']),
+              if (record['notes'] != null && record['notes'].isNotEmpty)
+                _buildDetailRow('Notes', record['notes']),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(value),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +187,9 @@ class ServiceHistorypage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: TextField(
+                controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search Term',
+                  hintText: 'Search by service provider',
                   border: InputBorder.none,
                   prefixIcon: const Icon(Icons.search, color: Colors.grey),
                   contentPadding: const EdgeInsets.symmetric(
@@ -49,6 +197,7 @@ class ServiceHistorypage extends StatelessWidget {
                     vertical: 12,
                   ),
                 ),
+                onChanged: (value) => setState(() {}),
               ),
             ),
             const SizedBox(height: 20),
@@ -71,68 +220,62 @@ class ServiceHistorypage extends StatelessWidget {
                       border: Border.all(color: Colors.grey[300]!),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Oil Change',
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: _selectedFilter,
+                        hint: Text(
+                          'Select Service Type',
                           style: TextStyle(color: Colors.grey[800]),
                         ),
-                        Icon(Icons.arrow_drop_down, color: Colors.grey[600]),
-                      ],
+                        items: _serviceTypes.map((String type) {
+                          return DropdownMenuItem<String>(
+                            value: type,
+                            child: Text(type),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedFilter = newValue;
+                          });
+                        },
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '12-02-2025',
-                          style: TextStyle(color: Colors.grey[800]),
-                        ),
-                        Icon(
-                          Icons.calendar_today,
-                          size: 16,
-                          color: Colors.grey[600],
-                        ),
-                      ],
+                  child: InkWell(
+                    onTap: () => _selectDate(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey[300]!),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _selectedDate == null
+                                ? 'Select Date'
+                                : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                            style: TextStyle(color: Colors.grey[800]),
+                          ),
+                          Icon(
+                            Icons.calendar_today,
+                            size: 16,
+                            color: Colors.grey[600],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[300]!),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Rs. 3500.00',
-                    style: TextStyle(color: Colors.grey[800]),
-                  ),
-                  Icon(
-                    Icons.monetization_on,
-                    size: 16,
-                    color: Colors.grey[600],
-                  ),
-                ],
-              ),
             ),
             const SizedBox(height: 24),
 
@@ -143,17 +286,30 @@ class ServiceHistorypage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: ListView(
-                children: const [
-                  ServiceRecordCard(
-                    date: '12-02-2025',
-                    mileage: '50,000',
-                    provider: 'ABC Auto Service',
-                    cost: '3500',
-                    notes: 'Regular oil change',
-                  ),
-                ],
-              ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _getFilteredRecords().isEmpty
+                      ? const Center(
+                          child: Text('No service records found'),
+                        )
+                      : ListView.builder(
+                          itemCount: _getFilteredRecords().length,
+                          itemBuilder: (context, index) {
+                            final record = _getFilteredRecords()[index];
+                            return GestureDetector(
+                              onTap: () => _showRecordDetails(record),
+                              child: ServiceRecordCard(
+                                date: (record['date'] as Timestamp)
+                                    .toDate()
+                                    .toString()
+                                    .split(' ')[0],
+                                mileage: record['serviceMileage'].toString(),
+                                provider: record['serviceProvider'],
+                                serviceType: record['serviceType'],
+                              ),
+                            );
+                          },
+                        ),
             ),
           ],
         ),
@@ -168,7 +324,7 @@ class ServiceHistorypage extends StatelessWidget {
         showSelectedLabels: false,
         showUnselectedLabels: false,
         onTap: (index) {
-          (() {
+          setState(() {
             _selectedIndex = index;
           });
 
@@ -178,12 +334,12 @@ class ServiceHistorypage extends StatelessWidget {
               MaterialPageRoute(builder: (context) => const DashboardScreen()),
             );
           }
-           else if (index == 1) {
+          else if (index == 1) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => MapScreen()),
             );
-           }
+          }
           else if (index == 4) {
             Navigator.push(
               context,
@@ -196,7 +352,6 @@ class ServiceHistorypage extends StatelessWidget {
               MaterialPageRoute(builder: (context) => ServiceHistorypage()),
             );
           }
-          
         },
         items: [
           const BottomNavigationBarItem(
@@ -229,16 +384,14 @@ class ServiceRecordCard extends StatelessWidget {
   final String date;
   final String mileage;
   final String provider;
-  final String cost;
-  final String notes;
+  final String serviceType;
 
   const ServiceRecordCard({
     super.key,
     required this.date,
     required this.mileage,
     required this.provider,
-    required this.cost,
-    required this.notes,
+    required this.serviceType,
   });
 
   @override
@@ -272,7 +425,7 @@ class ServiceRecordCard extends StatelessWidget {
                 ),
               ),
               Text(
-                '₹$cost',
+                serviceType,
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
@@ -289,44 +442,6 @@ class ServiceRecordCard extends StatelessWidget {
           Text(
             provider,
             style: TextStyle(color: Colors.grey[600], fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(notes, style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.visibility_outlined, size: 20),
-                  label: const Text('View'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor: Colors.grey[100],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.download_outlined, size: 20),
-                  label: const Text('Download'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ),
         ],
       ),
