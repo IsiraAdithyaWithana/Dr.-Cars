@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dashboard.dart';
 import 'package:dr_cars/interface/obd2.dart';
-import 'package:dr_cars/interface/Service History.dart';
 
 int _selectedIndex = 4;
 
@@ -283,43 +282,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ServiceHistorypage()),
-              );
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.history, color: Colors.black87, size: 22),
-                    SizedBox(width: 12),
-                    Text(
-                      'Service History',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                Icon(Icons.arrow_forward_ios, color: Colors.black87, size: 16),
-              ],
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -398,47 +360,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildModelDropdown(),
           _buildTypeDropdown(),
           SizedBox(height: 20),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ServiceHistorypage()),
-                );
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.history, color: Colors.black87, size: 22),
-                      SizedBox(width: 12),
-                      Text(
-                        'Service History',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.black87,
-                    size: 16,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(height: 20),
           _buildTextField(
             controller: vehicleNumberController,
             label: "Vehicle Number",
@@ -496,11 +417,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => OBD2Page()),
-          );
-        } else if (index == 3) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ServiceHistorypage()),
           );
         } else if (index == 4) {
           Navigator.push(
