@@ -50,12 +50,12 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
   // Selected values
   String? _selectedModel;
-  String? _selectedService;
   String? _selectedBranch;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+  List<String> _selectedServices = [];
 
-  // Function to pick a date
+  // Date picker
   Future<void> _pickDate() async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -70,7 +70,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     }
   }
 
-  // Function to pick a time
+  // Time picker
   Future<void> _pickTime() async {
     TimeOfDay? pickedTime = await showTimePicker(
       context: context,
@@ -101,10 +101,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         builder: (context, constraints) {
           return Center(
             child: FractionallySizedBox(
-              widthFactor:
-                  constraints.maxWidth > 600
-                      ? 0.6
-                      : 0.95, //Increased width slightly for safety
+              widthFactor: constraints.maxWidth > 600 ? 0.6 : 0.95,
               child: Card(
                 elevation: 5,
                 shape: RoundedRectangleBorder(
@@ -113,7 +110,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: SingleChildScrollView(
-                    //Allows scrolling to avoid overflow
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -140,53 +136,42 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           (value) => setState(() => _selectedModel = value),
                         ),
                         const SizedBox(height: 16),
-                        _buildLabel('Type of Service '),
-
-                        SizedBox(
-                          width:
-                              double
-                                  .infinity, //Ensures it fits within the container
-                          child: DropdownButtonFormField<String>(
-                            value: _selectedService,
-                            items:
-                                serviceTypes.map((service) {
-                                  return DropdownMenuItem<String>(
-                                    value: service,
-                                    child: Container(
-                                      constraints: BoxConstraints(
-                                        maxWidth:
-                                            MediaQuery.of(context).size.width *
-                                            0.6, // Limits dropdown width
-                                      ),
-                                      child: Text(
-                                        service,
-                                        overflow:
-                                            TextOverflow
-                                                .ellipsis, // Truncates long text
-                                        maxLines: 1,
-                                        softWrap: false,
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedService = value;
-                              });
-                            },
-                            isExpanded:
-                                true, // Ensures the dropdown fits inside its container
-                            decoration: InputDecoration(
-                              hintText: "SELECT",
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey[200],
-                            ),
-                          ),
+                        _buildLabel('Type of Services '),
+                        Wrap(
+                          spacing: 8.0,
+                          runSpacing: 4.0,
+                          children:
+                              serviceTypes.map((service) {
+                                final isSelected = _selectedServices.contains(
+                                  service,
+                                );
+                                return FilterChip(
+                                  label: Text(
+                                    service,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  selected: isSelected,
+                                  onSelected: (bool selected) {
+                                    setState(() {
+                                      if (selected) {
+                                        _selectedServices.add(service);
+                                      } else {
+                                        _selectedServices.remove(service);
+                                      }
+                                    });
+                                  },
+                                  selectedColor: Colors.blueAccent,
+                                  backgroundColor: Colors.grey[200],
+                                  checkmarkColor: Colors.white,
+                                  labelStyle: TextStyle(
+                                    color:
+                                        isSelected
+                                            ? Colors.white
+                                            : Colors.black,
+                                  ),
+                                );
+                              }).toList(),
                         ),
-
                         const SizedBox(height: 16),
                         _buildLabel('Preferred Branch '),
                         _buildDropdown(
@@ -223,6 +208,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                               onPressed: () async {
                                 if (_selectedModel == null ||
                                     _selectedBranch == null ||
+                                    _selectedServices.isEmpty ||
                                     _selectedDate == null ||
                                     _selectedTime == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -239,13 +225,13 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                       .collection('appointments')
                                       .add({
                                         'vehicleModel': _selectedModel,
-                                        'serviceType': _selectedService,
+                                        'serviceTypes': _selectedServices,
                                         'branch': _selectedBranch,
                                         'date':
                                             _selectedDate!.toIso8601String(),
                                         'time': _selectedTime!.format(context),
                                         'timestamp':
-                                            FieldValue.serverTimestamp(), // Useful for ordering
+                                            FieldValue.serverTimestamp(),
                                       });
 
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -280,7 +266,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           );
         },
       ),
-
       bottomNavigationBar: BottomNavigationBar(
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
@@ -327,9 +312,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     return DropdownButtonFormField<String>(
       value: selectedValue,
       items:
-          items.map((item) {
-            return DropdownMenuItem(value: item, child: Text(item));
-          }).toList(),
+          items
+              .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+              .toList(),
       onChanged: onChanged,
       decoration: InputDecoration(
         hintText: "SELECT",
