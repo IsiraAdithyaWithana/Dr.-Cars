@@ -229,7 +229,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   SizedBox(height: 20),
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: true,
+                    obscureText: !_showPassword,
                     validator: (value) {
                       if (value == null || value.isEmpty)
                         return 'Password is required';
