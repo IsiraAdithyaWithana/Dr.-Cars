@@ -196,18 +196,27 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
       'selectedBrand': selectedBrand,
       'selectedModel': selectedModel,
       'year': vehicleYearController.text.trim(),
+      'uid': userIdController.text,
+      'mileage': '100000',
+      'vehicleType': 'Car',
+      'vehiclePhotoUrl': null,
+      'lastUpdated': FieldValue.serverTimestamp(),
     };
 
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     if (isVehicleExisting) {
       final String uid = widget.vehicleData?['uid'];
-      if (uid.isNotEmpty) {
+
+      final userDoc = await firestore.collection('Users').doc(uid).get();
+      final vehicleDoc = await firestore.collection('Vehicle').doc(uid).get();
+
+      if (userDoc.exists) {
         await firestore.collection('Users').doc(uid).update(userData);
-        await firestore
-            .collection('Vehicle')
-            .doc(widget.vehicleNumber)
-            .update(vehicleData);
+      }
+
+      if (vehicleDoc.exists) {
+        await firestore.collection('Vehicle').doc(uid).update(vehicleData);
       }
     } else {
       final newUserRef = firestore.collection('Users').doc();
@@ -219,7 +228,7 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      await firestore.collection('Vehicle').doc(widget.vehicleNumber).set({
+      await firestore.collection('Vehicle').doc(newUID).set({
         ...vehicleData,
         'uid': newUID,
         'createdAt': FieldValue.serverTimestamp(),
