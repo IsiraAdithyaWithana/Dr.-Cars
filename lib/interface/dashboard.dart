@@ -417,7 +417,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: Image.asset('images/logo.png', height: 30),
             label: '',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
       ),

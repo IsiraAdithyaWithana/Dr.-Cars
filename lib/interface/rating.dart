@@ -1,12 +1,11 @@
 import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
-import 'package:dr_cars/interface/profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-int _selectedIndex = 3;
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -312,50 +311,7 @@ class _RatingScreenState extends State<RatingScreen> {
         ),
       ),
       
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.black,
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-
-          if (index == 0) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => DashboardScreen()),
-            );
-          } else if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => MapScreen()),
-            );
-          } else if (index == 3) {
-            if (widget.serviceCenterId != null) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => RatingScreen()),
-              );
-            }
-          } else if (index == 4) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
-            );
-          }
-        },
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
-          BottomNavigationBarItem(
-            icon: Image.asset('images/logo.png', height: 30),
-            label: '',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
-        ],
-      ),
+      
     );
   }
 }

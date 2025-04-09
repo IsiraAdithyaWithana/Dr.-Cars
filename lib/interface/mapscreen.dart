@@ -2,6 +2,7 @@ import 'package:dr_cars/interface/OBD2.dart';
 import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/rating.dart';
+import 'package:dr_cars/interface/service_history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -513,7 +514,7 @@ class _MapScreenState extends State<MapScreen> {
               );
               break;
             case 3:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => RatingScreen()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ServiceHistoryPage()));
               break;
             case 4:
               Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
@@ -524,7 +525,7 @@ class _MapScreenState extends State<MapScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
           BottomNavigationBarItem(icon: Image.asset('images/logo.png', height: 30), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
       ),

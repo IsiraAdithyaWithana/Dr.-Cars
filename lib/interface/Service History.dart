@@ -3,7 +3,7 @@ import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/rating.dart';
 import 'package:flutter/material.dart';
 
-int _selectedIndex = 0;
+int _selectedIndex = 3;
 
 class ServiceHistorypage extends StatelessWidget {
   const ServiceHistorypage({super.key});
@@ -181,7 +181,7 @@ class ServiceHistorypage extends StatelessWidget {
           if (index == 3) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => RatingScreen()),
+              MaterialPageRoute(builder: (context) => ServiceHistorypage()),
             );
           }
         },
@@ -199,7 +199,7 @@ class ServiceHistorypage extends StatelessWidget {
             label: '',
           ),
           const BottomNavigationBarItem(
-            icon: Icon(Icons.rate_review, size: 24),
+            icon: Icon(Icons.history, size: 24),
             label: '',
           ),
           const BottomNavigationBarItem(
