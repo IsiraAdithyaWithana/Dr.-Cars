@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MapScreen extends StatefulWidget {
   @override
@@ -18,6 +19,8 @@ class _MapScreenState extends State<MapScreen> {
   final Location _location = Location();
   final MapController _mapController = MapController();
   Map<String, dynamic>? _selectedCenter;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  bool _showReviews = false;
 
   final List<Map<String, dynamic>> serviceCenters = [
     {
@@ -95,18 +98,172 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
-  Widget _buildCardButton(IconData icon, String label, Color color) {
-  return Column(
-    children: [
-      CircleAvatar(
-        backgroundColor: color.withOpacity(0.1),
-        child: Icon(icon, color: color),
+  double _calculateAverageRating(List<QueryDocumentSnapshot> feedbacks) {
+    if (feedbacks.isEmpty) return 0.0;
+    int totalRating = 0;
+    
+    for (var feedback in feedbacks) {
+      totalRating += (feedback['rating'] ?? 0) as int;
+    }
+    
+    return totalRating / feedbacks.length;
+  }
+
+  Widget _buildCardButton(IconData icon, String label, Color color, {VoidCallback? onPressed}) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Column(
+        children: [
+          CircleAvatar(
+            backgroundColor: color.withOpacity(0.1),
+            child: Icon(icon, color: color),
+          ),
+          SizedBox(height: 6),
+          Text(label, style: TextStyle(fontSize: 12)),
+        ],
       ),
-      SizedBox(height: 6),
-      Text(label, style: TextStyle(fontSize: 12)),
-    ],
-  );
-}
+    );
+  }
+
+  Widget _buildReviewsList() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _firestore.collection('Feedbacks')
+          .where('serviceCenterId', isEqualTo: _selectedCenter!['name'])
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                "No reviews available for this center yet. Be the first to add a review!",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          );
+        }
+
+        final feedbacks = snapshot.data!.docs;
+        final averageRating = _calculateAverageRating(feedbacks);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Reviews (${feedbacks.length})",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        averageRating.toStringAsFixed(1),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(width: 4),
+                      Row(
+                        children: List.generate(5, (index) {
+                          return Icon(
+                            Icons.star,
+                            size: 16,
+                            color: index < averageRating.floor() ? Colors.orange : Colors.grey[300],
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.only(bottom: 20),
+                itemCount: feedbacks.length,
+                itemBuilder: (context, index) {
+                  final feedback = feedbacks[index].data() as Map<String, dynamic>;
+                  return Card(
+                    margin: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                feedback['name'] ?? 'Anonymous',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                _formatDate(feedback['date'] ?? ''),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          Row(
+                            children: List.generate(5, (index) {
+                              return Icon(
+                                Icons.star,
+                                size: 18,
+                                color: index < (feedback['rating'] ?? 0) ? Colors.orange : Colors.grey[300],
+                              );
+                            }),
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            feedback['feedback'] ?? '',
+                            style: TextStyle(fontSize: 14,
+                             
+                              color: Colors.black,),
+
+                              
+                            ),
+                        ],
+                    ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+                             
+  }
+
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return "${date.day}/${date.month}/${date.year}";
+    } catch (e) {
+      return dateString;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -160,6 +317,7 @@ class _MapScreenState extends State<MapScreen> {
                               onTap: () {
                                 setState(() {
                                   _selectedCenter = center;
+                                  _showReviews = false; // Reset reviews visibility when selecting new center
                                 });
                               },
                               child: const Icon(Icons.location_on, color: Colors.red, size: 40),
@@ -205,81 +363,123 @@ class _MapScreenState extends State<MapScreen> {
 
                 // Bottom card when a center is selected
                 if (_selectedCenter != null)
-  Positioned(
-    left: 0,
-    right: 0,
-    bottom: 0,
-    child: Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 10,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Drag indicator
-          Center(
-            child: Container(
-              width: 40,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-          SizedBox(height: 12),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Service Center Info Card
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: _showReviews 
+                                ? BorderRadius.only(
+                                    topLeft: Radius.circular(24),
+                                    topRight: Radius.circular(24),
+                                  )
+                                : BorderRadius.vertical(top: Radius.circular(24)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 10,
+                                offset: Offset(0, -2),
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Drag indicator
+                              Center(
+                                child: Container(
+                                  width: 40,
+                                  height: 5,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[300],
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 12),
 
-          // Title & location
-          Text(
-            _selectedCenter!['name'],
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 4),
-          Row(
-            children: [
-              Icon(Icons.location_on, size: 16, color: Colors.red),
-              SizedBox(width: 4),
-              Text(
-                "(${_selectedCenter!['lat']}, ${_selectedCenter!['lng']})",
-                style: TextStyle(color: Colors.grey[700], fontSize: 14),
-              ),
-            ],
-          ),
-          SizedBox(height: 12),
+                              // Title & location
+                              Text(
+                                _selectedCenter!['name'],
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(Icons.location_on, size: 16, color: Colors.red),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    "(${_selectedCenter!['lat']}, ${_selectedCenter!['lng']})",
+                                    style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 12),
 
-          // Description
-          Text(
-            _selectedCenter!['description'],
-            style: TextStyle(fontSize: 14),
-          ),
-          SizedBox(height: 12),
+                              // Description
+                              Text(
+                                _selectedCenter!['description'],
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              SizedBox(height: 12),
 
-          // Buttons Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildCardButton(Icons.directions, "Directions", Colors.blue),
-              _buildCardButton(Icons.bookmark, "Save", const Color.fromARGB(255, 9, 21, 43)),
-              _buildCardButton(Icons.feedback, "Feedbacks", Colors.green),
-            ],
-          ),
-          SizedBox(height: 12),
-
-        ],
-      ),
-    ),
-  ),
-
+                              // Buttons Row
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  _buildCardButton(Icons.directions, "Directions", Colors.blue),
+                                  _buildCardButton(Icons.bookmark, "Save", const Color.fromARGB(255, 9, 21, 43)),
+                                  _buildCardButton(
+                                    Icons.feedback, 
+                                    "Feedbacks", 
+                                    Colors.green,
+                                    onPressed: () async {
+                                      setState(() {
+                                        _showReviews = !_showReviews;
+                                      });
+                                      
+                                      if (!_showReviews) {
+                                        // If hiding reviews, navigate to rating screen
+                                        final result = await Navigator.push(
+                                          context, 
+                                          MaterialPageRoute(
+                                            builder: (context) => RatingScreen(
+                                              serviceCenterId: _selectedCenter!['name'],
+                                            )
+                                          )
+                                        );
+                                        
+                                        // Show reviews after returning from rating screen
+                                        setState(() {
+                                          _showReviews = true;
+                                        });
+                                      }
+                                    }
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        
+                        // Reviews Section
+                        if (_showReviews)
+                          Container(
+                            height: MediaQuery.of(context).size.height * 0.4,
+                            color: Colors.white,
+                            child: _buildReviewsList(),
+                          ),
+                      ],
+                    ),
+                  ),
               ],
             ),
       floatingActionButton: FloatingActionButton(

@@ -28,6 +28,10 @@ class MyApp extends StatelessWidget {
 }
 
 class RatingScreen extends StatefulWidget {
+  final String? serviceCenterId;
+  
+  const RatingScreen({Key? key, this.serviceCenterId}) : super(key: key);
+
   @override
   _RatingScreenState createState() => _RatingScreenState();
 }
@@ -55,6 +59,7 @@ class _RatingScreenState extends State<RatingScreen> {
       'rating': _selectedRating,
       'feedback': _feedbackController.text,
       'helpfulCount': 0,
+      'serviceCenterId': widget.serviceCenterId,
     };
 
     await _firestore.collection('Feedbacks').add(feedback);
@@ -65,6 +70,11 @@ class _RatingScreenState extends State<RatingScreen> {
     });
 
     _showSnackBar();
+    
+    // If we came from a specific service center, go back to MapScreen
+    if (widget.serviceCenterId != null) {
+      Navigator.pop(context, true); // Return true to indicate a review was submitted
+    }
   }
 
   void _showSubmitDialog() {
@@ -116,29 +126,45 @@ class _RatingScreenState extends State<RatingScreen> {
 
   @override
   Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      automaticallyImplyLeading: false, // This removes the back arrow
-      backgroundColor: Colors.black,
-      foregroundColor: Colors.white,
-      title: Center(
-        child: Text("Reviews", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: Center(
+          child: Text(
+            widget.serviceCenterId != null 
+                ? "${widget.serviceCenterId} Reviews"
+                : "Reviews",
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
+          ),
+        ),
+        leading: widget.serviceCenterId != null 
+            ? IconButton(
+                icon: Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
+        automaticallyImplyLeading: widget.serviceCenterId != null,
       ),
-    ),
-    body: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("Share your feedback", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          SizedBox(height: 18),
-          Text("How was the service at the service center today?", style: TextStyle(fontSize: 19, color: Colors.black87)),
-          SizedBox(height: 18),
-          Row(
-            children: List.generate(5, (index) {
-              return IconButton(
-                icon: Icon(Icons.star, size: 34, color: _selectedRating > index ? Colors.orange : Colors.grey),
-                onPressed: () => setState(() => _selectedRating = index + 1),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.serviceCenterId != null 
+                  ? "Share your feedback for ${widget.serviceCenterId}" 
+                  : "Share your feedback",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)
+            ),
+            SizedBox(height: 18),
+            Text("How was the service at the service center today?", style: TextStyle(fontSize: 19, color: Colors.black87)),
+            SizedBox(height: 18),
+            Row(
+              children: List.generate(5, (index) {
+                return IconButton(
+                  icon: Icon(Icons.star, size: 34, color: _selectedRating > index ? Colors.orange : Colors.grey),
+                  onPressed: () => setState(() => _selectedRating = index + 1),
                 );
               }),
             ),
@@ -158,12 +184,23 @@ class _RatingScreenState extends State<RatingScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () {},
-                    child: Text("Cancel",
-                     style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.black,
-                      )),
+                    onPressed: () {
+                      if (widget.serviceCenterId != null) {
+                        Navigator.pop(context);
+                      } else {
+                        _feedbackController.clear();
+                        setState(() {
+                          _selectedRating = 0;
+                        });
+                      }
+                    },
+                    child: Text(
+                      "Cancel",
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.black,
+                      )
+                    ),
                   ),
                 ),
                 SizedBox(width: 20),
@@ -171,26 +208,37 @@ class _RatingScreenState extends State<RatingScreen> {
                   child: ElevatedButton(
                     onPressed: _showSubmitDialog,
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-                    child: Text("Submit",
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                      )),
-                    
+                    child: Text(
+                      "Submit",
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
+                      )
+                    ),
                   ),
                 ),
               ],
             ),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: _firestore.collection('Feedbacks').snapshots(),
+                stream: widget.serviceCenterId != null 
+                    ? _firestore.collection('Feedbacks')
+                        .where('serviceCenterId', isEqualTo: widget.serviceCenterId)
+                        .snapshots()
+                    : _firestore.collection('Feedbacks').snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
                   }
 
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return Center(child: Text("No feedback available"));
+                    return Center(
+                      child: Text(
+                        widget.serviceCenterId != null
+                            ? "No feedback available for this service center"
+                            : "No feedback available"
+                      )
+                    );
                   }
 
                   final feedbacks = snapshot.data!.docs;
@@ -199,15 +247,17 @@ class _RatingScreenState extends State<RatingScreen> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Average Rating: ${averageRating.toStringAsFixed(1)}",
-                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)
-                       ),
+                      SizedBox(height: 20),
+                      Text(
+                        "Average Rating: ${averageRating.toStringAsFixed(1)}",
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)
+                      ),
                       SizedBox(height: 10),
                       Text(
-            "Total Feedbacks: ${feedbacks.length}",
-            style: TextStyle(fontSize: 16, color: Colors.black87),
-          ),
-          SizedBox(height: 10),
+                        "Total Feedbacks: ${feedbacks.length}",
+                        style: TextStyle(fontSize: 16, color: Colors.black87),
+                      ),
+                      SizedBox(height: 10),
                       Expanded(
                         child: ListView.builder(
                           itemCount: feedbacks.length,
@@ -237,7 +287,20 @@ class _RatingScreenState extends State<RatingScreen> {
                                     SizedBox(height: 8),
                                     Text(feedback['feedback'] ?? '', style: TextStyle(fontSize: 16)),
                                     SizedBox(height: 8),
-                                    Text("${feedback['helpfulCount'] ?? 0} people found this helpful", style: TextStyle(fontSize: 14, color: Colors.grey)),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          "${feedback['helpfulCount'] ?? 0} people found this helpful", 
+                                          style: TextStyle(fontSize: 14, color: Colors.grey)
+                                        ),
+                                        if (feedback['serviceCenterId'] != null && widget.serviceCenterId == null)
+                                          Text(
+                                            "Service Center: ${feedback['serviceCenterId']}", 
+                                            style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic)
+                                          ),
+                                      ],
+                                    ),
                                   ],
                                 ),
                               ),
@@ -257,45 +320,47 @@ class _RatingScreenState extends State<RatingScreen> {
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.black,
-        currentIndex: _selectedIndex, // Highlight selected item
+        currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
-            _selectedIndex = index; // Update selected index
+            _selectedIndex = index;
           });
 
-           if (index == 0) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => DashboardScreen()),
-          );
+          if (index == 0) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => DashboardScreen()),
+            );
           } else if (index == 1) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => MapScreen()),
-          );
-        } else if (index == 3) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => RatingScreen()),
-          );
-        } else if (index == 4) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ProfileScreen()),
-          );
-        }
-      },
-      items: [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-        BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
-        BottomNavigationBarItem(
-          icon: Image.asset('images/logo.png', height: 30),
-          label: '',
-        ),
-        BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
-      ],
-    ),
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => MapScreen()),
+            );
+          } else if (index == 3) {
+            if (widget.serviceCenterId != null) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => RatingScreen()),
+              );
+            }
+          } else if (index == 4) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ProfileScreen()),
+            );
+          }
+        },
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
+          BottomNavigationBarItem(
+            icon: Image.asset('images/logo.png', height: 30),
+            label: '',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+        ],
+      ),
     );
   }
 }
