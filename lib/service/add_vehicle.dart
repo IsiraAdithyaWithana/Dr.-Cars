@@ -23,7 +23,10 @@ class AddVehicle extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Image.asset('images/bg_removed_logo.png', height: 100), // Ensure the image path is correct
+            Image.asset(
+              'images/bg_removed_logo.png',
+              height: 100,
+            ), // Ensure the image path is correct
             const SizedBox(height: 30),
             const Text(
               "Add a vehicle",
@@ -55,45 +58,71 @@ class AddVehicle extends StatelessWidget {
                 ),
                 onPressed: () async {
                   String vehicleNumber = vehicleController.text.trim();
-                  
+
                   if (vehicleNumber.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Please enter a vehicle number.")),
+                      const SnackBar(
+                        content: Text("Please enter a vehicle number."),
+                      ),
                     );
                     return;
                   }
 
-                  // Search Firestore for a document with a matching vehicle number
-                  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-                      .collection('Vehicle')
-                      .where('vehicleNumber', isEqualTo: vehicleNumber)
-                      .get();
+                  QuerySnapshot querySnapshot =
+                      await FirebaseFirestore.instance
+                          .collection('Vehicle')
+                          .where('vehicleNumber', isEqualTo: vehicleNumber)
+                          .get();
 
                   if (querySnapshot.docs.isNotEmpty) {
-                    // Get first matching document
                     var vehicleDoc = querySnapshot.docs.first;
+                    Map<String, dynamic> vehicleData =
+                        vehicleDoc.data() as Map<String, dynamic>;
+
+                    String? uid = vehicleData['uid'];
+
+                    Map<String, dynamic>? userData;
+
+                    if (uid != null) {
+                      DocumentSnapshot userDoc =
+                          await FirebaseFirestore.instance
+                              .collection('Users')
+                              .doc(uid)
+                              .get();
+
+                      if (userDoc.exists) {
+                        userData = userDoc.data() as Map<String, dynamic>;
+                      }
+                    }
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => OwnerInfo(
-                          vehicleNumber: vehicleNumber,
-                          vehicleData: vehicleDoc.data() as Map<String, dynamic>?,
-                        ),
+                        builder:
+                            (context) => OwnerInfo(
+                              vehicleNumber: vehicleNumber,
+                              vehicleData: vehicleData,
+                              userData: userData,
+                            ),
                       ),
                     );
                   } else {
-                    // No matching document found, redirect without data
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => OwnerInfo(vehicleNumber: vehicleNumber),
+                        builder:
+                            (context) =>
+                                OwnerInfo(vehicleNumber: vehicleNumber),
                       ),
                     );
                   }
                 },
                 child: const Text(
                   "Continue",
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),

@@ -149,15 +149,11 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
 
   void _populateFields(Map<String, dynamic> data) {
     setState(() {
-      selectedBrand = data['brand'] ?? 'Toyota';
-      selectedModel = data['model'] ?? vehicleModels['Toyota']?[0];
-      if (data['manufactureYear'] != null) {
-        vehicleYearController.text = data['manufactureYear'].toString();
-      } else {
-        vehicleYearController.text = "";
-      }
-
-      userIdController.text = data['userId'] ?? "";
+      selectedBrand = data['selectedBrand'] ?? 'Toyota';
+      selectedModel = data['selectedModel'] ?? vehicleModels['Toyota']?[0];
+      vehicleYearController.text =
+          data['year']?.toString() ?? data['manufactureYear']?.toString() ?? '';
+      userIdController.text = data['uid'] ?? '';
     });
   }
 
