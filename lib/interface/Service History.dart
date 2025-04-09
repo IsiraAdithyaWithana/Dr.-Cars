@@ -3,7 +3,7 @@ import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/rating.dart';
 import 'package:flutter/material.dart';
 
-int _selectedIndex = 0;
+int _selectedIndex = 3;
 
 class ServiceHistorypage extends StatelessWidget {
   const ServiceHistorypage({super.key});
@@ -13,8 +13,14 @@ class ServiceHistorypage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Service History', style: TextStyle(fontSize: 18)),
-        backgroundColor: Colors.white,
+        title: const Text('Service History', 
+        style: TextStyle(
+          fontSize: 24 , 
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          ),
+          ),
+        backgroundColor: Colors.black,
         foregroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
@@ -181,7 +187,7 @@ class ServiceHistorypage extends StatelessWidget {
           if (index == 3) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => RatingScreen()),
+              MaterialPageRoute(builder: (context) => ServiceHistorypage()),
             );
           }
         },
@@ -199,7 +205,7 @@ class ServiceHistorypage extends StatelessWidget {
             label: '',
           ),
           const BottomNavigationBarItem(
-            icon: Icon(Icons.rate_review, size: 24),
+            icon: Icon(Icons.history, size: 24),
             label: '',
           ),
           const BottomNavigationBarItem(

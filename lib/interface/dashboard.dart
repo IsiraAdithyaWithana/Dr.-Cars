@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dr_cars/interface/Service%20History.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/rating.dart';
@@ -398,7 +399,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             case 3:
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => RatingScreen()),
+                MaterialPageRoute(builder: (context) => ServiceHistorypage()),
               );
               break;
             case 4:
@@ -416,7 +417,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: Image.asset('images/logo.png', height: 30),
             label: '',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
       ),
