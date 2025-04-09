@@ -20,17 +20,16 @@ class OwnerInfo extends StatefulWidget {
 
 class _OwnerInfoPageState extends State<OwnerInfo> {
   final TextEditingController nameController = TextEditingController();
-  final TextEditingController usernameController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController contactController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController vehicleYearController = TextEditingController();
   final TextEditingController userIdController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   String? selectedBrand;
   String? selectedModel;
 
-  // Map of vehicle brands to their respective models
   final Map<String, List<String>> vehicleModels = {
     'Toyota': [
       'Corolla',
@@ -115,8 +114,6 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
   @override
   void initState() {
     super.initState();
-
-    // If vehicleData is not passed, fetch data from Firestore
     if (widget.vehicleData == null) {
       _fetchVehicleData();
     } else {
@@ -124,14 +121,12 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
       _fetchUserData();
     }
 
-    if (widget.userData == null) {
-    } else {
+    if (widget.userData != null) {
       _userDetails(widget.userData!);
     }
   }
 
   Future<void> _fetchVehicleData() async {
-    // Fetch data from Firestore using vehicleNumber
     DocumentSnapshot vehicleDoc =
         await FirebaseFirestore.instance
             .collection('Vehicle')
@@ -158,6 +153,8 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
   }
 
   Future<void> _fetchUserData() async {
+    if (userIdController.text.isEmpty) return;
+
     DocumentSnapshot userDoc =
         await FirebaseFirestore.instance
             .collection('Users')
@@ -182,6 +179,59 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
     });
   }
 
+  Future<void> _handleContinue() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final isVehicleExisting = widget.vehicleData != null;
+
+    Map<String, dynamic> userData = {
+      'Name': nameController.text.trim(),
+      'Address': addressController.text.trim(),
+      'Contact': contactController.text.trim(),
+      'Email': emailController.text.trim(),
+    };
+
+    Map<String, dynamic> vehicleData = {
+      'vehicleNumber': widget.vehicleNumber,
+      'selectedBrand': selectedBrand,
+      'selectedModel': selectedModel,
+      'year': vehicleYearController.text.trim(),
+    };
+
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    if (isVehicleExisting) {
+      final String uid = widget.vehicleData?['uid'];
+      if (uid.isNotEmpty) {
+        await firestore.collection('Users').doc(uid).update(userData);
+        await firestore
+            .collection('Vehicle')
+            .doc(widget.vehicleNumber)
+            .update(vehicleData);
+      }
+    } else {
+      final newUserRef = firestore.collection('Users').doc();
+      final newUID = newUserRef.id;
+
+      await newUserRef.set({
+        ...userData,
+        'uid': newUID,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      await firestore.collection('Vehicle').doc(widget.vehicleNumber).set({
+        ...vehicleData,
+        'uid': newUID,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AddService()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -197,80 +247,71 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            const CircleAvatar(
-              radius: 50,
-              backgroundImage: AssetImage('images/logo.png'),
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(nameController, "Name", "Name of user"),
-            _buildTextField(addressController, "Address", "Address"),
-            _buildTextField(contactController, "Contact", "Contact Number"),
-            _buildTextField(emailController, "E-mail", "Email"),
-            _buildTextField(
-              vehicleYearController,
-              "Vehicle Year",
-              "Year of Manufacture",
-            ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              const CircleAvatar(
+                radius: 50,
+                backgroundImage: AssetImage('images/logo.png'),
+              ),
+              const SizedBox(height: 20),
+              _buildTextField(nameController, "Name"),
+              _buildTextField(addressController, "Address"),
+              _buildTextField(contactController, "Contact"),
+              _buildTextField(emailController, "Email", isEmail: true),
+              _buildTextField(vehicleYearController, "Vehicle Year"),
 
-            // Brand Dropdown
-            _buildDropdownField(
-              "Brand",
-              vehicleModels.keys.toList(),
-              selectedBrand,
-              (value) {
-                setState(() {
-                  selectedBrand = value;
-                  // Reset the model when brand changes
-                  selectedModel = vehicleModels[selectedBrand]?.first;
-                });
-              },
-            ),
-
-            // Model Dropdown
-            if (selectedBrand != null)
               _buildDropdownField(
-                "Model",
-                vehicleModels[selectedBrand] ?? [],
-                selectedModel,
+                "Brand",
+                vehicleModels.keys.toList(),
+                selectedBrand,
                 (value) {
                   setState(() {
-                    selectedModel = value;
+                    selectedBrand = value;
+                    selectedModel = vehicleModels[selectedBrand]?.first;
                   });
                 },
               ),
 
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
+              if (selectedBrand != null)
+                _buildDropdownField(
+                  "Model",
+                  vehicleModels[selectedBrand] ?? [],
+                  selectedModel,
+                  (value) {
+                    setState(() {
+                      selectedModel = value;
+                    });
+                  },
                 ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => AddService()),
-                  );
-                },
-                child: const Text(
-                  "Continue",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                  onPressed: _handleContinue,
+                  child: const Text(
+                    "Continue",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-          ],
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -278,18 +319,27 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
 
   Widget _buildTextField(
     TextEditingController controller,
-    String label,
-    String hint,
-  ) {
+    String label, {
+    bool isEmail = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          hintText: hint,
+          hintText: "Enter $label",
           border: const OutlineInputBorder(),
         ),
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return 'Please enter $label';
+          }
+          if (isEmail && !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+            return 'Enter a valid email';
+          }
+          return null;
+        },
       ),
     );
   }
@@ -307,12 +357,13 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
           labelText: label,
           border: const OutlineInputBorder(),
         ),
-        value: selectedValue,
+        value: items.contains(selectedValue) ? selectedValue : null,
         items:
             items.map((String item) {
               return DropdownMenuItem<String>(value: item, child: Text(item));
             }).toList(),
         onChanged: onChanged,
+        validator: (value) => value == null ? 'Please select $label' : null,
       ),
     );
   }

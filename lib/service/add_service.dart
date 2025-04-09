@@ -8,7 +8,6 @@ class AddService extends StatefulWidget {
 }
 
 class _AddServiceState extends State<AddService> {
-  // Controllers for input fields
   final TextEditingController _previousOilChangeController =
       TextEditingController();
   final TextEditingController _currentMileageController =
@@ -20,7 +19,6 @@ class _AddServiceState extends State<AddService> {
   String? gearboxChecked;
   String? differentialChecked;
 
-  // Service selection boolean values
   bool _oilChanged = false;
   bool _airFilterChanged = false;
   bool _oilFilterChanged = false;
@@ -44,11 +42,9 @@ class _AddServiceState extends State<AddService> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
         actions: [
-          // Home icon button in the right corner
           IconButton(
             icon: const Icon(Icons.home, color: Colors.black),
             onPressed: () {
-              // Navigate back to the home screen
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -104,8 +100,6 @@ class _AddServiceState extends State<AddService> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
-
-              // List of services
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
@@ -120,7 +114,6 @@ class _AddServiceState extends State<AddService> {
                         });
                       },
                     ),
-
                     SizedBox(width: 10),
                     DropdownButton<String>(
                       value: oilType,
@@ -143,7 +136,6 @@ class _AddServiceState extends State<AddService> {
                   ],
                 ),
               ),
-
               CheckboxListTile(
                 title: const Text("Air Filter Changed"),
                 value: _airFilterChanged,
@@ -217,7 +209,6 @@ class _AddServiceState extends State<AddService> {
                 style: TextStyle(color: Colors.black),
               ),
               const SizedBox(height: 20),
-              // Button to proceed to receipt page
               SizedBox(
                 width: double.infinity,
                 height: 50,
