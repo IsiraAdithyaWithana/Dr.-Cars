@@ -11,22 +11,21 @@ class MapScreen extends StatefulWidget {
   _MapScreenState createState() => _MapScreenState();
 }
 
- int _selectedIndex = 1;
+int _selectedIndex = 1;
 
 class _MapScreenState extends State<MapScreen> {
   LocationData? _userLocation;
   final Location _location = Location();
-
   final MapController _mapController = MapController();
+  Map<String, dynamic>? _selectedCenter;
 
-
-  // Dr cars service centers
   final List<Map<String, dynamic>> serviceCenters = [
     {
       "name": "Dr Cars Colombo Service Center",
       "lat": 6.9271,
       "lng": 79.8612,
       "description": "Located in the heart of Colombo, providing 24/7 customer support."
+      
     },
     {
       "name": "Dr Cars Kandy Service Center",
@@ -54,7 +53,7 @@ class _MapScreenState extends State<MapScreen> {
     },
     {
       "name": "Dr Cars Ampara Service Center",
-      "lat": 7.301763770344583 ,
+      "lat": 7.301763770344583,
       "lng": 81.67479843992851,
       "description": "Located close to heritage sites, ensuring reliable service."
     },
@@ -67,7 +66,6 @@ class _MapScreenState extends State<MapScreen> {
     _trackUserLocation();
   }
 
-  // requesting to get the current location of the user
   Future<void> _getUserLocation() async {
     bool serviceEnabled = await _location.serviceEnabled();
     if (!serviceEnabled) {
@@ -81,10 +79,7 @@ class _MapScreenState extends State<MapScreen> {
       if (permissionGranted != PermissionStatus.granted) return;
     }
 
-    _location.changeSettings(
-      accuracy: LocationAccuracy.high, // Ensures high accuracy
-      interval: 3000, // Updates every 3 seconds
-    );
+    _location.changeSettings(accuracy: LocationAccuracy.high, interval: 3000);
 
     final LocationData locationData = await _location.getLocation();
     setState(() {
@@ -92,7 +87,6 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
-  // tracking the user location
   void _trackUserLocation() {
     _location.onLocationChanged.listen((LocationData currentLocation) {
       setState(() {
@@ -101,114 +95,193 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
+  Widget _buildCardButton(IconData icon, String label, Color color) {
+  return Column(
+    children: [
+      CircleAvatar(
+        backgroundColor: color.withOpacity(0.1),
+        child: Icon(icon, color: color),
+      ),
+      SizedBox(height: 6),
+      Text(label, style: TextStyle(fontSize: 12)),
+    ],
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-       leading: IconButton(
-         icon: Icon(Icons.arrow_back, color: Colors.white),
-         onPressed: () {
-         Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => DashboardScreen()),
-      );
-    },
-  ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => DashboardScreen()),
+            );
+          },
+        ),
         title: const Text(" Dr Cars Service Centers"),
-        
       ),
       body: _userLocation == null
-    ? const Center(child: CircularProgressIndicator())
-    : Stack(
-        children: [
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              center: LatLng(_userLocation!.latitude!, _userLocation!.longitude!),
-             zoom: 9.0,
-             minZoom: 5.0,
-             maxZoom: 18.0,
-             interactiveFlags: InteractiveFlag.all,
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                subdomains: ['a', 'b', 'c'],
-              ),
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: LatLng(_userLocation!.latitude!, _userLocation!.longitude!),
-                    width: 50,
-                    height: 50,
-                    child: const Icon(Icons.person_pin_circle, color: Colors.blue, size: 50),
+          ? const Center(child: CircularProgressIndicator())
+          : Stack(
+              children: [
+                FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    center: LatLng(_userLocation!.latitude!, _userLocation!.longitude!),
+                    zoom: 9.0,
+                    minZoom: 5.0,
+                    maxZoom: 18.0,
+                    interactiveFlags: InteractiveFlag.all,
                   ),
-                  for (var center in serviceCenters)
-                    Marker(
-                      point: LatLng(center["lat"], center["lng"]),
-                      width: 40,
-                      height: 40,
-                      child: GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text(center["name"]),
-                                content: Text(center["description"]),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text("Close"),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        child: const Icon(Icons.location_on, color: Colors.red, size: 40),
-                      ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                      subdomains: ['a', 'b', 'c'],
                     ),
-                ],
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: LatLng(_userLocation!.latitude!, _userLocation!.longitude!),
+                          width: 50,
+                          height: 50,
+                          child: const Icon(Icons.person_pin_circle, color: Colors.blue, size: 50),
+                        ),
+                        for (var center in serviceCenters)
+                          Marker(
+                            point: LatLng(center["lat"], center["lng"]),
+                            width: 40,
+                            height: 40,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedCenter = center;
+                                });
+                              },
+                              child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                // Zoom controls
+                Positioned(
+                  top: 20,
+                  right: 10,
+                  child: Column(
+                    children: [
+                      FloatingActionButton(
+                        heroTag: "zoom_in",
+                        mini: true,
+                        backgroundColor: Colors.white,
+                        child: const Icon(Icons.zoom_in, color: Colors.black),
+                        onPressed: () {
+                          setState(() {
+                            _mapController.move(_mapController.center, _mapController.zoom + 1);
+                          });
+                        },
+                      ),
+                      SizedBox(height: 20),
+                      FloatingActionButton(
+                        heroTag: "zoom_out",
+                        mini: true,
+                        backgroundColor: Colors.white,
+                        child: const Icon(Icons.zoom_out, color: Colors.black),
+                        onPressed: () {
+                          setState(() {
+                            _mapController.move(_mapController.center, _mapController.zoom - 1);
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Bottom card when a center is selected
+                if (_selectedCenter != null)
+  Positioned(
+    left: 0,
+    right: 0,
+    bottom: 0,
+    child: Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(0, -2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Drag indicator
+          Center(
+            child: Container(
+              width: 40,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          SizedBox(height: 12),
+
+          // Title & location
+          Text(
+            _selectedCenter!['name'],
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(Icons.location_on, size: 16, color: Colors.red),
+              SizedBox(width: 4),
+              Text(
+                "(${_selectedCenter!['lat']}, ${_selectedCenter!['lng']})",
+                style: TextStyle(color: Colors.grey[700], fontSize: 14),
               ),
             ],
           ),
-           // zoom in and zoom out buttons
-          Positioned(
-            top: 20,
-            right: 10,
-            child: Column(
-              children: [
-                FloatingActionButton(
-                  heroTag: "zoom_in",
-                  mini: true,
-                  backgroundColor: Colors.white,
-                  child: const Icon(Icons.zoom_in, color: Colors.black),
-                  onPressed: () {
-                    setState(() {
-                      _mapController.move(_mapController.center, _mapController.zoom + 1);
-                    });
-                  },
-                ),
-                SizedBox(height: 10),
-                FloatingActionButton(
-                  heroTag: "zoom_out",
-                  mini: true,
-                  backgroundColor: Colors.white,
-                  child: const Icon(Icons.zoom_out, color: Colors.black),
-                  onPressed: () {
-                    setState(() {
-                      _mapController.move(_mapController.center, _mapController.zoom - 1);
-                    });
-                  },
-                ),
-              ],
-            ),
-          )
+          SizedBox(height: 12),
+
+          // Description
+          Text(
+            _selectedCenter!['description'],
+            style: TextStyle(fontSize: 14),
+          ),
+          SizedBox(height: 12),
+
+          // Buttons Row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildCardButton(Icons.directions, "Directions", Colors.blue),
+              _buildCardButton(Icons.bookmark, "Save", const Color.fromARGB(255, 9, 21, 43)),
+              _buildCardButton(Icons.feedback, "Feedbacks", Colors.green),
+            ],
+          ),
+          SizedBox(height: 12),
+
         ],
       ),
+    ),
+  ),
+
+              ],
+            ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
         child: const Icon(Icons.my_location, color: Colors.white),
@@ -219,8 +292,8 @@ class _MapScreenState extends State<MapScreen> {
           });
         },
       ),
-      
-      // bottom navigation bar
+
+      // Bottom nav bar
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.black,
@@ -232,42 +305,27 @@ class _MapScreenState extends State<MapScreen> {
 
           switch (index) {
             case 0:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => DashboardScreen()),
-              );
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DashboardScreen()));
               break;
-              case 1:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => MapScreen()),
-              );
+            case 1:
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MapScreen()));
               break;
             case 3:
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => RatingScreen()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => RatingScreen()));
               break;
             case 4:
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfileScreen()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
               break;
           }
         },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
-          BottomNavigationBarItem(
-            icon: Image.asset('images/logo.png', height: 30),
-            label: '',
-          ),
+          BottomNavigationBarItem(icon: Image.asset('images/logo.png', height: 30), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
-      ), 
+      ),
     );
   }
 }
