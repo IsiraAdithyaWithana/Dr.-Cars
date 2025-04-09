@@ -29,38 +29,43 @@ class _MapScreenState extends State<MapScreen> {
       "name": "Dr Cars Colombo Service Center",
       "lat": 6.9271,
       "lng": 79.8612,
-      "description": "Located in the heart of Colombo, providing 24/7 customer support."
-      
+      "description": "Located in the heart of Colombo, providing 24/7 customer support.",
+      "image": "images/colombo.jpg"
     },
     {
       "name": "Dr Cars Kandy Service Center",
       "lat": 7.2906,
       "lng": 80.6337,
-      "description": "Situated near the Kandy Lake, offering maintenance services."
+      "description": "Situated near the Kandy Lake, offering maintenance services.",
+      "image": "images/kandy.jpg"
     },
     {
       "name": "Dr Cars Galle Service Center",
       "lat": 6.0535,
       "lng": 80.2210,
-      "description": "A modern facility near Galle Fort, specializing in quick repairs."
+      "description": "A modern facility near Galle Fort, specializing in quick repairs.",
+      "image": "images/galle.jpg"
     },
     {
       "name": "Dr Cars Jaffna Service Center",
       "lat": 9.6615,
       "lng": 80.0255,
-      "description": "Serving the northern region with dedicated support services."
+      "description": "Serving the northern region with dedicated support services.",
+      "image": "images/jaffna.jpg"
     },
     {
       "name": "Dr Cars Anuradhapura Service Center",
       "lat": 8.3114,
       "lng": 80.4037,
-      "description": "Located close to heritage sites, ensuring reliable service."
+      "description": "Located close to heritage sites, ensuring reliable service.",
+      "image": "images/anuradapura.jpg"
     },
     {
       "name": "Dr Cars Ampara Service Center",
       "lat": 7.301763770344583,
       "lng": 81.67479843992851,
-      "description": "Located close to heritage sites, ensuring reliable service."
+      "description": "Located close to heritage sites, ensuring reliable service.",
+      "image": "images/ampara.jpg"
     },
   ];
 
@@ -434,6 +439,16 @@ class _MapScreenState extends State<MapScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
+                                  _buildCardButton(
+                                   Icons.arrow_back,
+                                   "Back",
+                                  Colors.red,
+                                   onPressed: () {
+                                   setState(() {
+                                   _selectedCenter = null;
+                                 });
+                                },
+                               ),
                                   _buildCardButton(Icons.directions, "Directions", Colors.blue),
                                   _buildCardButton(Icons.bookmark, "Save", const Color.fromARGB(255, 9, 21, 43)),
                                   _buildCardButton(
@@ -463,12 +478,30 @@ class _MapScreenState extends State<MapScreen> {
                                       }
                                     }
                                   ),
+                                 
                                 ],
                               ),
+                        Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Center(
+                        child: ClipRRect(
+                         borderRadius: BorderRadius.circular(12),
+                         child: Image.asset(
+                        _selectedCenter!['image'],
+                        height: 200,
+                        width: 500,
+                        fit: BoxFit.cover,
+                      ),
+                   ),
+                 ),
+                ),
+             
+                       SizedBox(height: 12),
                             ],
                           ),
                         ),
-                        
+                    
+
                         // Reviews Section
                         if (_showReviews)
                           Container(
