@@ -22,6 +22,7 @@ class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _emailOrUsernameController =
       TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _showPassword = false;
 
   bool isLoading = false;
   bool isGoogleLoading = false;
@@ -226,13 +227,29 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                   ),
                   SizedBox(height: 20),
-                  TextField(
+                  TextFormField(
                     controller: _passwordController,
                     obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty)
+                        return 'Password is required';
+                    },
                     decoration: InputDecoration(
                       hintText: "Password",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _showPassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _showPassword = !_showPassword;
+                          });
+                        },
                       ),
                       filled: true,
                       fillColor: Colors.grey[200],
