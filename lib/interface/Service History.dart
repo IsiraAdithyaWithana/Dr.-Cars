@@ -13,7 +13,13 @@ class ServiceHistorypage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Service History', style: TextStyle(fontSize: 20 , color: Colors.white)),
+        title: const Text('Service History', 
+        style: TextStyle(
+          fontSize: 24 , 
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          ),
+          ),
         backgroundColor: Colors.black,
         foregroundColor: Colors.black,
         elevation: 0,
