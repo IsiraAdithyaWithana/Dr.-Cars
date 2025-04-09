@@ -1,3 +1,4 @@
+import 'package:dr_cars/interface/OBD2.dart';
 import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/rating.dart';
@@ -237,10 +238,7 @@ class _MapScreenState extends State<MapScreen> {
                           Text(
                             feedback['feedback'] ?? '',
                             style: TextStyle(fontSize: 14,
-                             
-                              color: Colors.black,),
-
-                              
+                              color: Colors.black,),                              
                             ),
                         ],
                     ),
@@ -509,6 +507,10 @@ class _MapScreenState extends State<MapScreen> {
               break;
             case 1:
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MapScreen()));
+              break;
+              case 2:
+              Navigator.push(context, MaterialPageRoute(builder: (context) => OBD2Page()),
+              );
               break;
             case 3:
               Navigator.push(context, MaterialPageRoute(builder: (context) => RatingScreen()));

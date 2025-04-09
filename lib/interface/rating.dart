@@ -58,7 +58,6 @@ class _RatingScreenState extends State<RatingScreen> {
       'date': DateTime.now().toString(),
       'rating': _selectedRating,
       'feedback': _feedbackController.text,
-      'helpfulCount': 0,
       'serviceCenterId': widget.serviceCenterId,
     };
 
@@ -290,10 +289,6 @@ class _RatingScreenState extends State<RatingScreen> {
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          "${feedback['helpfulCount'] ?? 0} people found this helpful", 
-                                          style: TextStyle(fontSize: 14, color: Colors.grey)
-                                        ),
                                         if (feedback['serviceCenterId'] != null && widget.serviceCenterId == null)
                                           Text(
                                             "Service Center: ${feedback['serviceCenterId']}", 
