@@ -9,7 +9,10 @@ class AppointmentsPage extends StatefulWidget {
 }
 
 class _AppointmentsPageState extends State<AppointmentsPage> {
-  // Lists for dropdowns
+  // 🔸 Added controller for vehicle number
+  final TextEditingController _vehicleNumberController =
+      TextEditingController();
+
   final List<String> vehicleModels = [
     'Car',
     'Van',
@@ -19,6 +22,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     'Three-Wheeler',
     'Bus',
   ];
+
   final List<String> serviceTypes = [
     'Full Service',
     'Oil and filter change',
@@ -37,6 +41,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     'Pre-purchase inspections',
     'Diagnostic testing',
   ];
+
   final List<String> branches = [
     'Kandy',
     'Colombo',
@@ -48,14 +53,12 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     'Batticaloa',
   ];
 
-  // Selected values
   String? _selectedModel;
+  List<String> _selectedServices = []; // 🔸 Changed to List
   String? _selectedBranch;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
-  List<String> _selectedServices = [];
 
-  // Date picker
   Future<void> _pickDate() async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -64,22 +67,17 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       lastDate: DateTime(2030),
     );
     if (pickedDate != null) {
-      setState(() {
-        _selectedDate = pickedDate;
-      });
+      setState(() => _selectedDate = pickedDate);
     }
   }
 
-  // Time picker
   Future<void> _pickTime() async {
     TimeOfDay? pickedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
     );
     if (pickedTime != null) {
-      setState(() {
-        _selectedTime = pickedTime;
-      });
+      setState(() => _selectedTime = pickedTime);
     }
   }
 
@@ -126,8 +124,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           thickness: 1.5,
                         ),
                         const SizedBox(height: 16),
+
                         _buildLabel('Vehicle Number '),
-                        _buildTextField(),
+                        _buildTextField(), // 🔸 uses controller now
+
                         const SizedBox(height: 16),
                         _buildLabel('Vehicle Model '),
                         _buildDropdown(
@@ -136,42 +136,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           (value) => setState(() => _selectedModel = value),
                         ),
                         const SizedBox(height: 16),
-                        _buildLabel('Type of Services '),
-                        Wrap(
-                          spacing: 8.0,
-                          runSpacing: 4.0,
-                          children:
-                              serviceTypes.map((service) {
-                                final isSelected = _selectedServices.contains(
-                                  service,
-                                );
-                                return FilterChip(
-                                  label: Text(
-                                    service,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  selected: isSelected,
-                                  onSelected: (bool selected) {
-                                    setState(() {
-                                      if (selected) {
-                                        _selectedServices.add(service);
-                                      } else {
-                                        _selectedServices.remove(service);
-                                      }
-                                    });
-                                  },
-                                  selectedColor: Colors.blueAccent,
-                                  backgroundColor: Colors.grey[200],
-                                  checkmarkColor: Colors.white,
-                                  labelStyle: TextStyle(
-                                    color:
-                                        isSelected
-                                            ? Colors.white
-                                            : Colors.black,
-                                  ),
-                                );
-                              }).toList(),
-                        ),
+
+                        _buildLabel('Type of Service '),
+                        _buildMultiSelect(), // 🔸 New multi-select widget
+
                         const SizedBox(height: 16),
                         _buildLabel('Preferred Branch '),
                         _buildDropdown(
@@ -186,6 +154,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         _buildLabel('Preferred Time '),
                         _buildTimePicker(),
                         const SizedBox(height: 24),
+
                         Center(
                           child: SizedBox(
                             width: 180,
@@ -206,11 +175,15 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                 ),
                               ),
                               onPressed: () async {
-                                if (_selectedModel == null ||
+                                // 🔸 Validation updated to include vehicle number
+                                if (_vehicleNumberController.text
+                                        .trim()
+                                        .isEmpty ||
+                                    _selectedModel == null ||
                                     _selectedBranch == null ||
-                                    _selectedServices.isEmpty ||
                                     _selectedDate == null ||
-                                    _selectedTime == null) {
+                                    _selectedTime == null ||
+                                    _selectedServices.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
@@ -220,10 +193,14 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                   );
                                   return;
                                 }
+
                                 try {
                                   await FirebaseFirestore.instance
                                       .collection('appointments')
                                       .add({
+                                        'vehicleNumber':
+                                            _vehicleNumberController.text
+                                                .trim(), // 🔸 Added
                                         'vehicleModel': _selectedModel,
                                         'serviceTypes': _selectedServices,
                                         'branch': _selectedBranch,
@@ -283,7 +260,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     );
   }
 
-  // 🔹 Label Widget
   Widget _buildLabel(String text) {
     return Text(
       text,
@@ -291,9 +267,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     );
   }
 
-  // 🔹 TextField Widget
   Widget _buildTextField() {
     return TextField(
+      controller: _vehicleNumberController, // 🔸 Controller added here
       decoration: InputDecoration(
         hintText: "EX: CAD-0896",
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
@@ -303,7 +279,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     );
   }
 
-  // 🔹 Dropdown Widget
   Widget _buildDropdown(
     List<String> items,
     String? selectedValue,
@@ -325,7 +300,29 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     );
   }
 
-  // 🔹 Date Picker Widget
+  Widget _buildMultiSelect() {
+    return Wrap(
+      spacing: 6.0,
+      children:
+          serviceTypes.map((service) {
+            final isSelected = _selectedServices.contains(service);
+            return FilterChip(
+              label: Text(service, overflow: TextOverflow.ellipsis),
+              selected: isSelected,
+              onSelected: (bool selected) {
+                setState(() {
+                  if (selected) {
+                    _selectedServices.add(service);
+                  } else {
+                    _selectedServices.remove(service);
+                  }
+                });
+              },
+            );
+          }).toList(),
+    );
+  }
+
   Widget _buildDatePicker() {
     return InkWell(
       onTap: _pickDate,
@@ -352,7 +349,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     );
   }
 
-  // 🔹 Time Picker Widget
   Widget _buildTimePicker() {
     return InkWell(
       onTap: _pickTime,
