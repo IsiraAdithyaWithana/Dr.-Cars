@@ -9,7 +9,7 @@ class AppointmentsPage extends StatefulWidget {
 }
 
 class _AppointmentsPageState extends State<AppointmentsPage> {
-  // 🔸 Added controller for vehicle number
+  //  used this controller for save the vehicle number in the fire base
   final TextEditingController _vehicleNumberController =
       TextEditingController();
 
@@ -54,7 +54,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   ];
 
   String? _selectedModel;
-  List<String> _selectedServices = []; // 🔸 Changed to List
+  List<String> _selectedServices = [];
   String? _selectedBranch;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
@@ -126,7 +126,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         const SizedBox(height: 16),
 
                         _buildLabel('Vehicle Number '),
-                        _buildTextField(), // 🔸 uses controller now
+                        _buildTextField(),
 
                         const SizedBox(height: 16),
                         _buildLabel('Vehicle Model '),
@@ -138,7 +138,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         const SizedBox(height: 16),
 
                         _buildLabel('Type of Service '),
-                        _buildMultiSelect(), // 🔸 New multi-select widget
+                        _buildMultiSelect(),
 
                         const SizedBox(height: 16),
                         _buildLabel('Preferred Branch '),
@@ -175,7 +175,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                 ),
                               ),
                               onPressed: () async {
-                                // 🔸 Validation updated to include vehicle number
                                 if (_vehicleNumberController.text
                                         .trim()
                                         .isEmpty ||
@@ -200,7 +199,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                       .add({
                                         'vehicleNumber':
                                             _vehicleNumberController.text
-                                                .trim(), // 🔸 Added
+                                                .trim(),
                                         'vehicleModel': _selectedModel,
                                         'serviceTypes': _selectedServices,
                                         'branch': _selectedBranch,
@@ -269,7 +268,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
   Widget _buildTextField() {
     return TextField(
-      controller: _vehicleNumberController, // 🔸 Controller added here
+      controller: _vehicleNumberController,
       decoration: InputDecoration(
         hintText: "EX: CAD-0896",
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
