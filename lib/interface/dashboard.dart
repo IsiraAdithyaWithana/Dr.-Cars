@@ -36,7 +36,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _fetchVehicleData(); // Refresh vehicle data when returning to dashboard
+    _fetchVehicleData();
   }
 
   Future<void> _fetchUserData() async {
@@ -306,7 +306,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const AppointmentsPage()),
+                    MaterialPageRoute(
+                      builder: (context) => const AppointmentsPage(),
+                    ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
