@@ -1,7 +1,7 @@
+import 'package:dr_cars/interface/service_history.dart';
 import 'package:flutter/material.dart';
 import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/interface/profile.dart';
-import 'package:dr_cars/interface/rating.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
 
 class OBD2Page extends StatefulWidget {
@@ -216,7 +216,7 @@ class _OBD2PageState extends State<OBD2Page> {
           } else if (index == 3) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => RatingScreen()),
+              MaterialPageRoute(builder: (context) => ServiceHistoryPage()),
             );
           } else if (index == 4) {
             Navigator.push(
@@ -232,7 +232,7 @@ class _OBD2PageState extends State<OBD2Page> {
             icon: Image.asset('images/logo.png', height: 30),
             label: '',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.rate_review), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
       ),

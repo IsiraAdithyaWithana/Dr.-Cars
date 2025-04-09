@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/Settings.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
-import 'package:dr_cars/interface/rating.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dashboard.dart';

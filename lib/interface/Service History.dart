@@ -1,6 +1,6 @@
 import 'package:dr_cars/interface/dashboard.dart';
+import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/profile.dart';
-import 'package:dr_cars/interface/rating.dart';
 import 'package:flutter/material.dart';
 
 int _selectedIndex = 3;
@@ -178,18 +178,25 @@ class ServiceHistorypage extends StatelessWidget {
               MaterialPageRoute(builder: (context) => const DashboardScreen()),
             );
           }
-          if (index == 4) {
+           else if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MapScreen()),
+            );
+           }
+          else if (index == 4) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const ProfileScreen()),
             );
           }
-          if (index == 3) {
+          else if (index == 3) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => ServiceHistorypage()),
             );
           }
+          
         },
         items: [
           const BottomNavigationBarItem(
@@ -197,7 +204,7 @@ class ServiceHistorypage extends StatelessWidget {
             label: '',
           ),
           const BottomNavigationBarItem(
-            icon: Icon(Icons.search, size: 24),
+            icon: Icon(Icons.map, size: 24),
             label: '',
           ),
           BottomNavigationBarItem(
