@@ -87,6 +87,12 @@ flutter:
     - images/bg_removed_logo.png
     - images/google_ico.png
     - images/dashcar.png
+    - images/ampara.jpg
+    - images/anuradapura.jpg
+    - images/colombo.jpg
+    - images/galle.jpg
+    - images/kandy.jpg
+    - images/jaffna.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
