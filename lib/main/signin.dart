@@ -144,11 +144,11 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   void _ResetPassword() async {
-    final email = _emailOrUsernameController.text.trim();
+    final input = _emailOrUsernameController.text.trim();
 
-    if (email.isEmpty) {
+    if (input.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please enter your email to reset password")),
+        SnackBar(content: Text("Please enter your email or username")),
       );
       return;
     }
@@ -158,14 +158,35 @@ class _SignInScreenState extends State<SignInScreen> {
     });
 
     try {
-      await _authService.resetPassword(email);
+      String emailToUse;
+
+      if (input.contains('@')) {
+        emailToUse = input;
+      } else {
+        final query =
+            await FirebaseFirestore.instance
+                .collection("Users")
+                .where("Username", isEqualTo: input)
+                .limit(1)
+                .get();
+
+        if (query.docs.isEmpty) {
+          throw Exception("No user found with that username");
+        }
+
+        emailToUse = query.docs.first["Email"];
+      }
+
+      await _authService.resetPassword(emailToUse);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Password reset link sent to your email")),
       );
     } catch (e) {
-      String errorMessage = e.toString();
-      errorMessage = errorMessage.replaceFirst(RegExp(r'^Exception[:]? ?'), '');
-
+      String errorMessage = e.toString().replaceFirst(
+        RegExp(r'^Exception[:]? ?'),
+        '',
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Failed to send reset email: $errorMessage")),
       );
