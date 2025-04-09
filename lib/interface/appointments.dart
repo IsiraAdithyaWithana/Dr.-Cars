@@ -90,12 +90,13 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.black,
         title: const Text(
           'Book Your Appointment',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
