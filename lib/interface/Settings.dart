@@ -1,3 +1,4 @@
+import 'package:dr_cars/interface/Service%20History.dart';
 import 'package:dr_cars/interface/service_history.dart';
 import 'package:flutter/material.dart';
 import 'package:dr_cars/interface/obd2.dart';
@@ -254,7 +255,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           } else if (index == 3) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ServiceHistoryPage()),
+              MaterialPageRoute(builder: (context) => ServiceHistorypage()),
             );
           } else if (index == 4) {
             Navigator.push(
