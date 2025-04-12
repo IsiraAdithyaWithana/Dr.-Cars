@@ -1,6 +1,8 @@
 import 'package:dr_cars/admin/pending_requests.dart';
 import 'package:dr_cars/admin/rejected_requests.dart';
+import 'package:dr_cars/main/signin.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ServiceCenterApprovalPage extends StatelessWidget {
   const ServiceCenterApprovalPage({super.key});
@@ -15,6 +17,19 @@ class ServiceCenterApprovalPage extends StatelessWidget {
           title: const Text("Service Center Requests"),
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
+          actions: [
+            IconButton(
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SignInScreen()),
+                );
+              },
+              icon: const Icon(Icons.logout),
+              tooltip: 'Sign Out',
+            ),
+          ],
           bottom: const TabBar(
             indicatorColor: Colors.white,
             labelColor: Colors.amber,
