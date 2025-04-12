@@ -5,6 +5,7 @@ import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AppointmentsPage extends StatefulWidget {
   const AppointmentsPage({Key? key}) : super(key: key);
@@ -64,6 +65,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
 
+  String? _userPhoneNumber;
+  String? _userId;
+
   Future<void> _pickDate() async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -84,6 +88,28 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     if (pickedTime != null) {
       setState(() => _selectedTime = pickedTime);
     }
+  }
+
+  Future<void> _loadUserData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _userId = user.uid;
+      DocumentSnapshot userDoc =
+          await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(user.uid)
+              .get();
+      setState(() {
+        _userPhoneNumber =
+            userDoc['Contact']; // make sure this key matches your Firestore
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
   }
 
   @override
@@ -214,6 +240,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                         'time': _selectedTime!.format(context),
                                         'timestamp':
                                             FieldValue.serverTimestamp(),
+                                        'Contact': _userPhoneNumber,
+                                        'userId':
+                                            _userId, // (Optional but helpful for reference)
                                       });
 
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -253,23 +282,36 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         unselectedItemColor: Colors.black,
 
         onTap: (index) {
-          
           switch (index) {
             case 0:
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DashboardScreen()));
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => DashboardScreen()),
+              );
               break;
             case 1:
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MapScreen()));
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => MapScreen()),
+              );
               break;
-              case 2:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => OBD2Page()),
+            case 2:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => OBD2Page()),
               );
               break;
             case 3:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ServiceHistorypage()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ServiceHistorypage()),
+              );
               break;
             case 4:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfileScreen()),
+              );
               break;
           }
         },
@@ -286,6 +328,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       ),
     );
   }
+
   Widget _buildLabel(String text) {
     return Text(
       text,
