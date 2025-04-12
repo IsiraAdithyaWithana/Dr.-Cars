@@ -125,6 +125,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             color: Colors.white,
           ),
         ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
         centerTitle: true,
       ),
       body: LayoutBuilder(
