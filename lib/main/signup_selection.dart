@@ -1,3 +1,4 @@
+import 'package:dr_cars/main/check_service_acc_availability.dart';
 import 'package:dr_cars/main/signup.dart';
 import 'package:dr_cars/main/signup_service.dart';
 import 'package:flutter/material.dart';
@@ -43,6 +44,21 @@ class SignupSelection extends StatelessWidget {
               child: Text('Service Center'),
               style: ElevatedButton.styleFrom(
                 minimumSize: Size(double.infinity, 50),
+              ),
+            ),
+            SizedBox(height: 100),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CheckRequestStatusPage(),
+                  ),
+                );
+              },
+              child: Text(
+                "Check service center availability!!",
+                style: TextStyle(color: Colors.black),
               ),
             ),
           ],
