@@ -108,49 +108,135 @@ class _SignInScreenState extends State<SignInScreen> {
       isGoogleLoading = true;
     });
 
-    final user = await _authService.signInWithGoogle();
+    try {
+      final googleUser = await _authService.getGoogleUser();
+      final googleAuth = await googleUser?.authentication;
 
-    if (user != null) {
-      if (user["newUser"] == true) {
+      if (googleUser == null || googleAuth == null) {
+        throw Exception("Google sign-in cancelled");
+      }
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final signInMethods = await FirebaseAuth.instance
+          .fetchSignInMethodsForEmail(googleUser.email);
+
+      if (signInMethods.contains('password') &&
+          !signInMethods.contains('google.com')) {
+        final passwordController = TextEditingController();
+        String? password = await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("Account Linking Required"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "This email is already registered with a password. Enter password to link Google account.",
+                  ),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(hintText: "Password"),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  child: Text("Cancel"),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                TextButton(
+                  child: Text("Link"),
+                  onPressed:
+                      () => Navigator.pop(context, passwordController.text),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (password == null || password.isEmpty) return;
+
+        final emailCredential = EmailAuthProvider.credential(
+          email: googleUser.email,
+          password: password,
+        );
+
+        final emailUser = await FirebaseAuth.instance.signInWithCredential(
+          emailCredential,
+        );
+        await emailUser.user!.linkWithCredential(credential);
+
+        UserCredential result = await FirebaseAuth.instance
+            .signInWithCredential(credential);
+
+        final userType = await _fetchUserType();
+
+        Widget screen;
+        if (userType == "Vehicle Owner") {
+          screen = DashboardScreen();
+        } else if (userType == "Service Center") {
+          screen = HomeScreen();
+        } else {
+          screen = DashboardScreen();
+        }
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => screen),
+        );
+        return;
+      }
+
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
+      final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+
+      if (isNewUser) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder:
                 (context) => GoogleProfileCompletionPage(
-                  uid: user["uid"],
-                  name: user["name"],
-                  email: user["email"],
+                  uid: userCredential.user!.uid,
+                  name: googleUser.displayName ?? '',
+                  email: googleUser.email,
                 ),
           ),
         );
       } else {
-        String userType = await _fetchUserType();
+        final userType = await _fetchUserType();
 
-        Widget targetScreen;
+        Widget screen;
         if (userType == "Vehicle Owner") {
-          targetScreen = DashboardScreen();
+          screen = DashboardScreen();
         } else if (userType == "Service Center") {
-          targetScreen = HomeScreen();
-        } else if (userType == "App Admin") {
-          targetScreen = ServiceCenterApprovalPage();
+          screen = HomeScreen();
         } else {
-          targetScreen = DashboardScreen();
+          screen = DashboardScreen();
         }
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => targetScreen),
+          MaterialPageRoute(builder: (_) => screen),
         );
       }
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Google Sign-In Failed")));
+    } catch (e) {
+      print("Google Sign-in Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Google Sign-In Failed: ${e.toString()}")),
+      );
+    } finally {
+      setState(() {
+        isGoogleLoading = false;
+      });
     }
-
-    setState(() {
-      isGoogleLoading = false;
-    });
   }
 
   void _ResetPassword() async {

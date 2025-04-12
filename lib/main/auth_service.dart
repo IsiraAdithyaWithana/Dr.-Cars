@@ -14,15 +14,15 @@ class AuthService {
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      final AuthCredential credential = GoogleAuthProvider.credential(
+      final AuthCredential googleCredential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      final UserCredential userCredential = await _auth.signInWithCredential(
-        credential,
+      UserCredential googleUserCredential = await _auth.signInWithCredential(
+        googleCredential,
       );
-      final User? user = userCredential.user;
+      final user = googleUserCredential.user;
 
       if (user != null) {
         final doc = await _firestore.collection('Users').doc(user.uid).get();
@@ -38,12 +38,12 @@ class AuthService {
 
         return {"newUser": false, "uid": user.uid};
       }
-
-      return null;
     } catch (e) {
       print("Google Sign-In Error: $e");
       return null;
     }
+
+    return null;
   }
 
   Future<User?> signUp(
@@ -146,5 +146,20 @@ class AuthService {
 
   Future<void> signOut() async {
     await _auth.signOut();
+  }
+
+  Future<GoogleSignInAccount?> getGoogleUser() async {
+    return await GoogleSignIn().signIn();
+  }
+
+  Future<AuthCredential?> getGoogleCredential() async {
+    final googleUser = await getGoogleUser();
+    if (googleUser == null) return null;
+
+    final googleAuth = await googleUser.authentication;
+    return GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
   }
 }

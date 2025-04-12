@@ -20,26 +20,62 @@ class _ServiceCenterRequestScreenState
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _contactController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
 
   bool _isSubmitting = false;
 
+  Future<bool> _checkDuplicate(String field, String value) async {
+    final users =
+        await FirebaseFirestore.instance
+            .collection("Users")
+            .where(field, isEqualTo: value)
+            .get();
+
+    if (users.docs.isNotEmpty) return true;
+
+    final requests =
+        await FirebaseFirestore.instance
+            .collection("ServiceCenterRequests")
+            .where(field, isEqualTo: value)
+            .get();
+
+    return requests.docs.isNotEmpty;
+  }
+
   Future<void> _submitRequest() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final email = _emailController.text.trim();
+    final username = _usernameController.text.trim();
 
     setState(() {
       _isSubmitting = true;
     });
 
+    final emailExists = await _checkDuplicate("Email", email);
+    final usernameExists = await _checkDuplicate("Username", username);
+
+    if (emailExists) {
+      _showError("This email address is already in use.");
+      return;
+    }
+
+    if (usernameExists) {
+      _showError("This username is already in use.");
+      return;
+    }
+
     try {
       await FirebaseFirestore.instance.collection("ServiceCenterRequests").add({
         "serviceCenterName": _centerNameController.text.trim(),
-        "email": _emailController.text.trim(),
+        "email": email,
         "ownerName": _ownerNameController.text.trim(),
         "nic": _nicController.text.trim(),
         "regNumber": _regCertController.text.trim(),
         "address": _addressController.text.trim(),
         "contact": _contactController.text.trim(),
         "notes": _notesController.text.trim(),
+        "username": username,
         "status": "pending",
         "createdAt": FieldValue.serverTimestamp(),
       });
@@ -50,13 +86,13 @@ class _ServiceCenterRequestScreenState
             (_) => AlertDialog(
               title: const Text("Request Submitted"),
               content: const Text(
-                "Your request has been submitted. Please wait while the app admin reviews and approves your service center account.",
+                "Your request has been submitted. Please wait while the app admin reviews and approves your service center account. Check the 'Check service center availability!! option frequently'",
               ),
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop(); // close dialog
-                    Navigator.of(context).pop(); // go back to home
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
                   },
                   child: const Text("OK"),
                 ),
@@ -66,14 +102,19 @@ class _ServiceCenterRequestScreenState
 
       _formKey.currentState!.reset();
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Submission failed: $e")));
+      _showError("Submission failed: $e");
     } finally {
       setState(() {
         _isSubmitting = false;
       });
     }
+  }
+
+  void _showError(String message) {
+    setState(() => _isSubmitting = false);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Widget _buildTextField({
@@ -122,6 +163,10 @@ class _ServiceCenterRequestScreenState
               _buildTextField(
                 label: "E-mail Address",
                 controller: _emailController,
+              ),
+              _buildTextField(
+                label: "Username",
+                controller: _usernameController,
               ),
               _buildTextField(
                 label: "Owner Name",
