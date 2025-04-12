@@ -252,6 +252,14 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                       ),
                                     ),
                                   );
+
+                                  // Redirect to dashboard after short delay
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DashboardScreen(),
+                                    ),
+                                  );
                                 } catch (e) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text('Error: $e')),
@@ -259,7 +267,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                 }
                               },
                               child: const Text(
-                                'Submit Appointment',
+                                'Schedule Appointment',
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.white,
