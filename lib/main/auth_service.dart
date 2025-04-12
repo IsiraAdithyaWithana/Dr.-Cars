@@ -24,7 +24,6 @@ class AuthService {
       );
 
       if (signInMethods.contains('password')) {
-        // Email already has a password account — link it
         final userQuery =
             await _firestore
                 .collection("Users")
@@ -36,7 +35,7 @@ class AuthService {
           final userDoc = userQuery.docs.first;
           final userData = userDoc.data();
           final username = userData['Username'];
-          final password = "12346789"; // default password
+          final password = "12346789";
 
           UserCredential emailUserCredential = await _auth
               .signInWithEmailAndPassword(
@@ -51,7 +50,6 @@ class AuthService {
           throw Exception("Email already exists but user data not found.");
         }
       } else {
-        // Safe to sign in normally
         UserCredential googleUserCredential = await _auth.signInWithCredential(
           googleCredential,
         );
