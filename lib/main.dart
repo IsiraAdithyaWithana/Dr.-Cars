@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dr_cars/interface/dashboard.dart';
+import 'package:dr_cars/admin/admin_home.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,7 +43,7 @@ class _AuthCheckState extends State<AuthCheck> {
           await _firestore.collection("Users").doc(user.uid).get();
       return userData.exists ? userData["User Type"] ?? "User" : "User";
     } catch (e) {
-      print("Error fetching user data: $e");
+      print("Error fetching user type: $e");
       return "User";
     }
   }
@@ -54,15 +55,20 @@ class _AuthCheckState extends State<AuthCheck> {
     if (user != null) {
       String userType = await _fetchUserType(user);
 
+      Widget targetScreen;
+      if (userType == "Vehicle Owner") {
+        targetScreen = DashboardScreen();
+      } else if (userType == "Service Center") {
+        targetScreen = HomeScreen();
+      } else if (userType == "App Admin") {
+        targetScreen = const ServiceCenterApprovalPage();
+      } else {
+        targetScreen = Welcome();
+      }
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder:
-              (context) =>
-                  userType == "Vehicle Owner"
-                      ? DashboardScreen()
-                      : HomeScreen(),
-        ),
+        MaterialPageRoute(builder: (context) => targetScreen),
       );
     } else {
       Navigator.pushReplacement(
@@ -74,6 +80,6 @@ class _AuthCheckState extends State<AuthCheck> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: CircularProgressIndicator()));
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

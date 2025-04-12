@@ -6,6 +6,7 @@ import 'package:dr_cars/service/service_menu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dr_cars/main/google_profile_completion.dart';
+import 'package:dr_cars/admin/admin_home.dart';
 
 class SignInScreen extends StatefulWidget {
   SignInScreen({super.key});
@@ -35,9 +36,7 @@ class _SignInScreenState extends State<SignInScreen> {
         DocumentSnapshot userData =
             await _firestore.collection("Users").doc(user.uid).get();
         return userData.exists ? userData["User Type"] ?? "User" : "User";
-      } catch (e) {
-        print("Error fetching user data: $e");
-      }
+      } catch (e) {}
     }
     return "User";
   }
@@ -73,15 +72,21 @@ class _SignInScreenState extends State<SignInScreen> {
       await _authService.signIn(emailToUse, password);
 
       String userType = await _fetchUserType();
+
+      Widget targetScreen;
+      if (userType == "Vehicle Owner") {
+        targetScreen = DashboardScreen();
+      } else if (userType == "Service Center") {
+        targetScreen = HomeScreen();
+      } else if (userType == "App Admin") {
+        targetScreen = ServiceCenterApprovalPage();
+      } else {
+        targetScreen = DashboardScreen();
+      }
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder:
-              (context) =>
-                  userType == "Vehicle Owner"
-                      ? DashboardScreen()
-                      : HomeScreen(),
-        ),
+        MaterialPageRoute(builder: (context) => targetScreen),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -121,15 +126,20 @@ class _SignInScreenState extends State<SignInScreen> {
       } else {
         String userType = await _fetchUserType();
 
+        Widget targetScreen;
+        if (userType == "Vehicle Owner") {
+          targetScreen = DashboardScreen();
+        } else if (userType == "Service Center") {
+          targetScreen = HomeScreen();
+        } else if (userType == "App Admin") {
+          targetScreen = ServiceCenterApprovalPage();
+        } else {
+          targetScreen = DashboardScreen();
+        }
+
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder:
-                (context) =>
-                    userType == "Vehicle Owner"
-                        ? DashboardScreen()
-                        : HomeScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => targetScreen),
         );
       }
     } else {
@@ -226,7 +236,6 @@ class _SignInScreenState extends State<SignInScreen> {
                       }
 
                       final input = value.trim();
-
                       final isEmail = input.contains('@');
                       final isValidUsername = RegExp(
                         r'^[a-z0-9._]+$',
@@ -254,6 +263,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     validator: (value) {
                       if (value == null || value.isEmpty)
                         return 'Password is required';
+                      return null;
                     },
                     decoration: InputDecoration(
                       hintText: "Password",

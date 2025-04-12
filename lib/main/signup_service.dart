@@ -1,17 +1,104 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-class ServiceCenterRequestScreen extends StatelessWidget {
+class ServiceCenterRequestScreen extends StatefulWidget {
   const ServiceCenterRequestScreen({super.key});
 
-  Future<void> _openForm() async {
-    final Uri url = Uri.parse(
-      "https://docs.google.com/forms/d/e/1FAIpQLSdvL3gHgFMdLvtMs5luSlnVLcaRFFcMs0GIvj_8pyrb83mgog/viewform?usp=header",
-    );
+  @override
+  State<ServiceCenterRequestScreen> createState() =>
+      _ServiceCenterRequestScreenState();
+}
 
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      debugPrint("Could not launch URL");
+class _ServiceCenterRequestScreenState
+    extends State<ServiceCenterRequestScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _centerNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _ownerNameController = TextEditingController();
+  final TextEditingController _nicController = TextEditingController();
+  final TextEditingController _regCertController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _contactController = TextEditingController();
+  final TextEditingController _notesController = TextEditingController();
+
+  bool _isSubmitting = false;
+
+  Future<void> _submitRequest() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      await FirebaseFirestore.instance.collection("ServiceCenterRequests").add({
+        "serviceCenterName": _centerNameController.text.trim(),
+        "email": _emailController.text.trim(),
+        "ownerName": _ownerNameController.text.trim(),
+        "nic": _nicController.text.trim(),
+        "regNumber": _regCertController.text.trim(),
+        "address": _addressController.text.trim(),
+        "contact": _contactController.text.trim(),
+        "notes": _notesController.text.trim(),
+        "status": "pending",
+        "createdAt": FieldValue.serverTimestamp(),
+      });
+
+      showDialog(
+        context: context,
+        builder:
+            (_) => AlertDialog(
+              title: const Text("Request Submitted"),
+              content: const Text(
+                "Your request has been submitted. Please wait while the app admin reviews and approves your service center account.",
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // close dialog
+                    Navigator.of(context).pop(); // go back to home
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+      );
+
+      _formKey.currentState!.reset();
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Submission failed: $e")));
+    } finally {
+      setState(() {
+        _isSubmitting = false;
+      });
     }
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    int maxLines = 1,
+    bool requiredField = true,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextFormField(
+        controller: controller,
+        maxLines: maxLines,
+        validator: (value) {
+          if (requiredField && (value == null || value.trim().isEmpty)) {
+            return 'This field is required';
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+        ),
+      ),
+    );
   }
 
   @override
@@ -23,82 +110,59 @@ class ServiceCenterRequestScreen extends StatelessWidget {
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "How to Request a Service Center Account",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              _buildTextField(
+                label: "Service Center Name",
+                controller: _centerNameController,
               ),
-              const SizedBox(height: 10),
-              const Text(
-                "Please fill out the following Google Form to request a service center account. Ensure that you provide accurate information and upload necessary documents.",
-                style: TextStyle(fontSize: 16),
+              _buildTextField(
+                label: "E-mail Address",
+                controller: _emailController,
               ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text("✔ Service Center Name"),
-                    Text("✔ Registered or Not?"),
-                    Text(
-                      "✔ If registered, upload your registration certificate",
-                    ),
-                    Text("✔ Service Center Start Date"),
-                    Text("✔ Contact Information (Phone & Email)"),
-                    Text("✔ Service Center Address"),
-                    Text("✔ Services Provided"),
-                    Text("✔ Additional Notes (Optional)"),
-                  ],
-                ),
+              _buildTextField(
+                label: "Owner Name",
+                controller: _ownerNameController,
               ),
-              const SizedBox(height: 16),
+              _buildTextField(label: "NIC Number", controller: _nicController),
+              _buildTextField(
+                label: "Registration Certificate Number",
+                controller: _regCertController,
+              ),
+              _buildTextField(
+                label: "Service Center Address",
+                controller: _addressController,
+              ),
+              _buildTextField(
+                label: "Contact Information",
+                controller: _contactController,
+              ),
+              _buildTextField(
+                label: "Additional Notes",
+                controller: _notesController,
+                maxLines: 3,
+                requiredField: false,
+              ),
+              const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _openForm,
+                onPressed: _isSubmitting ? null : _submitRequest,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
+                  minimumSize: const Size(double.infinity, 50),
                 ),
-                child: const Text("Open Google Form"),
+                child:
+                    _isSubmitting
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text("Submit Request"),
               ),
-              const SizedBox(height: 24),
-              const Text(
-                "Privacy Policy",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                "By submitting this form, you agree that we will securely store your provided information, including any uploaded documents, for verification purposes. Your data will only be used for processing your request and will not be shared with third parties without your consent.",
-                style: TextStyle(fontSize: 14, color: Colors.black87),
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: const Text("Back to Home"),
-                ),
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Back to Home"),
               ),
             ],
           ),
