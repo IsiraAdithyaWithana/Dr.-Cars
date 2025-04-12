@@ -19,56 +19,24 @@ class AuthService {
         idToken: googleAuth.idToken,
       );
 
-      List<String> signInMethods = await _auth.fetchSignInMethodsForEmail(
-        googleUser.email,
+      UserCredential googleUserCredential = await _auth.signInWithCredential(
+        googleCredential,
       );
+      final user = googleUserCredential.user;
 
-      if (signInMethods.contains('password')) {
-        final userQuery =
-            await _firestore
-                .collection("Users")
-                .where("Email", isEqualTo: googleUser.email)
-                .limit(1)
-                .get();
+      if (user != null) {
+        final doc = await _firestore.collection('Users').doc(user.uid).get();
 
-        if (userQuery.docs.isNotEmpty) {
-          final userDoc = userQuery.docs.first;
-          final userData = userDoc.data();
-          final username = userData['Username'];
-          final password = "12346789";
-
-          UserCredential emailUserCredential = await _auth
-              .signInWithEmailAndPassword(
-                email: googleUser.email,
-                password: password,
-              );
-
-          await emailUserCredential.user?.linkWithCredential(googleCredential);
-
-          return {"newUser": false, "uid": emailUserCredential.user?.uid};
-        } else {
-          throw Exception("Email already exists but user data not found.");
+        if (!doc.exists) {
+          return {
+            "newUser": true,
+            "uid": user.uid,
+            "name": user.displayName ?? "",
+            "email": user.email ?? "",
+          };
         }
-      } else {
-        UserCredential googleUserCredential = await _auth.signInWithCredential(
-          googleCredential,
-        );
-        final user = googleUserCredential.user;
 
-        if (user != null) {
-          final doc = await _firestore.collection('Users').doc(user.uid).get();
-
-          if (!doc.exists) {
-            return {
-              "newUser": true,
-              "uid": user.uid,
-              "name": user.displayName ?? "",
-              "email": user.email ?? "",
-            };
-          }
-
-          return {"newUser": false, "uid": user.uid};
-        }
+        return {"newUser": false, "uid": user.uid};
       }
     } catch (e) {
       print("Google Sign-In Error: $e");

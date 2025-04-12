@@ -124,13 +124,71 @@ class _SignInScreenState extends State<SignInScreen> {
       final signInMethods = await FirebaseAuth.instance
           .fetchSignInMethodsForEmail(googleUser.email);
 
-      if (signInMethods.contains('password')) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "This email is already registered with email/password. Please sign in using that method.",
-            ),
-          ),
+      if (signInMethods.contains('password') &&
+          !signInMethods.contains('google.com')) {
+        final passwordController = TextEditingController();
+        String? password = await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("Account Linking Required"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "This email is already registered with a password. Enter password to link Google account.",
+                  ),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(hintText: "Password"),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  child: Text("Cancel"),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                TextButton(
+                  child: Text("Link"),
+                  onPressed:
+                      () => Navigator.pop(context, passwordController.text),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (password == null || password.isEmpty) return;
+
+        final emailCredential = EmailAuthProvider.credential(
+          email: googleUser.email,
+          password: password,
+        );
+
+        final emailUser = await FirebaseAuth.instance.signInWithCredential(
+          emailCredential,
+        );
+        await emailUser.user!.linkWithCredential(credential);
+
+        UserCredential result = await FirebaseAuth.instance
+            .signInWithCredential(credential);
+
+        final userType = await _fetchUserType();
+
+        Widget screen;
+        if (userType == "Vehicle Owner") {
+          screen = DashboardScreen();
+        } else if (userType == "Service Center") {
+          screen = HomeScreen();
+        } else {
+          screen = DashboardScreen();
+        }
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => screen),
         );
         return;
       }
@@ -138,7 +196,6 @@ class _SignInScreenState extends State<SignInScreen> {
       final userCredential = await FirebaseAuth.instance.signInWithCredential(
         credential,
       );
-
       final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
 
       if (isNewUser) {
@@ -154,22 +211,20 @@ class _SignInScreenState extends State<SignInScreen> {
           ),
         );
       } else {
-        String userType = await _fetchUserType();
+        final userType = await _fetchUserType();
 
-        Widget targetScreen;
+        Widget screen;
         if (userType == "Vehicle Owner") {
-          targetScreen = DashboardScreen();
+          screen = DashboardScreen();
         } else if (userType == "Service Center") {
-          targetScreen = HomeScreen();
-        } else if (userType == "App Admin") {
-          targetScreen = ServiceCenterApprovalPage();
+          screen = HomeScreen();
         } else {
-          targetScreen = DashboardScreen();
+          screen = DashboardScreen();
         }
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => targetScreen),
+          MaterialPageRoute(builder: (_) => screen),
         );
       }
     } catch (e) {
