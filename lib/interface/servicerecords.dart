@@ -136,7 +136,9 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                 controller: _currentMileageController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
                   suffixText: 'KM',
                   hintText: 'Enter current mileage',
                 ),
@@ -158,7 +160,9 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
               DropdownButtonFormField<String>(
                 value: _selectedServiceType,
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
                   hintText: 'Select service type',
                 ),
                 items:
@@ -198,7 +202,9 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                     DropdownButtonFormField<String>(
                       value: _selectedOilType,
                       decoration: InputDecoration(
-                        border: OutlineInputBorder(),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
                         hintText: 'Select oil type',
                       ),
                       items:
@@ -235,7 +241,9 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                 onTap: () => _selectDate(context),
                 child: InputDecorator(
                   decoration: InputDecoration(
-                    border: OutlineInputBorder(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
                     suffixIcon: Icon(Icons.calendar_today),
                   ),
                   child: Text(
@@ -257,7 +265,9 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                 controller: _serviceMileageController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
                   suffixText: 'KM',
                   hintText: 'Enter service mileage',
                 ),
@@ -279,7 +289,9 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
               TextFormField(
                 controller: _serviceProviderController,
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
                   hintText: 'Enter service provider name',
                 ),
                 validator: (value) {
@@ -301,7 +313,9 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                 controller: _serviceCostController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
                   prefixText: 'Rs.',
                   hintText: 'Enter service cost',
                 ),
@@ -324,7 +338,9 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                 controller: _notesController,
                 maxLines: 3,
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
                   hintText: 'Enter any additional notes',
                 ),
               ),
