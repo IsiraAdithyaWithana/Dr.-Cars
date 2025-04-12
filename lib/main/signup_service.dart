@@ -86,7 +86,7 @@ class _ServiceCenterRequestScreenState
             (_) => AlertDialog(
               title: const Text("Request Submitted"),
               content: const Text(
-                "Your request has been submitted. Please wait while the app admin reviews and approves your service center account.",
+                "Your request has been submitted. Please wait while the app admin reviews and approves your service center account. Check the 'Check service center availability!! option frequently'",
               ),
               actions: [
                 TextButton(

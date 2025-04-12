@@ -14,36 +14,70 @@ class AuthService {
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      final AuthCredential credential = GoogleAuthProvider.credential(
+      final AuthCredential googleCredential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      final UserCredential userCredential = await _auth.signInWithCredential(
-        credential,
+      List<String> signInMethods = await _auth.fetchSignInMethodsForEmail(
+        googleUser.email,
       );
-      final User? user = userCredential.user;
 
-      if (user != null) {
-        final doc = await _firestore.collection('Users').doc(user.uid).get();
+      if (signInMethods.contains('password')) {
+        // Email already has a password account — link it
+        final userQuery =
+            await _firestore
+                .collection("Users")
+                .where("Email", isEqualTo: googleUser.email)
+                .limit(1)
+                .get();
 
-        if (!doc.exists) {
-          return {
-            "newUser": true,
-            "uid": user.uid,
-            "name": user.displayName ?? "",
-            "email": user.email ?? "",
-          };
+        if (userQuery.docs.isNotEmpty) {
+          final userDoc = userQuery.docs.first;
+          final userData = userDoc.data();
+          final username = userData['Username'];
+          final password = "12346789"; // default password
+
+          UserCredential emailUserCredential = await _auth
+              .signInWithEmailAndPassword(
+                email: googleUser.email,
+                password: password,
+              );
+
+          await emailUserCredential.user?.linkWithCredential(googleCredential);
+
+          return {"newUser": false, "uid": emailUserCredential.user?.uid};
+        } else {
+          throw Exception("Email already exists but user data not found.");
         }
+      } else {
+        // Safe to sign in normally
+        UserCredential googleUserCredential = await _auth.signInWithCredential(
+          googleCredential,
+        );
+        final user = googleUserCredential.user;
 
-        return {"newUser": false, "uid": user.uid};
+        if (user != null) {
+          final doc = await _firestore.collection('Users').doc(user.uid).get();
+
+          if (!doc.exists) {
+            return {
+              "newUser": true,
+              "uid": user.uid,
+              "name": user.displayName ?? "",
+              "email": user.email ?? "",
+            };
+          }
+
+          return {"newUser": false, "uid": user.uid};
+        }
       }
-
-      return null;
     } catch (e) {
       print("Google Sign-In Error: $e");
       return null;
     }
+
+    return null;
   }
 
   Future<User?> signUp(
@@ -146,5 +180,20 @@ class AuthService {
 
   Future<void> signOut() async {
     await _auth.signOut();
+  }
+
+  Future<GoogleSignInAccount?> getGoogleUser() async {
+    return await GoogleSignIn().signIn();
+  }
+
+  Future<AuthCredential?> getGoogleCredential() async {
+    final googleUser = await getGoogleUser();
+    if (googleUser == null) return null;
+
+    final googleAuth = await googleUser.authentication;
+    return GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
   }
 }

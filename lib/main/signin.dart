@@ -108,18 +108,48 @@ class _SignInScreenState extends State<SignInScreen> {
       isGoogleLoading = true;
     });
 
-    final user = await _authService.signInWithGoogle();
+    try {
+      final googleUser = await _authService.getGoogleUser();
+      final googleAuth = await googleUser?.authentication;
 
-    if (user != null) {
-      if (user["newUser"] == true) {
+      if (googleUser == null || googleAuth == null) {
+        throw Exception("Google sign-in cancelled");
+      }
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final signInMethods = await FirebaseAuth.instance
+          .fetchSignInMethodsForEmail(googleUser.email);
+
+      if (signInMethods.contains('password')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "This email is already registered with email/password. Please sign in using that method.",
+            ),
+          ),
+        );
+        return;
+      }
+
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
+
+      final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+
+      if (isNewUser) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder:
                 (context) => GoogleProfileCompletionPage(
-                  uid: user["uid"],
-                  name: user["name"],
-                  email: user["email"],
+                  uid: userCredential.user!.uid,
+                  name: googleUser.displayName ?? '',
+                  email: googleUser.email,
                 ),
           ),
         );
@@ -142,15 +172,16 @@ class _SignInScreenState extends State<SignInScreen> {
           MaterialPageRoute(builder: (context) => targetScreen),
         );
       }
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Google Sign-In Failed")));
+    } catch (e) {
+      print("Google Sign-in Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Google Sign-In Failed: ${e.toString()}")),
+      );
+    } finally {
+      setState(() {
+        isGoogleLoading = false;
+      });
     }
-
-    setState(() {
-      isGoogleLoading = false;
-    });
   }
 
   void _ResetPassword() async {
