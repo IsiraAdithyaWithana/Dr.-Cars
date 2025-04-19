@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/Service%20History.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/profile.dart';
+import 'package:dr_cars/interface/receipt_notification_page.dart';
 import 'package:dr_cars/main/signin.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -107,52 +108,105 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: Colors.black,
         automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                ClipOval(
+                  child: Image.asset(
+                    'images/logo.png',
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Welcome Back',
+                      style: TextStyle(fontSize: 16, color: Colors.white70),
+                    ),
+                    Text(
+                      userName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            if (vehicleData != null && vehicleData!['vehicleNumber'] != null)
+              StreamBuilder<QuerySnapshot>(
+                stream:
+                    FirebaseFirestore.instance
+                        .collection('Pending_Receipts')
+                        .where(
+                          'vehicleNumber',
+                          isEqualTo: vehicleData!['vehicleNumber'],
+                        )
+                        .snapshots(),
+                builder: (context, snapshot) {
+                  int count = snapshot.hasData ? snapshot.data!.docs.length : 0;
+
+                  return Stack(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.receipt_long,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ReceiptNotificationPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      if (count > 0)
+                        Positioned(
+                          right: 6,
+                          top: 6,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 20,
+                              minHeight: 20,
+                            ),
+                            child: Text(
+                              '$count',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+          ],
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            SafeArea(
-              child: Padding(
-                padding: EdgeInsets.only(top: 10),
-                child: Image.asset('images/logo.png', height: 80),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Welcome, $userName!",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () async {
-                      await FirebaseAuth.instance.signOut();
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => SignInScreen()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 60,
-                        vertical: 12,
-                      ),
-                    ),
-                    child: Text(
-                      "Sign Out",
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ),
             SizedBox(height: 20),
             Text(
               'Your vehicle',
@@ -298,7 +352,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
             SizedBox(height: 20),
-            // Make an Appointment Button
             Container(
               width: screenWidth * 0.9,
               margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -336,7 +389,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
 
-            SizedBox(height: 10), // Space between buttons
+            SizedBox(height: 10),
             Container(
               width: screenWidth * 0.9,
               margin: const EdgeInsets.symmetric(horizontal: 16),
