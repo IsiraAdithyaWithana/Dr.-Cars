@@ -3,6 +3,10 @@ import 'package:dr_cars/service/service_menu.dart';
 import 'package:flutter/material.dart';
 
 class AddService extends StatefulWidget {
+  final String vehicleNumber;
+
+  const AddService({required this.vehicleNumber, super.key});
+
   @override
   _AddServiceState createState() => _AddServiceState();
 }
@@ -33,9 +37,9 @@ class _AddServiceState extends State<AddService> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Vehicle Owner Information",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        title: Text(
+          "Add Service: ${widget.vehicleNumber}",
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
@@ -67,8 +71,23 @@ class _AddServiceState extends State<AddService> {
               const SizedBox(height: 10),
               TextField(
                 controller: _previousOilChangeController,
+                readOnly: true,
+                onTap: () async {
+                  final DateTime? picked = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2101),
+                  );
+                  if (picked != null) {
+                    setState(() {
+                      _previousOilChangeController.text =
+                          "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                    });
+                  }
+                },
                 decoration: InputDecoration(
-                  labelText: "Enter previous oil change",
+                  labelText: "Enter previous oil change date",
                   labelStyle: TextStyle(color: Colors.black54),
                   border: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.black),
@@ -76,6 +95,7 @@ class _AddServiceState extends State<AddService> {
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.black),
                   ),
+                  suffixIcon: Icon(Icons.calendar_today, color: Colors.black54),
                 ),
                 style: TextStyle(color: Colors.black),
               ),
@@ -196,8 +216,23 @@ class _AddServiceState extends State<AddService> {
               const SizedBox(height: 10),
               TextField(
                 controller: _nextServiceDateController,
+                readOnly: true,
+                onTap: () async {
+                  final DateTime? picked = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(2101),
+                  );
+                  if (picked != null) {
+                    setState(() {
+                      _nextServiceDateController.text =
+                          "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                    });
+                  }
+                },
                 decoration: InputDecoration(
-                  labelText: "Enter next service date",
+                  labelText: "Next service date",
                   labelStyle: TextStyle(color: Colors.black54),
                   border: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.black),
@@ -205,6 +240,7 @@ class _AddServiceState extends State<AddService> {
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.black),
                   ),
+                  suffixIcon: Icon(Icons.calendar_today, color: Colors.black54),
                 ),
                 style: TextStyle(color: Colors.black),
               ),
@@ -225,6 +261,7 @@ class _AddServiceState extends State<AddService> {
                       MaterialPageRoute(
                         builder:
                             (context) => RecieptPage(
+                              vehicleNumber: widget.vehicleNumber,
                               previousOilChange:
                                   _previousOilChangeController.text,
                               currentMileage: _currentMileageController.text,

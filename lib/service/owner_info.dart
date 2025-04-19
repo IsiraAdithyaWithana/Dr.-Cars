@@ -26,6 +26,7 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
   final TextEditingController vehicleYearController = TextEditingController();
   final TextEditingController userIdController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool isLoading = false;
 
   String? selectedBrand;
   String? selectedModel;
@@ -182,6 +183,8 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
   Future<void> _handleContinue() async {
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() => isLoading = true);
+
     final isVehicleExisting = widget.vehicleData != null;
 
     Map<String, dynamic> userData = {
@@ -203,18 +206,16 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
       'lastUpdated': FieldValue.serverTimestamp(),
     };
 
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final firestore = FirebaseFirestore.instance;
 
     if (isVehicleExisting) {
       final String uid = widget.vehicleData?['uid'];
-
       final userDoc = await firestore.collection('Users').doc(uid).get();
       final vehicleDoc = await firestore.collection('Vehicle').doc(uid).get();
 
       if (userDoc.exists) {
         await firestore.collection('Users').doc(uid).update(userData);
       }
-
       if (vehicleDoc.exists) {
         await firestore.collection('Vehicle').doc(uid).update(vehicleData);
       }
@@ -235,10 +236,15 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
       });
     }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AddService()),
-    );
+    if (mounted) {
+      setState(() => isLoading = false);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AddService(vehicleNumber: widget.vehicleNumber),
+        ),
+      );
+    }
   }
 
   @override
@@ -246,7 +252,7 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Vehicle Owner: ${widget.vehicleNumber}",
+          "Vehicle: ${widget.vehicleNumber}",
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
@@ -308,14 +314,24 @@ class _OwnerInfoPageState extends State<OwnerInfo> {
                     ),
                   ),
                   onPressed: _handleContinue,
-                  child: const Text(
-                    "Continue",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child:
+                      isLoading
+                          ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : const Text(
+                            "Continue",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                 ),
               ),
               const SizedBox(height: 20),
