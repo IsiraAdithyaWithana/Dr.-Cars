@@ -172,9 +172,6 @@ class _SignInScreenState extends State<SignInScreen> {
         );
         await emailUser.user!.linkWithCredential(credential);
 
-        UserCredential result = await FirebaseAuth.instance
-            .signInWithCredential(credential);
-
         final userType = await _fetchUserType();
 
         Widget screen;
