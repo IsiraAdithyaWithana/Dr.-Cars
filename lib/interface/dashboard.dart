@@ -151,7 +151,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           'vehicleNumber',
                           isEqualTo: vehicleData!['vehicleNumber'],
                         )
-                        .where('status', isEqualTo: 'not confirmed')
+                        .where('status', whereIn: ['not confirmed', 'finished'])
                         .snapshots(),
                 builder: (context, snapshot) {
                   int count = snapshot.hasData ? snapshot.data!.docs.length : 0;
