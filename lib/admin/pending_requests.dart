@@ -54,6 +54,7 @@ class _PendingRequestsTabState extends State<PendingRequestsTab> {
 
         await _firestore.collection("Users").doc(userCredential.user!.uid).set({
           "Name": data["ownerName"],
+          "Service Center Name": data["serviceCenterName"],
           "Email": email,
           "Username": data["username"],
           "Address": data["address"],

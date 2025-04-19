@@ -108,31 +108,6 @@ class ServiceReceiptsPage extends StatelessWidget {
                         ),
                         child: const Text("Finish"),
                       ),
-                    ),
-                  if (status == "confirmed")
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          await FirebaseFirestore.instance
-                              .collection("Service_Receipts")
-                              .doc(docId)
-                              .update({"status": "finished"});
-
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Service marked as finished."),
-                              ),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text("Finish"),
-                      ),
                     )
                   else if (status == "rejected")
                     Padding(

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/service/service_menu.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class RecieptPage extends StatefulWidget {
@@ -38,11 +39,18 @@ class _RecieptPageState extends State<RecieptPage> {
 
   Future<void> _sendReceipt() async {
     setState(() => isLoading = true);
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final uid = currentUser?.uid;
 
     Map<String, String> finalPrices = {};
     _priceControllers.forEach((service, controller) {
       finalPrices[service] = controller.text.trim();
     });
+
+    final userDoc =
+        await FirebaseFirestore.instance.collection("Users").doc(uid).get();
+
+    final serviceCenterName = userDoc['Service Center Name'] ?? 'Unknown';
 
     await FirebaseFirestore.instance.collection('Service_Receipts').add({
       'vehicleNumber': widget.vehicleNumber,
@@ -52,6 +60,8 @@ class _RecieptPageState extends State<RecieptPage> {
       'services': finalPrices,
       'status': 'not confirmed',
       'createdAt': FieldValue.serverTimestamp(),
+      'serviceCenterId': uid,
+      'Service Center Name': serviceCenterName,
     });
 
     if (mounted) {

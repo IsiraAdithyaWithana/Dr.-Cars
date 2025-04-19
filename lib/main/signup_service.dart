@@ -54,6 +54,13 @@ class _ServiceCenterRequestScreenState
 
     final emailExists = await _checkDuplicate("Email", email);
     final usernameExists = await _checkDuplicate("Username", username);
+    final centerName = _centerNameController.text.trim();
+    final centerExists = await _checkDuplicate("serviceCenterName", centerName);
+
+    if (centerExists) {
+      _showError("This service center name is already in use.");
+      return;
+    }
 
     if (emailExists) {
       _showError("This email address is already in use.");

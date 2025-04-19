@@ -114,6 +114,7 @@ class _ReceiptNotificationPageState extends State<ReceiptNotificationPage> {
                 }
 
                 return TabBar(
+                  isScrollable: true,
                   labelColor: Colors.amber,
                   unselectedLabelColor: Colors.white70,
                   indicatorColor: Colors.amber,
@@ -168,7 +169,9 @@ class _ReceiptNotificationPageState extends State<ReceiptNotificationPage> {
             return Card(
               margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: ExpansionTile(
-                title: Text("Receipt ${index + 1}"),
+                title: Text(
+                  "Receipt ${index + 1}: ${receipts[index]['Service Center Name']}",
+                ),
                 subtitle: Text("Mileage: ${receipt['currentMileage']}"),
                 children: [
                   ListTile(
@@ -234,62 +237,15 @@ class _ReceiptNotificationPageState extends State<ReceiptNotificationPage> {
                                   .doc(receipts[index].id)
                                   .update({"status": "confirmed"});
 
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Receipt confirmed."),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.black,
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text("Confirm"),
-                          ),
-                          ElevatedButton(
-                            onPressed: () async {
-                              await FirebaseFirestore.instance
-                                  .collection("Service_Receipts")
-                                  .doc(receipts[index].id)
-                                  .update({"status": "rejected"});
-
                               if (mounted) {
                                 Future.microtask(() {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text("Receipt rejected."),
+                                      content: Text("Receipt confirmed."),
                                     ),
                                   );
                                 });
                               }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text("Reject"),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (showActions)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () async {
-                              await FirebaseFirestore.instance
-                                  .collection("Service_Receipts")
-                                  .doc(receipts[index].id)
-                                  .update({"status": "confirmed"});
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Receipt confirmed."),
-                                ),
-                              );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.black,
