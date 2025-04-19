@@ -44,12 +44,13 @@ class _RecieptPageState extends State<RecieptPage> {
       finalPrices[service] = controller.text.trim();
     });
 
-    await FirebaseFirestore.instance.collection('Pending_Receipts').add({
+    await FirebaseFirestore.instance.collection('Service_Receipts').add({
       'vehicleNumber': widget.vehicleNumber,
       'previousOilChange': widget.previousOilChange,
       'currentMileage': widget.currentMileage,
       'nextServiceDate': widget.nextServiceDate,
       'services': finalPrices,
+      'status': 'not confirmed',
       'createdAt': FieldValue.serverTimestamp(),
     });
 

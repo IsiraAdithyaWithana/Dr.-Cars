@@ -3,7 +3,6 @@ import 'package:dr_cars/interface/Service%20History.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/receipt_notification_page.dart';
-import 'package:dr_cars/main/signin.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dr_cars/interface/obd2.dart';
@@ -147,11 +146,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               StreamBuilder<QuerySnapshot>(
                 stream:
                     FirebaseFirestore.instance
-                        .collection('Pending_Receipts')
+                        .collection('Service_Receipts')
                         .where(
                           'vehicleNumber',
                           isEqualTo: vehicleData!['vehicleNumber'],
                         )
+                        .where('status', isEqualTo: 'not confirmed')
                         .snapshots(),
                 builder: (context, snapshot) {
                   int count = snapshot.hasData ? snapshot.data!.docs.length : 0;

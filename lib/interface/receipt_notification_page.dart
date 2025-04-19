@@ -38,90 +38,143 @@ class _ReceiptNotificationPageState extends State<ReceiptNotificationPage> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Pending Receipts"),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Receipt Notifications"),
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          bottom: const TabBar(
+            labelColor: Colors.amber,
+            unselectedLabelColor: Colors.white70,
+            indicatorColor: Colors.amber,
+            tabs: [
+              Tab(text: "Pending"),
+              Tab(text: "Confirmed"),
+              Tab(text: "Rejected"),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _buildReceiptList("not confirmed", true),
+            _buildReceiptList("confirmed", false),
+            _buildReceiptList("rejected", false),
+          ],
+        ),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream:
-            FirebaseFirestore.instance
-                .collection('Pending_Receipts')
-                .where('vehicleNumber', isEqualTo: vehicleNumber)
-                .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("No pending receipts found."));
-          }
+    );
+  }
 
-          final receipts = snapshot.data!.docs;
-          return ListView.builder(
-            itemCount: receipts.length,
-            itemBuilder: (context, index) {
-              final receipt = receipts[index].data() as Map<String, dynamic>;
-              final services = receipt['services'] as Map<String, dynamic>;
+  Widget _buildReceiptList(String status, bool showActions) {
+    return StreamBuilder<QuerySnapshot>(
+      stream:
+          FirebaseFirestore.instance
+              .collection('Service_Receipts')
+              .where('vehicleNumber', isEqualTo: vehicleNumber)
+              .where('status', isEqualTo: status)
+              .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: ExpansionTile(
-                  title: Text("Receipt ${index + 1}"),
-                  subtitle: Text("Mileage: ${receipt['currentMileage']}"),
-                  children: [
-                    ListTile(
-                      title: const Text("Previous Oil Change"),
-                      subtitle: Text(receipt['previousOilChange']),
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(child: Text("No $status receipts found."));
+        }
+
+        final receipts = snapshot.data!.docs;
+
+        return ListView.builder(
+          itemCount: receipts.length,
+          itemBuilder: (context, index) {
+            final receipt = receipts[index].data() as Map<String, dynamic>;
+            final services = receipt['services'] as Map<String, dynamic>;
+
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: ExpansionTile(
+                title: Text("Receipt ${index + 1}"),
+                subtitle: Text("Mileage: ${receipt['currentMileage']}"),
+                children: [
+                  ListTile(
+                    title: const Text("Previous Oil Change"),
+                    subtitle: Text(receipt['previousOilChange']),
+                  ),
+                  ListTile(
+                    title: const Text("Next Service Date"),
+                    subtitle: Text(receipt['nextServiceDate']),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      "Services:",
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    ListTile(
-                      title: const Text("Next Service Date"),
-                      subtitle: Text(receipt['nextServiceDate']),
+                  ),
+                  ...services.entries.map(
+                    (entry) => ListTile(
+                      title: Text(entry.key),
+                      trailing: Text("Rs. ${entry.value}"),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: const Text(
-                        "Services:",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    ...services.entries.map(
-                      (entry) => ListTile(
-                        title: Text(entry.key),
-                        trailing: Text("Rs. ${entry.value}"),
-                      ),
-                    ),
+                  ),
+                  if (showActions)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          await FirebaseFirestore.instance
-                              .collection("Pending_Receipts")
-                              .doc(receipts[index].id)
-                              .delete();
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () async {
+                              await FirebaseFirestore.instance
+                                  .collection("Service_Receipts")
+                                  .doc(receipts[index].id)
+                                  .update({"status": "confirmed"});
 
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Receipt confirmed and removed"),
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Receipt confirmed."),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              foregroundColor: Colors.white,
                             ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text("Confirm Receipt"),
+                            child: const Text("Confirm"),
+                          ),
+                          ElevatedButton(
+                            onPressed: () async {
+                              await FirebaseFirestore.instance
+                                  .collection("Service_Receipts")
+                                  .doc(receipts[index].id)
+                                  .update({"status": "rejected"});
+
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Receipt rejected."),
+                                  ),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text("Reject"),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 8),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-      ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
