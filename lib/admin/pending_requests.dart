@@ -14,6 +14,7 @@ class _PendingRequestsTabState extends State<PendingRequestsTab> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   List<String> selectedRequestIds = [];
+  bool isLoading = false;
 
   Future<void> _acceptRequests() async {
     for (String docId in selectedRequestIds) {
@@ -66,16 +67,15 @@ class _PendingRequestsTabState extends State<PendingRequestsTab> {
             .collection("ServiceCenterRequests")
             .doc(docId)
             .delete();
-        await _auth.sendPasswordResetEmail(email: email);
       }
     }
 
     setState(() => selectedRequestIds.clear());
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Accepted request(s) and sent email")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Accepted request(s)")));
     }
   }
 
@@ -184,28 +184,67 @@ class _PendingRequestsTabState extends State<PendingRequestsTab> {
               Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Expanded(
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.4,
                       child: ElevatedButton(
-                        onPressed: _acceptRequests,
+                        onPressed:
+                            isLoading
+                                ? null
+                                : () async {
+                                  setState(() => isLoading = true);
+                                  await _acceptRequests();
+                                  if (mounted)
+                                    setState(() => isLoading = false);
+                                },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        child: const Text("Accept and Send Email"),
+                        child:
+                            isLoading
+                                ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const Text("Accept"),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
+                    SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.4,
                       child: ElevatedButton(
-                        onPressed: _rejectRequests,
+                        onPressed:
+                            isLoading
+                                ? null
+                                : () async {
+                                  setState(() => isLoading = true);
+                                  await _rejectRequests();
+                                  if (mounted)
+                                    setState(() => isLoading = false);
+                                },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.redAccent,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        child: const Text("Reject"),
+                        child:
+                            isLoading
+                                ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const Text("Reject"),
                       ),
                     ),
                   ],
