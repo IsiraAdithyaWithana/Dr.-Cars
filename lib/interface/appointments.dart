@@ -231,31 +231,41 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
                         const SizedBox(height: 16),
 
-                        _buildLabel('Preferred Branch '),
-                        _buildDropdown(branches, _selectedBranch, (
-                          value,
-                        ) async {
-                          setState(() => _selectedBranch = value);
+                        _buildLabel('City'),
+                        _buildDropdown(
+                          List<String>.from(branches)..sort(),
+                          _selectedBranch,
+                          (value) async {
+                            setState(() {
+                              _selectedBranch = value;
+                              _filteredServiceCenters = [];
+                              _selectedServiceCenterId = null;
+                            });
 
-                          QuerySnapshot snapshot =
-                              await FirebaseFirestore.instance
-                                  .collection('ServiceCenters')
-                                  .where('branch', isEqualTo: value)
-                                  .get();
-
-                          setState(() {
-                            _filteredServiceCenters =
-                                snapshot.docs
-                                    .map(
-                                      (doc) => {
-                                        'id': doc.id,
-                                        'name': doc['name'],
-                                      },
+                            QuerySnapshot snapshot =
+                                await FirebaseFirestore.instance
+                                    .collection('Users')
+                                    .where(
+                                      'User Type',
+                                      isEqualTo: 'Service Center',
                                     )
-                                    .toList();
-                            _selectedServiceCenterId = null; // reset selection
-                          });
-                        }),
+                                    .where('City', isEqualTo: value)
+                                    .get();
+
+                            setState(() {
+                              _filteredServiceCenters =
+                                  snapshot.docs
+                                      .map(
+                                        (doc) => {
+                                          'id': doc.id,
+                                          'name': doc['Service Center Name'],
+                                          'uid': doc['uid'],
+                                        },
+                                      )
+                                      .toList();
+                            });
+                          },
+                        ),
 
                         if (_filteredServiceCenters.isNotEmpty)
                           Column(
@@ -286,6 +296,19 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                 ),
                               ),
                             ],
+                          ),
+
+                        if (_filteredServiceCenters.isEmpty &&
+                            _selectedBranch != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              'No service centers available in this city.',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
 
                         const SizedBox(height: 16),
@@ -336,6 +359,13 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                 }
 
                                 try {
+                                  final selectedCenter = _filteredServiceCenters
+                                      .firstWhere(
+                                        (center) =>
+                                            center['id'] ==
+                                            _selectedServiceCenterId,
+                                      );
+
                                   await FirebaseFirestore.instance
                                       .collection('appointments')
                                       .add({
@@ -352,8 +382,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                             FieldValue.serverTimestamp(),
                                         'Contact': _userPhoneNumber,
                                         'userId': _userId,
-                                        'serviceCenterId':
-                                            _selectedServiceCenterId, // (Optional but helpful for reference)
+                                        'serviceCenterUid':
+                                            selectedCenter['uid'],
                                       });
 
                                   ScaffoldMessenger.of(context).showSnackBar(
