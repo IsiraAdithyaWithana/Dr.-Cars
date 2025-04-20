@@ -58,6 +58,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     'Matara',
     'Batticaloa',
   ];
+  List<Map<String, dynamic>> _filteredServiceCenters = [];
+  String? _selectedServiceCenterId;
 
   String? _selectedModel;
   List<String> _selectedServices = [];
@@ -177,12 +179,64 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         _buildMultiSelect(),
 
                         const SizedBox(height: 16),
+
                         _buildLabel('Preferred Branch '),
-                        _buildDropdown(
-                          branches,
-                          _selectedBranch,
-                          (value) => setState(() => _selectedBranch = value),
-                        ),
+                        _buildDropdown(branches, _selectedBranch, (
+                          value,
+                        ) async {
+                          setState(() => _selectedBranch = value);
+
+                          QuerySnapshot snapshot =
+                              await FirebaseFirestore.instance
+                                  .collection('ServiceCenters')
+                                  .where('branch', isEqualTo: value)
+                                  .get();
+
+                          setState(() {
+                            _filteredServiceCenters =
+                                snapshot.docs
+                                    .map(
+                                      (doc) => {
+                                        'id': doc.id,
+                                        'name': doc['name'],
+                                      },
+                                    )
+                                    .toList();
+                            _selectedServiceCenterId = null; // reset selection
+                          });
+                        }),
+
+                        if (_filteredServiceCenters.isNotEmpty)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel('Select Service Center'),
+                              DropdownButtonFormField<String>(
+                                value: _selectedServiceCenterId,
+                                items:
+                                    _filteredServiceCenters.map((center) {
+                                      return DropdownMenuItem<String>(
+                                        value: center['id'],
+                                        child: Text(center['name']),
+                                      );
+                                    }).toList(),
+                                onChanged: (value) {
+                                  setState(
+                                    () => _selectedServiceCenterId = value,
+                                  );
+                                },
+                                decoration: InputDecoration(
+                                  hintText: "SELECT",
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[200],
+                                ),
+                              ),
+                            ],
+                          ),
+
                         const SizedBox(height: 16),
                         _buildLabel('Preferred Date '),
                         _buildDatePicker(),
@@ -218,7 +272,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                     _selectedBranch == null ||
                                     _selectedDate == null ||
                                     _selectedTime == null ||
-                                    _selectedServices.isEmpty) {
+                                    _selectedServices.isEmpty ||
+                                    _selectedServiceCenterId == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
@@ -245,8 +300,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                         'timestamp':
                                             FieldValue.serverTimestamp(),
                                         'Contact': _userPhoneNumber,
-                                        'userId':
-                                            _userId, // (Optional but helpful for reference)
+                                        'userId': _userId,
+                                        'serviceCenterId':
+                                            _selectedServiceCenterId, // (Optional but helpful for reference)
                                       });
 
                                   ScaffoldMessenger.of(context).showSnackBar(
