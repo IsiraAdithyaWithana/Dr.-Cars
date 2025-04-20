@@ -19,6 +19,35 @@ class _ReceiptNotificationPageState extends State<ReceiptNotificationPage> {
     _loadVehicleNumber();
   }
 
+  Tab _buildTabWithBadge(String label, int count) {
+    return Tab(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(label),
+          if (count > 0) ...[
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '$count',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Future<void> _loadVehicleNumber() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
@@ -61,6 +90,7 @@ class _ReceiptNotificationPageState extends State<ReceiptNotificationPage> {
               stream:
                   FirebaseFirestore.instance
                       .collection('Service_Receipts')
+                      .where('vehicleNumber', isEqualTo: vehicleNumber)
                       .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
@@ -68,61 +98,31 @@ class _ReceiptNotificationPageState extends State<ReceiptNotificationPage> {
                 }
 
                 final docs = snapshot.data!.docs;
-                final pendingCount =
-                    docs
-                        .where((doc) => doc['status'] == 'not confirmed')
-                        .length;
-                final confirmedCount =
-                    docs.where((doc) => doc['status'] == 'confirmed').length;
-                final rejectedCount =
-                    docs.where((doc) => doc['status'] == 'rejected').length;
-                final finishedCount =
-                    docs.where((doc) => doc['status'] == 'finished').length;
+                final counts = {
+                  'not confirmed': 0,
+                  'confirmed': 0,
+                  'rejected': 0,
+                  'finished': 0,
+                };
 
-                List<Widget> buildTab(String label, int count) {
-                  return [
-                    Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(label),
-                          if (count > 0) ...[
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                '$count',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ];
+                for (var doc in docs) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final status = data['status'];
+                  if (counts.containsKey(status)) {
+                    counts[status] = counts[status]! + 1;
+                  }
                 }
 
                 return TabBar(
-                  isScrollable: true,
+                  isScrollable: false,
                   labelColor: Colors.amber,
                   unselectedLabelColor: Colors.white70,
                   indicatorColor: Colors.amber,
                   tabs: [
-                    ...buildTab("Pending", pendingCount),
-                    ...buildTab("Confirmed", confirmedCount),
-                    ...buildTab("Rejected", rejectedCount),
-                    ...buildTab("Finished", finishedCount),
+                    _buildTabWithBadge("Pending", counts['not confirmed']!),
+                    _buildTabWithBadge("Confirmed", counts['confirmed']!),
+                    _buildTabWithBadge("Rejected", counts['rejected']!),
+                    _buildTabWithBadge("Finished", counts['finished']!),
                   ],
                 );
               },

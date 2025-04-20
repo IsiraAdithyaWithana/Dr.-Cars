@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/Service%20History.dart';
+import 'package:dr_cars/interface/appointment_notification_page.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/receipt_notification_page.dart';
@@ -8,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:dr_cars/interface/obd2.dart';
 import 'package:dr_cars/interface/servicerecords.dart';
 import 'package:dr_cars/interface/appointments.dart';
+import 'package:rxdart/rxdart.dart';
+import 'dart:ui';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -143,18 +146,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
             if (vehicleData != null && vehicleData!['vehicleNumber'] != null)
-              StreamBuilder<QuerySnapshot>(
-                stream:
-                    FirebaseFirestore.instance
-                        .collection('Service_Receipts')
-                        .where(
-                          'vehicleNumber',
-                          isEqualTo: vehicleData!['vehicleNumber'],
-                        )
-                        .where('status', whereIn: ['not confirmed', 'finished'])
-                        .snapshots(),
+              StreamBuilder<List<QuerySnapshot>>(
+                stream: Rx.combineLatest2(
+                  FirebaseFirestore.instance
+                      .collection('Service_Receipts')
+                      .where(
+                        'vehicleNumber',
+                        isEqualTo: vehicleData!['vehicleNumber'],
+                      )
+                      .where('status', whereIn: ['not confirmed', 'finished'])
+                      .snapshots(),
+                  FirebaseFirestore.instance
+                      .collection('appointments')
+                      .where(
+                        'vehicleNumber',
+                        isEqualTo: vehicleData!['vehicleNumber'],
+                      )
+                      .where('status', whereIn: ['accepted', 'rejected'])
+                      .snapshots(),
+                  (QuerySnapshot receipts, QuerySnapshot appointments) => [
+                    receipts,
+                    appointments,
+                  ],
+                ),
                 builder: (context, snapshot) {
-                  int count = snapshot.hasData ? snapshot.data!.docs.length : 0;
+                  if (!snapshot.hasData) return Container();
+
+                  final receipts = snapshot.data![0];
+                  final appointments = snapshot.data![1];
+
+                  int totalCount = receipts.size + appointments.size;
 
                   return Stack(
                     children: [
@@ -164,15 +185,141 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           color: Colors.white,
                         ),
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const ReceiptNotificationPage(),
-                            ),
+                          showDialog(
+                            context: context,
+                            barrierDismissible: true,
+                            builder: (BuildContext context) {
+                              return BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                                child: Dialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  backgroundColor: Colors.white,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 20,
+                                      horizontal: 8,
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text(
+                                          "Select Notification Type",
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const Divider(),
+                                        ListTile(
+                                          leading: const Icon(
+                                            Icons.receipt_long,
+                                          ),
+                                          title: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              const Text(
+                                                "Receipt Notifications",
+                                              ),
+                                              if (receipts.size > 0)
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.red,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                  ),
+                                                  child: Text(
+                                                    '${receipts.size}',
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (_) =>
+                                                        const ReceiptNotificationPage(),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        ListTile(
+                                          leading: const Icon(
+                                            Icons.calendar_today,
+                                          ),
+                                          title: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              const Text(
+                                                "Appointment Notifications",
+                                              ),
+                                              if (appointments.size > 0)
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.red,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                  ),
+                                                  child: Text(
+                                                    '${appointments.size}',
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (_) =>
+                                                        const AppointmentNotificationPage(),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
-                      if (count > 0)
+                      if (totalCount > 0)
                         Positioned(
                           right: 6,
                           top: 6,
@@ -187,7 +334,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               minHeight: 20,
                             ),
                             child: Text(
-                              '$count',
+                              '$totalCount',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,

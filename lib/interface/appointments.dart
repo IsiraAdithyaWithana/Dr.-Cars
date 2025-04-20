@@ -384,6 +384,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                         'userId': _userId,
                                         'serviceCenterUid':
                                             selectedCenter['uid'],
+                                        'status': 'pending',
                                       });
 
                                   ScaffoldMessenger.of(context).showSnackBar(
