@@ -49,15 +49,66 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   ];
 
   final List<String> branches = [
-    'Kandy',
+    // Western Province
     'Colombo',
-    'Galle',
-    'Jaffna',
-    'Kurunegala',
+    'Dehiwala',
+    'Moratuwa',
+    'Nugegoda',
+    'Homagama',
+    'Piliyandala',
+    'Battaramulla',
+    'Gampaha',
+    'Negombo', 'Ja-Ela', 'Wattala', 'Ragama', 'Katunayake',
     'Kalutara',
-    'Matara',
-    'Batticaloa',
+    'Panadura',
+    'Beruwala',
+    'Horana',
+    'Aluthgama',
+    'Matugama',
+
+    // Central Province
+    'Kandy',
+    'Peradeniya',
+    'Katugastota',
+    'Gampola',
+    'Nawalapitiya',
+    'Matale', 'Dambulla', 'Ukuwela', 'Rattota',
+    'Nuwara Eliya', 'Hatton', 'Talawakele', 'Nanu Oya',
+
+    // Southern Province
+    'Galle', 'Unawatuna', 'Ambalangoda', 'Hikkaduwa',
+    'Matara', 'Weligama', 'Akurassa', 'Dikwella',
+    'Hambantota', 'Tangalle', 'Tissamaharama', 'Ambalantota',
+
+    // Northern Province
+    'Jaffna', 'Point Pedro', 'Chavakachcheri', 'Nallur',
+    'Kilinochchi', 'Pallai', 'Paranthan',
+    'Mannar', 'Thalaimannar', 'Pesalai',
+    'Vavuniya', 'Cheddikulam', 'Nedunkeni',
+    'Mullaitivu', 'Puthukkudiyiruppu', 'Oddusuddan',
+
+    // Eastern Province
+    'Batticaloa', 'Eravur', 'Kattankudy',
+    'Ampara', 'Kalmunai', 'Sammanthurai', 'Akkaraipattu',
+    'Trincomalee', 'Kinniya', 'Mutur', 'Kuchchaveli',
+
+    // North Western Province
+    'Kurunegala', 'Pannala', 'Nikaweratiya', 'Kuliyapitiya',
+    'Puttalam', 'Wennappuwa', 'Chilaw', 'Anamaduwa',
+
+    // North Central Province
+    'Anuradhapura', 'Kekirawa', 'Medawachchiya', 'Mihintale',
+    'Polonnaruwa', 'Hingurakgoda', 'Medirigiriya',
+
+    // Uva Province
+    'Badulla', 'Bandarawela', 'Hali-Ela', 'Diyatalawa',
+    'Monaragala', 'Wellawaya', 'Bibile', 'Buttala',
+
+    // Sabaragamuwa Province
+    'Ratnapura', 'Balangoda', 'Eheliyagoda', 'Kuruwita',
+    'Kegalle', 'Mawanella', 'Rambukkana', 'Warakapola',
   ];
+
   List<Map<String, dynamic>> _filteredServiceCenters = [];
   String? _selectedServiceCenterId;
 
