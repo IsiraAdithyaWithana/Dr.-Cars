@@ -62,6 +62,10 @@ class RejectedRequestsTab extends StatelessWidget {
                     subtitle: Text(data["contact"] ?? "N/A"),
                   ),
                   ListTile(
+                    title: const Text("City"),
+                    subtitle: Text(data["city"] ?? "N/A"),
+                  ),
+                  ListTile(
                     title: const Text("Notes"),
                     subtitle: Text(data["notes"] ?? "N/A"),
                   ),

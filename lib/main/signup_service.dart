@@ -23,6 +23,68 @@ class _ServiceCenterRequestScreenState
   final TextEditingController _usernameController = TextEditingController();
 
   bool _isSubmitting = false;
+  String? _selectedCity;
+
+  final List<String> _cities = [
+    // Western Province
+    'Colombo',
+    'Dehiwala',
+    'Moratuwa',
+    'Nugegoda',
+    'Homagama',
+    'Piliyandala',
+    'Battaramulla',
+    'Gampaha',
+    'Negombo', 'Ja-Ela', 'Wattala', 'Ragama', 'Katunayake',
+    'Kalutara',
+    'Panadura',
+    'Beruwala',
+    'Horana',
+    'Aluthgama',
+    'Matugama',
+
+    // Central Province
+    'Kandy',
+    'Peradeniya',
+    'Katugastota',
+    'Gampola',
+    'Nawalapitiya',
+    'Matale', 'Dambulla', 'Ukuwela', 'Rattota',
+    'Nuwara Eliya', 'Hatton', 'Talawakele', 'Nanu Oya',
+
+    // Southern Province
+    'Galle', 'Unawatuna', 'Ambalangoda', 'Hikkaduwa',
+    'Matara', 'Weligama', 'Akurassa', 'Dikwella',
+    'Hambantota', 'Tangalle', 'Tissamaharama', 'Ambalantota',
+
+    // Northern Province
+    'Jaffna', 'Point Pedro', 'Chavakachcheri', 'Nallur',
+    'Kilinochchi', 'Pallai', 'Paranthan',
+    'Mannar', 'Thalaimannar', 'Pesalai',
+    'Vavuniya', 'Cheddikulam', 'Nedunkeni',
+    'Mullaitivu', 'Puthukkudiyiruppu', 'Oddusuddan',
+
+    // Eastern Province
+    'Batticaloa', 'Eravur', 'Kattankudy',
+    'Ampara', 'Kalmunai', 'Sammanthurai', 'Akkaraipattu',
+    'Trincomalee', 'Kinniya', 'Mutur', 'Kuchchaveli',
+
+    // North Western Province
+    'Kurunegala', 'Pannala', 'Nikaweratiya', 'Kuliyapitiya',
+    'Puttalam', 'Wennappuwa', 'Chilaw', 'Anamaduwa',
+
+    // North Central Province
+    'Anuradhapura', 'Kekirawa', 'Medawachchiya', 'Mihintale',
+    'Polonnaruwa', 'Hingurakgoda', 'Medirigiriya',
+
+    // Uva Province
+    'Badulla', 'Bandarawela', 'Hali-Ela', 'Diyatalawa',
+    'Monaragala', 'Wellawaya', 'Bibile', 'Buttala',
+
+    // Sabaragamuwa Province
+    'Ratnapura', 'Balangoda', 'Eheliyagoda', 'Kuruwita',
+    'Kegalle', 'Mawanella', 'Rambukkana', 'Warakapola',
+  ];
 
   Future<bool> _checkDuplicate(String field, String value) async {
     final users =
@@ -83,6 +145,7 @@ class _ServiceCenterRequestScreenState
         "contact": _contactController.text.trim(),
         "notes": _notesController.text.trim(),
         "username": username,
+        "city": _selectedCity,
         "status": "pending",
         "createdAt": FieldValue.serverTimestamp(),
       });
@@ -151,6 +214,7 @@ class _ServiceCenterRequestScreenState
 
   @override
   Widget build(BuildContext context) {
+    final sortedCities = List<String>.from(_cities)..sort();
     return Scaffold(
       appBar: AppBar(
         title: const Text("Service Center Account Request"),
@@ -191,6 +255,31 @@ class _ServiceCenterRequestScreenState
               _buildTextField(
                 label: "Contact Information",
                 controller: _contactController,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: DropdownButtonFormField<String>(
+                  value: _selectedCity,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: "Service Center City",
+                    border: OutlineInputBorder(),
+                  ),
+                  items:
+                      sortedCities.map((city) {
+                        return DropdownMenuItem<String>(
+                          value: city,
+                          child: Text(city),
+                        );
+                      }).toList(),
+                  validator:
+                      (value) => value == null ? 'Please select a city' : null,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCity = value;
+                    });
+                  },
+                ),
               ),
               _buildTextField(
                 label: "Additional Notes",

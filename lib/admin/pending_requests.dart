@@ -60,6 +60,7 @@ class _PendingRequestsTabState extends State<PendingRequestsTab> {
           "Address": data["address"],
           "Contact": data["contact"],
           "User Type": "Service Center",
+          "City": data["city"],
           "uid": userCredential.user!.uid,
           "createdAt": FieldValue.serverTimestamp(),
         });
@@ -170,6 +171,10 @@ class _PendingRequestsTabState extends State<PendingRequestsTab> {
                             ListTile(
                               title: const Text("Contact"),
                               subtitle: Text(data["contact"] ?? "N/A"),
+                            ),
+                            ListTile(
+                              title: const Text("City"),
+                              subtitle: Text(data["city"] ?? "N/A"),
                             ),
                             ListTile(
                               title: const Text("Notes"),
