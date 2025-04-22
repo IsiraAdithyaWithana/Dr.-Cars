@@ -39,7 +39,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _phoneController = TextEditingController();
   bool _isLoading = false;
   final String _supportEmail = 'support@drcars.com';
-  final String _supportPhone = '+94123456789';
+  final String _supportPhone = '+94772111426';
   final String _supportChat = 'https://drcars.com/support/chat';
 
   @override
