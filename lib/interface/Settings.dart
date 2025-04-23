@@ -537,17 +537,6 @@ If you have any questions or concerns about this Privacy Policy, please contact 
                     _showSnackBar('This feature will be available soon');
                   },
                 ),
-                SwitchListTile(
-                  title: Text('Biometric Login'),
-                  subtitle: Text(
-                    'Use fingerprint or face recognition to log in',
-                  ),
-                  value: false,
-                  onChanged: (value) {
-                    // This will be implemented later
-                    _showSnackBar('This feature will be available soon');
-                  },
-                ),
               ],
             ),
             actions: [
