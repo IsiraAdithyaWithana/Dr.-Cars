@@ -602,11 +602,59 @@ If you have any questions or concerns about this Privacy Policy, please contact 
           (context) => AlertDialog(
             title: Text('Terms and Conditions'),
             content: SingleChildScrollView(
-              child: Text(
-                'By using our service, you agree to these terms and conditions...',
-              ),
+              child: Text('''Terms and Conditions for Dr Cars
+
+Effective Date: April 23, 2025
+
+Please read these Terms and Conditions ("Terms") carefully before using the Dr Cars app. By accessing or using the app, you agree to be bound by these Terms.
+
+1. Use of the App
+You agree to use the Dr Cars app only for lawful purposes and in accordance with these Terms. You may not misuse the app or interfere with its normal operation.
+
+2. Service Bookings
+All service bookings made through the app are subject to availability and confirmation. We reserve the right to cancel or refuse any booking at our discretion.
+
+3. User Information
+You are responsible for providing accurate and up-to-date information during registration and booking. Any false or misleading information may result in suspension of your account.
+
+4. Payments
+Prices and fees for services are displayed in the app and may vary based on location and service provider. All payments must be completed as per the method specified during booking.
+
+5. Cancellations and Refunds
+You may cancel a service within the allowed cancellation window specified during booking. Refunds (if applicable) are processed based on the service provider’s policy.
+
+6. Intellectual Property
+All content, branding, and features of the Dr Cars app are the property of Dr Cars or its licensors. You may not copy, modify, or distribute any part of the app without permission.
+
+7. Limitation of Liability
+Dr Cars is not responsible for any direct or indirect damages resulting from use of the app or services booked through it. We act solely as a platform connecting users and service providers.
+
+8. Changes to Terms
+We may update these Terms from time to time. Continued use of the app after changes means you accept the new Terms.
+
+9. Governing Law
+These Terms are governed by and interpreted in accordance with the laws of [Your Country/Region].
+
+10. Contact Us
+If you have any questions about these Terms, please contact us at:
+Email: support@drcars.com
+Phone: +94 77 211 1426
+Chat: https://drcars.com/support/chat
+'''),
             ),
             actions: [
+              TextButton(
+                onPressed: () => _launchUrl('mailto:support@drcars.com'),
+                child: Text('Email Us'),
+              ),
+              TextButton(
+                onPressed: () => _launchUrl('tel:+94772111426'),
+                child: Text('Call Us'),
+              ),
+              TextButton(
+                onPressed: () => _launchUrl('https://drcars.com/support/chat'),
+                child: Text('Chat Support'),
+              ),
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text('Close'),
