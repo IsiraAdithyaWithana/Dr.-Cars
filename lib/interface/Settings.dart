@@ -442,11 +442,72 @@ class _SettingsScreenState extends State<SettingsScreen> {
           (context) => AlertDialog(
             title: Text('Privacy Policy'),
             content: SingleChildScrollView(
-              child: Text(
-                'Your privacy is important to us. This policy outlines how we collect, use, and protect your personal information...',
-              ),
+              child: Text('''Privacy Policy for Dr Cars
+
+Effective Date: April 23, 2025
+
+At Dr Cars, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and protect your information when you use our car service booking app.
+
+1. Information We Collect
+
+When you use Dr Cars, we may collect the following personal information:
+- Full Name
+- Address
+- Phone Number
+- Email Address
+- Username
+
+This information is collected to provide you with a smooth and personalized experience when booking car services.
+
+2. How We Use Your Information
+
+We use your information to:
+- Register and manage your account
+- Process and confirm your service bookings
+- Communicate with you regarding your bookings and support inquiries
+- Improve our services and user experience
+- Ensure security and prevent unauthorized access
+
+3. Data Sharing
+
+We do not sell, trade, or rent your personal information to third parties. We may share your information only:
+- With service professionals (e.g., mechanics or garages) to fulfill your booking
+- When required by law or legal process
+- To protect the rights, property, or safety of Dr Cars and its users
+
+4. Data Security
+
+We implement reasonable safeguards to protect your personal information from unauthorized access, use, or disclosure.
+
+5. Your Choices
+
+You can review, update, or delete your personal information by contacting us or through your account settings in the app.
+
+6. Changes to This Policy
+
+We may update this Privacy Policy from time to time. If we make any significant changes, we will notify you through the app or by email.
+
+7. Contact Us
+
+If you have any questions or concerns about this Privacy Policy, please contact us at:
+- Email: support@drcars.com
+- Phone: +94 77 211 1426
+- Chat: https://drcars.com/support/chat
+'''),
             ),
             actions: [
+              TextButton(
+                onPressed: () => _launchUrl('mailto:support@drcars.com'),
+                child: Text('Email Us'),
+              ),
+              TextButton(
+                onPressed: () => _launchUrl('tel:+94772111426'),
+                child: Text('Call Us'),
+              ),
+              TextButton(
+                onPressed: () => _launchUrl('https://drcars.com/support/chat'),
+                child: Text('Chat Support'),
+              ),
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text('Close'),
