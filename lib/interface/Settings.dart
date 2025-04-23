@@ -41,7 +41,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = false;
   final String _supportEmail = 'mailto:support@drcars.com';
   final String _supportPhone = 'tel:+94772111426';
-  final String _supportChat = 'https://drcars.com/support/chat';
+  final String _supportChat = 'https://wa.me/+94772111426';
 
   @override
   void initState() {
@@ -492,7 +492,7 @@ We may update this Privacy Policy from time to time. If we make any significant 
 If you have any questions or concerns about this Privacy Policy, please contact us at:
 - Email: support@drcars.com
 - Phone: +94 77 211 1426
-- Chat: https://drcars.com/support/chat
+- Chat: https://wa.me/+94772111426
 '''),
             ),
             actions: [
@@ -505,7 +505,7 @@ If you have any questions or concerns about this Privacy Policy, please contact 
                 child: Text('Call Us'),
               ),
               TextButton(
-                onPressed: () => _launchUrl('https://drcars.com/support/chat'),
+                onPressed: () => _launchUrl('https://wa.me/+94772111426'),
                 child: Text('Chat Support'),
               ),
               TextButton(
@@ -639,7 +639,7 @@ These Terms are governed by and interpreted in accordance with the laws of [Your
 If you have any questions about these Terms, please contact us at:
 Email: support@drcars.com
 Phone: +94 77 211 1426
-Chat: https://drcars.com/support/chat
+Chat: https://wa.me/+94772111426
 '''),
             ),
             actions: [
@@ -652,7 +652,7 @@ Chat: https://drcars.com/support/chat
                 child: Text('Call Us'),
               ),
               TextButton(
-                onPressed: () => _launchUrl('https://drcars.com/support/chat'),
+                onPressed: () => _launchUrl('https://wa.me/+94772111426'),
                 child: Text('Chat Support'),
               ),
               TextButton(
