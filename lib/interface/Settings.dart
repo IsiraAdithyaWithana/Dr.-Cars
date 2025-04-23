@@ -9,6 +9,7 @@ import 'package:dr_cars/interface/rating.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/main/signin.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -511,19 +512,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Icon(Icons.email),
                   title: Text('Email Support'),
                   subtitle: Text(_supportEmail),
-                  onTap: () {},
+                  onTap: () => _launchUrl('mailto:$_supportEmail'),
                 ),
                 ListTile(
                   leading: Icon(Icons.phone),
                   title: Text('Call Support'),
                   subtitle: Text(_supportPhone),
-                  onTap: () {},
+                  onTap: () => _launchUrl('tel:$_supportPhone'),
                 ),
                 ListTile(
                   leading: Icon(Icons.chat),
                   title: Text('Live Chat'),
                   subtitle: Text('Click to start chat'),
-                  onTap: () {},
+                  onTap: () => _launchUrl(_supportChat),
                 ),
               ],
             ),
@@ -535,6 +536,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
     );
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw 'Could not launch $url';
+    }
   }
 
   void _showTermsAndConditions(BuildContext context) {
