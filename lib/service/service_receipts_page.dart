@@ -20,7 +20,7 @@ class ServiceReceiptsPage extends StatelessWidget {
             tabs: [Tab(text: "Confirmed"), Tab(text: "Rejected")],
           ),
         ),
-        
+
         body: TabBarView(
           children: [
             _buildReceiptList("confirmed"),
