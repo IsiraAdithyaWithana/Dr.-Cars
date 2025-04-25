@@ -8,6 +8,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 
 class MapScreen extends StatefulWidget {
   @override
@@ -24,48 +26,63 @@ class _MapScreenState extends State<MapScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _showReviews = false;
 
+  Future<void> _makePhoneCall(String phoneNumber) async {
+  final Uri launchUri = Uri(
+    scheme: 'tel',
+    path: phoneNumber,
+  );
+  await launchUrl(launchUri);
+}
+
+
   final List<Map<String, dynamic>> serviceCenters = [
     {
       "name": "Dr Cars Colombo Service Center",
       "lat": 6.9271,
       "lng": 79.8612,
       "description": "Located in the heart of Colombo, providing 24/7 customer support.",
-      "image": "images/colombo.jpg"
+      "image": "images/colombo.jpg",
+      "phone": "0762611651"
     },
     {
       "name": "Dr Cars Kandy Service Center",
       "lat": 7.2906,
       "lng": 80.6337,
       "description": "Situated near the Kandy Lake, offering maintenance services.",
-      "image": "images/kandy.jpg"
+      "image": "images/kandy.jpg",
+      "phone": "0762611651"
     },
     {
       "name": "Dr Cars Galle Service Center",
       "lat": 6.0535,
       "lng": 80.2210,
       "description": "A modern facility near Galle Fort, specializing in quick repairs.",
-      "image": "images/galle.jpg"
+      "image": "images/galle.jpg",
+      "phone": "0762611651"
     },
     {
       "name": "Dr Cars Jaffna Service Center",
       "lat": 9.6615,
       "lng": 80.0255,
       "description": "Serving the northern region with dedicated support services.",
-      "image": "images/jaffna.jpg"
+      "image": "images/jaffna.jpg",
+      "phone": "0762611651"
     },
     {
       "name": "Dr Cars Anuradhapura Service Center",
       "lat": 8.3114,
       "lng": 80.4037,
       "description": "Located close to heritage sites, ensuring reliable service.",
-      "image": "images/anuradapura.jpg"
+      "image": "images/anuradapura.jpg",
+      "phone": "0762611651"
     },
     {
       "name": "Dr Cars Ampara Service Center",
       "lat": 7.301763770344583,
       "lng": 81.67479843992851,
       "description": "Located close to heritage sites, ensuring reliable service.",
-      "image": "images/ampara.jpg"
+      "image": "images/ampara.jpg",
+      "phone": "0762611651"
     },
   ];
 
@@ -435,6 +452,8 @@ class _MapScreenState extends State<MapScreen> {
                               ),
                               SizedBox(height: 12),
 
+                          
+
                               // Buttons Row
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -449,6 +468,18 @@ class _MapScreenState extends State<MapScreen> {
                                  });
                                 },
                                ),
+                                  _buildCardButton(Icons.phone, "Call", Colors.green,
+                                    onPressed: () {
+                                      if (_selectedCenter!['phone'] != null) {
+                                        _makePhoneCall(_selectedCenter!['phone']);
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text("No phone number available.")),
+                                        );
+                                      }
+                                    },
+                                  ),
+                               
                                   _buildCardButton(Icons.directions, "Directions", Colors.blue),
                                   _buildCardButton(Icons.bookmark, "Save", const Color.fromARGB(255, 9, 21, 43)),
                                   _buildCardButton(
