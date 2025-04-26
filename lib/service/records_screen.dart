@@ -16,12 +16,15 @@ class _RecordsScreenState extends State<RecordsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Records", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Records",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
         centerTitle: true,
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -29,13 +32,13 @@ class _RecordsScreenState extends State<RecordsScreen> {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset('images/logo.png', height: 100),
-              SizedBox(height: 20),
-              Text(
+              const SizedBox(height: 20),
+              const Text(
                 "Find Vehicle",
                 style: TextStyle(
                   fontSize: 24,
@@ -43,27 +46,27 @@ class _RecordsScreenState extends State<RecordsScreen> {
                   color: Colors.black,
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextField(
                 controller: _vehicleNumberController,
                 decoration: InputDecoration(
                   labelText: "Vehicle Number",
-                  labelStyle: TextStyle(color: Colors.black54),
+                  labelStyle: const TextStyle(color: Colors.black54),
                   border: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black),
+                    borderSide: const BorderSide(color: Colors.black),
                   ),
-                  enabledBorder: OutlineInputBorder(
+                  enabledBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.black),
                   ),
                   filled: true,
                   fillColor: Colors.black.withOpacity(0.1),
                 ),
-                style: TextStyle(color: Colors.black),
+                style: const TextStyle(color: Colors.black),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  String vehicleNumber = _vehicleNumberController.text;
+                  String vehicleNumber = _vehicleNumberController.text.trim();
                   if (vehicleNumber.isNotEmpty) {
                     Navigator.push(
                       context,
@@ -76,17 +79,17 @@ class _RecordsScreenState extends State<RecordsScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black, // Updated property
-                  foregroundColor: Colors.white, // Updated property
-                  minimumSize: Size(double.infinity, 50),
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 50),
                   elevation: 5,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: Text("Continue", style: TextStyle(fontSize: 18)),
+                child: const Text("Continue", style: TextStyle(fontSize: 18)),
               ),
-              SizedBox(height: 70),
+              const SizedBox(height: 70),
             ],
           ),
         ),
