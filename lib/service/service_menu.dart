@@ -252,15 +252,52 @@ class PasswordDialog extends StatefulWidget {
 
 class _PasswordDialogState extends State<PasswordDialog> {
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+  String? _errorText;
+
+  Future<bool> _verifyPassword() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final email = user?.email;
+      final password = _passwordController.text.trim();
+
+      if (email == null || password.isEmpty) {
+        return false;
+      }
+
+      final credential = EmailAuthProvider.credential(
+        email: email,
+        password: password,
+      );
+
+      await user!.reauthenticateWithCredential(credential);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Enter Password'),
-      content: TextField(
-        controller: _passwordController,
-        obscureText: true,
-        decoration: const InputDecoration(labelText: 'Password'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _passwordController,
+            obscureText: true,
+            decoration: InputDecoration(
+              labelText: 'Password',
+              errorText: _errorText,
+            ),
+          ),
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.only(top: 10),
+              child: CircularProgressIndicator(),
+            ),
+        ],
       ),
       actions: [
         TextButton(
@@ -270,11 +307,24 @@ class _PasswordDialogState extends State<PasswordDialog> {
           child: const Text('Cancel'),
         ),
         TextButton(
-          onPressed: () {
-            if (_passwordController.text == 'Isira') {
+          onPressed: () async {
+            setState(() {
+              _isLoading = true;
+              _errorText = null;
+            });
+
+            final isAuthenticated = await _verifyPassword();
+
+            setState(() {
+              _isLoading = false;
+            });
+
+            if (isAuthenticated) {
               Navigator.of(context).pop(true);
             } else {
-              Navigator.of(context).pop(false);
+              setState(() {
+                _errorText = "Wrong password!";
+              });
             }
           },
           child: const Text('Submit'),
