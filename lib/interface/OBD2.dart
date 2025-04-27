@@ -1,5 +1,5 @@
-import 'package:dr_cars/interface/Service%20History.dart';
 import 'package:flutter/material.dart';
+import 'package:dr_cars/interface/Service%20History.dart';
 import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/interface/profile.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
@@ -21,6 +21,104 @@ class _OBD2PageState extends State<OBD2Page> {
     'BMW X5',
     'Mercedes C-Class',
   ];
+
+  // Mock method to simulate OBD-II Freeze Frame command (02)
+  Future<Map<String, String>> _getFreezeFrameData() async {
+    // Placeholder for actual OBD-II communication
+    Map<String, String> freezeFrameData = {
+      'RPM': '2500 RPM',
+      'Speed': '60 km/h',
+      'Coolant Temp': '90°C',
+      'Throttle Position': '20%',
+      'Fuel Pressure': '45 PSI',
+    };
+    return freezeFrameData;
+  }
+
+  // Mock method to simulate OBD-II Clear DTC command (04)
+  Future<void> _clearDTC() async {
+    // Placeholder for actual OBD-II communication
+    // Send the OBD-II `04` command to clear DTC (Diagnostic Trouble Codes)
+    // In a real implementation, you would send the command here and handle the response
+    await Future.delayed(Duration(seconds: 2)); // Simulate a delay
+  }
+
+  // Show Freeze Frame data in a dialog
+  void _onFreezeFrameButtonPressed() async {
+    if (!_isConnected) {
+      return;
+    }
+
+    Map<String, String> freezeFrameData = await _getFreezeFrameData();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Freeze Frame Data'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: freezeFrameData.entries.map((entry) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Text('${entry.key}: ${entry.value}'),
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Show confirmation dialog for clearing DTC
+  void _onClearDTCButtonPressed() async {
+    if (!_isConnected) {
+      return;
+    }
+
+    // Ask for user confirmation
+    bool? confirmClear = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Clear DTC Codes'),
+          content: Text('Do you want to clear all stored error codes?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+
+    // If user confirms, clear the DTC codes
+    if (confirmClear == true) {
+      // Call method to clear the DTC codes (simulated)
+      await _clearDTC();
+
+      // Show a success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('DTC codes cleared successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -239,11 +337,20 @@ class _OBD2PageState extends State<OBD2Page> {
     );
   }
 
+  // Diagnostic Button builder
   Widget _buildDiagnosticButton(String title, IconData icon) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ElevatedButton(
-        onPressed: _isConnected ? () {} : null,
+        onPressed: _isConnected
+            ? () {
+                if (title == 'Freeze Frame') {
+                  _onFreezeFrameButtonPressed();
+                } else if (title == 'Clear DTC') {
+                  _onClearDTCButtonPressed();
+                }
+              }
+            : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
@@ -252,7 +359,9 @@ class _OBD2PageState extends State<OBD2Page> {
             borderRadius: BorderRadius.circular(10),
           ),
         ),
-        child: Row(children: [Icon(icon), SizedBox(width: 10), Text(title)]),
+        child: Row(
+          children: [Icon(icon), SizedBox(width: 10), Text(title)],
+        ),
       ),
     );
   }
