@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/Service%20History.dart';
+import 'package:dr_cars/interface/VehicleDashboard.dart';
 import 'package:dr_cars/interface/appointment_notification_page.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/profile.dart';
@@ -28,12 +29,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool isLoading = true;
   String? errorMessage;
   String? _vehicleImageUrl;
+  bool _hasVehicleInfo = false;
+bool _checkingVehicleInfo = true;
 
   @override
   void initState() {
     super.initState();
     _fetchUserData();
     _fetchVehicleData();
+     _checkVehicleSetup();
   }
 
   @override
@@ -99,11 +103,232 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     }
   }
+  Future<void> _checkVehicleSetup() async {
+  setState(() {
+    _checkingVehicleInfo = true;
+  });
+  
+  try {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final vehicleDoc = await FirebaseFirestore.instance
+          .collection('Vehicle')
+          .doc(user.uid)
+          .get();
+          
+      setState(() {
+        _hasVehicleInfo = vehicleDoc.exists;
+      });
+    }
+  } catch (e) {
+    print("Error checking vehicle setup: $e");
+  } finally {
+    setState(() {
+      _checkingVehicleInfo = false;
+    });
+  }
+}
 
   int getNextMaintenanceMileage(int currentMileage) {
     return ((currentMileage ~/ 5000) + 1) * 5000;
   }
-
+Widget _buildVehicleDashboardButton() {
+  return Card(
+    elevation: 3,
+    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    child: InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => VehicleDashboardScreen()),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: EdgeInsets.all(12),
+              child: Icon(
+                Icons.dashboard_customize,
+                color: Colors.blue,
+                size: 32,
+              ),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Vehicle Dashboard',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'View real-time vehicle metrics and status',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.grey,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+Widget _buildSmartVehicleDashboardButton() {
+  if (_checkingVehicleInfo) {
+    return Card(
+      elevation: 3,
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+    );
+  }
+  
+  if (!_hasVehicleInfo) {
+    return Card(
+      elevation: 3,
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ProfileScreen()),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: EdgeInsets.all(12),
+                child: Icon(
+                  Icons.directions_car,
+                  color: Colors.orange,
+                  size: 32,
+                ),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Set Up Your Vehicle',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Complete your vehicle profile to access the dashboard',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.grey,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  return Card(
+    elevation: 3,
+    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    child: InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => VehicleDashboardScreen()),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: EdgeInsets.all(12),
+              child: Icon(
+                Icons.dashboard_customize,
+                color: Colors.blue,
+                size: 32,
+              ),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Vehicle Dashboard',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'View real-time vehicle metrics and status',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.grey,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -603,9 +828,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 trailing: Icon(Icons.build, color: Colors.orange),
               ),
             ),
+             _buildVehicleDashboardButton(),
           ],
         ),
       ),
+      
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.black,
@@ -660,5 +887,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
     );
+    
   }
 }
