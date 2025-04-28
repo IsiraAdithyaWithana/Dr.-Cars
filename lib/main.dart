@@ -6,10 +6,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/admin/admin_home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Global notifier to manage theme updates
+final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  // Load saved dark mode preference
+  final prefs = await SharedPreferences.getInstance();
+  bool isDarkMode = prefs.getBool('darkMode') ?? false;
+  themeNotifier.value = isDarkMode ? ThemeMode.dark : ThemeMode.light;
+
   runApp(MyApp());
 }
 
@@ -18,7 +28,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false, home: AuthCheck());
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (_, ThemeMode currentMode, __) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData.light(),
+          darkTheme: ThemeData.dark(),
+          themeMode: currentMode,
+          home: AuthCheck(),
+        );
+      },
+    );
   }
 }
 
@@ -52,10 +73,9 @@ class _AuthCheckState extends State<AuthCheck> {
     User? user = auth.currentUser;
     await Future.delayed(Duration(seconds: 2));
 
+    Widget targetScreen;
     if (user != null) {
       String userType = await _fetchUserType(user);
-
-      Widget targetScreen;
       if (userType == "Vehicle Owner") {
         targetScreen = DashboardScreen();
       } else if (userType == "Service Center") {
@@ -65,17 +85,14 @@ class _AuthCheckState extends State<AuthCheck> {
       } else {
         targetScreen = Welcome();
       }
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => targetScreen),
-      );
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => Welcome()),
-      );
+      targetScreen = Welcome();
     }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => targetScreen),
+    );
   }
 
   @override

@@ -10,15 +10,25 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/main/signin.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dr_cars/main.dart'; // for themeNotifier
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: SettingsScreen(),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (_, ThemeMode currentMode, __) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData.light(),
+          darkTheme: ThemeData.dark(),
+          themeMode: currentMode,
+          home: const SettingsScreen(),
+        );
+      },
     );
   }
 }
@@ -46,7 +56,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    _loadPreferences();
     _loadUserData();
+  }
+
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _darkMode = prefs.getBool('darkMode') ?? false;
+      themeNotifier.value = _darkMode ? ThemeMode.dark : ThemeMode.light;
+    });
   }
 
   Future<void> _loadUserData() async {
@@ -65,6 +84,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _nameController.text = userData['Name'] ?? '';
             _emailController.text = userData['Email'] ?? '';
             _phoneController.text = userData['Contact'] ?? '';
+            _notificationsEnabled = userData['notificationsEnabled'] ?? true;
+            _selectedLanguage = userData['language'] ?? 'English';
           });
         }
       }
@@ -88,9 +109,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               'Email': _emailController.text,
               'Contact': _phoneController.text,
               'notificationsEnabled': _notificationsEnabled,
-              'darkMode': _darkMode,
               'language': _selectedLanguage,
             });
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('darkMode', _darkMode);
+        themeNotifier.value = _darkMode ? ThemeMode.dark : ThemeMode.light;
+
         _showSnackBar('Settings Updated Successfully');
       }
     } catch (e) {
@@ -101,71 +126,70 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showSnackBar(String message) {
+    final isError = message.toLowerCase().contains('error');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: message.contains('Error') ? Colors.red : Colors.green,
+        backgroundColor: isError ? Colors.red : Colors.green,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
-        backgroundColor: Colors.grey[300],
+        title: const Text('Settings'),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.save),
+            icon: const Icon(Icons.save),
             onPressed: _isLoading ? null : _updateUserData,
           ),
         ],
       ),
       body:
           _isLoading
-              ? Center(child: CircularProgressIndicator())
+              ? const Center(child: CircularProgressIndicator())
               : ListView(
                 children: [
                   _buildSectionHeader('Account Settings'),
                   _buildSettingItem(
                     Icons.person_outline,
                     "Personal Information",
-                    context,
                     onTap: () => _showPersonalInfoDialog(context),
                   ),
                   _buildSettingItem(
                     Icons.notifications_outlined,
                     "Notifications",
-                    context,
                     trailing: Switch(
                       value: _notificationsEnabled,
                       onChanged:
-                          (value) =>
-                              setState(() => _notificationsEnabled = value),
+                          (v) => setState(() => _notificationsEnabled = v),
                     ),
                   ),
                   _buildSettingItem(
                     Icons.language,
                     "Language",
-                    context,
                     trailing: DropdownButton<String>(
                       value: _selectedLanguage,
                       items:
-                          _languages.map((String language) {
-                            return DropdownMenuItem<String>(
-                              value: language,
-                              child: Text(language),
-                            );
-                          }).toList(),
-                      onChanged: (String? newValue) {
-                        if (newValue != null) {
-                          setState(() => _selectedLanguage = newValue);
+                          _languages
+                              .map(
+                                (lang) => DropdownMenuItem(
+                                  value: lang,
+                                  child: Text(lang),
+                                ),
+                              )
+                              .toList(),
+                      onChanged: (v) {
+                        if (v != null) {
+                          setState(() => _selectedLanguage = v);
                         }
                       },
                     ),
@@ -173,121 +197,122 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildSettingItem(
                     Icons.dark_mode,
                     "Dark Mode",
-                    context,
                     trailing: Switch(
                       value: _darkMode,
-                      onChanged: (value) => setState(() => _darkMode = value),
+                      onChanged:
+                          (v) => setState(() {
+                            _darkMode = v;
+                            themeNotifier.value =
+                                v ? ThemeMode.dark : ThemeMode.light;
+                          }),
                     ),
                   ),
                   _buildSectionHeader('Privacy & Security'),
                   _buildSettingItem(
                     Icons.lock_outline,
                     "Privacy policy",
-                    context,
                     onTap: () => _showPrivacyPolicy(context),
                   ),
                   _buildSettingItem(
                     Icons.security,
                     "Security",
-                    context,
                     onTap: () => _showSecuritySettings(context),
                   ),
                   _buildSettingItem(
                     Icons.password,
                     "Change Password",
-                    context,
                     onTap: () => _showChangePasswordDialog(context),
                   ),
                   _buildSectionHeader('Support'),
                   _buildSettingItem(
                     Icons.help_outline,
                     "Help & Support",
-                    context,
                     onTap: () => _showHelpSupport(context),
                   ),
                   _buildSettingItem(
                     Icons.description_outlined,
                     "Terms and conditions",
-                    context,
                     onTap: () => _showTermsAndConditions(context),
                   ),
                   _buildSettingItem(
                     Icons.info_outline,
                     "About",
-                    context,
                     onTap: () => _showAboutDialog(context),
                   ),
                   _buildSectionHeader('Account Actions'),
                   _buildSettingItem(
                     Icons.delete_outline,
                     "Delete account",
-                    context,
                     color: Colors.red,
                     onTap: () => _showDeleteAccountDialog(context),
                   ),
                   _buildSettingItem(
                     Icons.logout,
                     "Log Out",
-                    context,
                     onTap: () => _showLogoutDialog(context),
                   ),
                 ],
               ),
       bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.black,
+        selectedItemColor: theme.colorScheme.secondary,
+        unselectedItemColor: theme.iconTheme.color,
         currentIndex: 4,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => DashboardScreen()),
-            );
-          } else if (index == 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => MapScreen()),
-            );
-          } else if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => OBD2Page()),
-            );
-          } else if (index == 3) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ServiceHistorypage()),
-            );
-          } else if (index == 4) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
-            );
+        onTap: (i) {
+          switch (i) {
+            case 0:
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => DashboardScreen()),
+              );
+              break;
+            case 1:
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => MapScreen()),
+              );
+              break;
+            case 2:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => OBD2Page()),
+              );
+              break;
+            case 3:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ServiceHistorypage()),
+              );
+              break;
+            case 4:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ProfileScreen()),
+              );
+              break;
           }
         },
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
+          const BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          const BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
           BottomNavigationBarItem(
-            icon: Image.asset('images/logo.png', height: 30),
+            icon: Image.asset('images/logo.png', width: 30, height: 30),
             label: '',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+          const BottomNavigationBarItem(icon: Icon(Icons.history), label: ''),
+          const BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
       ),
     );
   }
 
   Widget _buildSectionHeader(String title) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
       child: Text(
         title,
-        style: TextStyle(
-          fontSize: 18,
+        style: theme.textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.bold,
-          color: Colors.black87,
         ),
       ),
     );
@@ -295,58 +320,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSettingItem(
     IconData icon,
-    String title,
-    BuildContext context, {
-    Color color = Colors.black,
+    String title, {
+    Color? color,
     VoidCallback? onTap,
     Widget? trailing,
   }) {
+    final theme = Theme.of(context);
+    final itemColor = color ?? theme.iconTheme.color;
     return ListTile(
-      leading: Icon(icon, color: color),
-      title: Text(title, style: TextStyle(color: color)),
+      leading: Icon(icon, color: itemColor),
+      title: Text(
+        title,
+        style: theme.textTheme.bodyMedium?.copyWith(color: itemColor),
+      ),
       trailing:
           trailing ??
-          Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+          Icon(Icons.arrow_forward_ios, size: 16, color: theme.iconTheme.color),
       onTap: onTap,
     );
   }
 
-  void _showPersonalInfoDialog(BuildContext context) {
+  void _showPersonalInfoDialog(BuildContext ctx) {
     showDialog(
-      context: context,
+      context: ctx,
       builder:
-          (context) => AlertDialog(
-            title: Text('Personal Information'),
+          (_) => AlertDialog(
+            title: const Text('Personal Information'),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: _nameController,
-                    decoration: InputDecoration(labelText: 'Name'),
+                    decoration: const InputDecoration(labelText: 'Name'),
                   ),
                   TextField(
                     controller: _emailController,
-                    decoration: InputDecoration(labelText: 'Email'),
+                    decoration: const InputDecoration(labelText: 'Email'),
                   ),
                   TextField(
                     controller: _phoneController,
-                    decoration: InputDecoration(labelText: 'Phone'),
+                    decoration: const InputDecoration(labelText: 'Phone'),
                   ),
                 ],
               ),
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Cancel'),
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.pop(ctx);
                   _updateUserData();
                 },
-                child: Text('Save'),
+                child: const Text('Save'),
               ),
             ],
           ),
