@@ -95,6 +95,35 @@ flutter:
     - images/galle.jpg
     - images/kandy.jpg
     - images/jaffna.jpg
+    - images/BMW/123.png
+    - images/BMW/ABS.png
+    - images/BMW/airbag warning.png
+    - images/BMW/breake.png
+    - images/BMW/check engine.png
+    - images/BMW/e brake.png
+    - images/BMW/fog lights.png
+    - images/BMW/fuel low.png
+    - images/BMW/glow.png
+    - images/BMW/high heat.png
+    - images/BMW/oil light.png
+    - images/BMW/seatbelt.png
+    - images/BMW/tire presure waring.png
+    - images/BMW/TRC.png
+    - images/BMW/warning.png
+    - images/BMW/window heater.png
+    - images/Toyota/ABS.png
+    - images/Toyota/BATTERY CHECK.png
+    - images/Toyota/DOORS OPEND.png
+    - images/Toyota/ENGINE CHECK LIGHT.png
+    - images/Toyota/HAND BREAK.png
+    - images/Toyota/HAZARD.png
+    - images/Toyota/HEAD BEAM.png
+    - images/Toyota/LOW BEAM.png
+    - images/Toyota/LOW FUEL.png
+    - images/Toyota/seat bealts.png
+    - images/Toyota/WATER HEAT.png
+    - images/Toyota/WINDSCREEN WASHER LIQUID LOW.png
+    
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
