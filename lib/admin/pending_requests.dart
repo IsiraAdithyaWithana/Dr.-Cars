@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class PendingRequestsTab extends StatefulWidget {
   const PendingRequestsTab({super.key});
@@ -17,67 +16,69 @@ class _PendingRequestsTabState extends State<PendingRequestsTab> {
   bool isLoading = false;
 
   Future<void> _acceptRequests() async {
-    for (String docId in selectedRequestIds) {
-      final request =
-          await _firestore.collection("ServiceCenterRequests").doc(docId).get();
-      final data = request.data();
-      if (data != null) {
-        final email = data["email"];
-        final isGmail = email.toString().toLowerCase().endsWith("@gmail.com");
+    setState(() => isLoading = true);
 
-        UserCredential userCredential;
+    try {
+      for (String docId in selectedRequestIds) {
+        final request =
+            await _firestore
+                .collection("ServiceCenterRequests")
+                .doc(docId)
+                .get();
+        final data = request.data();
+        if (data != null) {
+          final email = data["email"];
 
-        if (isGmail) {
-          final googleUser = await GoogleSignIn().signIn();
-          if (googleUser == null) continue;
+          try {
+            UserCredential userCredential = await _auth
+                .createUserWithEmailAndPassword(
+                  email: email,
+                  password: "12346789",
+                );
 
-          final googleAuth = await googleUser.authentication;
-          final googleCredential = GoogleAuthProvider.credential(
-            accessToken: googleAuth.accessToken,
-            idToken: googleAuth.idToken,
-          );
+            await _firestore
+                .collection("Users")
+                .doc(userCredential.user!.uid)
+                .set({
+                  "Name": data["ownerName"],
+                  "Service Center Name": data["serviceCenterName"],
+                  "Email": email,
+                  "Username": data["username"],
+                  "Address": data["address"],
+                  "Contact": data["contact"],
+                  "User Type": "Service Center",
+                  "City": data["city"],
+                  "uid": userCredential.user!.uid,
+                  "createdAt": FieldValue.serverTimestamp(),
+                });
 
-          userCredential = await _auth.signInWithCredential(googleCredential);
-
-          final emailCredential = EmailAuthProvider.credential(
-            email: email,
-            password: "12346789",
-          );
-
-          await userCredential.user!.linkWithCredential(emailCredential);
-        } else {
-          userCredential = await _auth.createUserWithEmailAndPassword(
-            email: email,
-            password: "12346789",
-          );
+            await _firestore
+                .collection("ServiceCenterRequests")
+                .doc(docId)
+                .delete();
+          } on FirebaseAuthException catch (e) {
+            if (e.code == 'email-already-in-use') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Email already in use for $email.')),
+              );
+            } else {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Error: ${e.message}')));
+            }
+          }
         }
-
-        await _firestore.collection("Users").doc(userCredential.user!.uid).set({
-          "Name": data["ownerName"],
-          "Service Center Name": data["serviceCenterName"],
-          "Email": email,
-          "Username": data["username"],
-          "Address": data["address"],
-          "Contact": data["contact"],
-          "User Type": "Service Center",
-          "City": data["city"],
-          "uid": userCredential.user!.uid,
-          "createdAt": FieldValue.serverTimestamp(),
-        });
-
-        await _firestore
-            .collection("ServiceCenterRequests")
-            .doc(docId)
-            .delete();
       }
-    }
-
-    setState(() => selectedRequestIds.clear());
-
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Accepted request(s)")));
+    } finally {
+      setState(() {
+        selectedRequestIds.clear();
+        isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Accepted request(s)")));
+      }
     }
   }
 

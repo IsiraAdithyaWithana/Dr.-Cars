@@ -7,6 +7,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dr_cars/main/google_profile_completion.dart';
 import 'package:dr_cars/admin/admin_home.dart';
+import 'package:dr_cars/main/google_link.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'dart:ui';
 
 class SignInScreen extends StatefulWidget {
   SignInScreen({super.key});
@@ -47,7 +50,7 @@ class _SignInScreenState extends State<SignInScreen> {
     });
 
     final input = _emailOrUsernameController.text.trim();
-    final password = _passwordController.text;
+    final password = _passwordController.text.trim();
 
     try {
       String emailToUse;
@@ -63,13 +66,16 @@ class _SignInScreenState extends State<SignInScreen> {
                 .get();
 
         if (query.docs.isEmpty) {
-          throw Exception("No user found with that username");
+          throw Exception("No user found with that username.");
         }
 
         emailToUse = query.docs.first["Email"];
       }
 
-      await _authService.signIn(emailToUse, password);
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailToUse,
+        password: password,
+      );
 
       String userType = await _fetchUserType();
 
@@ -89,12 +95,79 @@ class _SignInScreenState extends State<SignInScreen> {
         MaterialPageRoute(builder: (context) => targetScreen),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Sign In Failed: ${e.toString().replaceFirst('Exception: ', '')}",
-          ),
-        ),
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+            child: Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              backgroundColor: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Login Failed",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.redAccent,
+                        fontSize: 20,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "• Please check your email/username and password.",
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            "• If you used Google Sign-In, click 'Continue with Google' instead.",
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            "• If you forgot password, reset it to enable both login methods.",
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        "OK",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       );
     } finally {
       setState(() {
@@ -109,90 +182,54 @@ class _SignInScreenState extends State<SignInScreen> {
     });
 
     try {
-      final googleUser = await _authService.getGoogleUser();
-      final googleAuth = await googleUser?.authentication;
+      final googleUser = await GoogleSignIn().signIn();
 
-      if (googleUser == null || googleAuth == null) {
+      if (googleUser == null) {
         throw Exception("Google sign-in cancelled");
       }
 
-      final credential = GoogleAuthProvider.credential(
+      final email = googleUser.email;
+
+      final signInMethods = await FirebaseAuth.instance
+          .fetchSignInMethodsForEmail(email);
+
+      final googleAuth = await googleUser.authentication;
+      final googleCredential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      final signInMethods = await FirebaseAuth.instance
-          .fetchSignInMethodsForEmail(googleUser.email);
-
       if (signInMethods.contains('password') &&
           !signInMethods.contains('google.com')) {
-        final passwordController = TextEditingController();
-        String? password = await showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text("Account Linking Required"),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "This email is already registered with a password. Enter password to link Google account.",
+        final query =
+            await FirebaseFirestore.instance
+                .collection("Users")
+                .where("Email", isEqualTo: email)
+                .limit(1)
+                .get();
+
+        if (query.docs.isNotEmpty) {
+          final userType = query.docs.first.get("User Type") ?? "User";
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (_) => GooglePasswordLinkPage(
+                    email: email,
+                    googleCredential: googleCredential,
+                    userType: userType,
                   ),
-                  TextField(
-                    controller: passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(hintText: "Password"),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  child: Text("Cancel"),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                TextButton(
-                  child: Text("Link"),
-                  onPressed:
-                      () => Navigator.pop(context, passwordController.text),
-                ),
-              ],
-            );
-          },
-        );
-
-        if (password == null || password.isEmpty) return;
-
-        final emailCredential = EmailAuthProvider.credential(
-          email: googleUser.email,
-          password: password,
-        );
-
-        final emailUser = await FirebaseAuth.instance.signInWithCredential(
-          emailCredential,
-        );
-        await emailUser.user!.linkWithCredential(credential);
-
-        final userType = await _fetchUserType();
-
-        Widget screen;
-        if (userType == "Vehicle Owner") {
-          screen = DashboardScreen();
-        } else if (userType == "Service Center") {
-          screen = HomeScreen();
-        } else {
-          screen = DashboardScreen();
+            ),
+          );
+          return;
         }
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => screen),
-        );
-        return;
       }
 
       final userCredential = await FirebaseAuth.instance.signInWithCredential(
-        credential,
+        googleCredential,
       );
+
       final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
 
       if (isNewUser) {
@@ -200,21 +237,23 @@ class _SignInScreenState extends State<SignInScreen> {
           context,
           MaterialPageRoute(
             builder:
-                (context) => GoogleProfileCompletionPage(
+                (_) => GoogleProfileCompletionPage(
                   uid: userCredential.user!.uid,
                   name: googleUser.displayName ?? '',
-                  email: googleUser.email,
+                  email: email,
                 ),
           ),
         );
       } else {
         final userType = await _fetchUserType();
-
         Widget screen;
+
         if (userType == "Vehicle Owner") {
           screen = DashboardScreen();
         } else if (userType == "Service Center") {
           screen = HomeScreen();
+        } else if (userType == "App Admin") {
+          screen = ServiceCenterApprovalPage();
         } else {
           screen = DashboardScreen();
         }
@@ -225,7 +264,6 @@ class _SignInScreenState extends State<SignInScreen> {
         );
       }
     } catch (e) {
-      print("Google Sign-in Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Google Sign-In Failed: ${e.toString()}")),
       );

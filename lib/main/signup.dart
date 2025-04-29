@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dr_cars/interface/dashboard.dart';
-import 'package:dr_cars/main/auth_service.dart';
 import 'package:dr_cars/main/signin.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -20,7 +17,6 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController contactController = TextEditingController();
-  final AuthService _authService = AuthService();
 
   final _formKey = GlobalKey<FormState>();
   bool _showPassword = false;
@@ -232,76 +228,33 @@ class _SignUpPageState extends State<SignUpPage> {
 
       final email = emailController.text.trim();
       final password = passwordController.text.trim();
-      final isGmail = email.endsWith("@gmail.com");
 
       try {
-        if (isGmail) {
-          final googleUser = await GoogleSignIn().signIn();
-          if (googleUser == null) throw Exception("Google sign-in cancelled");
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(email: email, password: password);
 
-          final googleAuth = await googleUser.authentication;
-          final googleCredential = GoogleAuthProvider.credential(
-            accessToken: googleAuth.accessToken,
-            idToken: googleAuth.idToken,
-          );
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(userCredential.user!.uid)
+            .set({
+              'Name': nameController.text.trim(),
+              'Email': email,
+              'Username': usernameController.text.trim(),
+              'Address': addressController.text.trim(),
+              'Contact': contactController.text.trim(),
+              'User Type': 'Vehicle Owner',
+              'uid': userCredential.user!.uid,
+              'createdAt': FieldValue.serverTimestamp(),
+            });
 
-          final userCredential = await FirebaseAuth.instance
-              .signInWithCredential(googleCredential);
-
-          final emailCredential = EmailAuthProvider.credential(
-            email: email,
-            password: password,
-          );
-
-          await userCredential.user!.linkWithCredential(emailCredential);
-
-          await FirebaseFirestore.instance
-              .collection("Users")
-              .doc(userCredential.user!.uid)
-              .set({
-                "Name": nameController.text.trim(),
-                "Email": email,
-                "Username": usernameController.text.trim(),
-                "Address": addressController.text.trim(),
-                "Contact": contactController.text.trim(),
-                "User Type": "Vehicle Owner",
-                "uid": userCredential.user!.uid,
-                "createdAt": FieldValue.serverTimestamp(),
-              });
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => DashboardScreen()),
-          );
-        } else {
-          var user = await _authService.signUp(
-            nameController.text,
-            email,
-            password,
-            usernameController.text,
-            addressController.text,
-            contactController.text,
-          );
-
-          if (user != null) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => DashboardScreen()),
-            );
-          } else {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text("Sign Up Failed")));
-          }
-        }
-      } catch (e) {
-        String errorMessage = e.toString().replaceFirst(
-          RegExp(r'^Exception[:]? ?'),
-          '',
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => SignInScreen()),
         );
+      } catch (e) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(errorMessage)));
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       } finally {
         setState(() => _isLoading = false);
       }
