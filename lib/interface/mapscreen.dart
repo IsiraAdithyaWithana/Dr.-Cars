@@ -9,6 +9,10 @@ import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+
 
 
 class MapScreen extends StatefulWidget {
@@ -25,6 +29,61 @@ class _MapScreenState extends State<MapScreen> {
   Map<String, dynamic>? _selectedCenter;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _showReviews = false;
+  List<LatLng> _polylineCoordinates = [];
+  String _distanceText = "";
+  bool _isCardCollapsed = false;
+
+
+
+Future<void> _getRoute(LatLng destination) async {
+  final originLat = _userLocation!.latitude!;
+  final originLng = _userLocation!.longitude!;
+  final apiKey = "AIzaSyB4WgMn8qywWKjtTz_lboNoIcOM1PbBeco";
+
+  final url =
+      "https://maps.googleapis.com/maps/api/directions/json?origin=$originLat,$originLng&destination=${destination.latitude},${destination.longitude}&key=$apiKey";
+
+  final response = await http.get(Uri.parse(url));
+  final data = json.decode(response.body);
+
+  if (data['status'] == 'OK') {
+    final points = data['routes'][0]['overview_polyline']['points'];
+    final polylinePoints = PolylinePoints().decodePolyline(points);
+
+    final distance = data['routes'][0]['legs'][0]['distance']['text'];
+
+    final decodedCoordinates = polylinePoints
+        .map((point) => LatLng(point.latitude, point.longitude))
+        .toList();
+
+    setState(() {
+      _polylineCoordinates = decodedCoordinates;
+      _distanceText = distance;
+    
+    });
+
+    // Fit the map to the route bounds
+    if (_polylineCoordinates.isNotEmpty) {
+      final bounds = LatLngBounds(
+        _polylineCoordinates.first,
+        _polylineCoordinates.first,
+      );
+
+      for (var latLng in _polylineCoordinates) {
+        bounds.extend(latLng);
+      }
+
+      _mapController.fitBounds(
+        bounds,
+        options: FitBoundsOptions(padding: EdgeInsets.all(50)),
+      );
+    }
+  } else {
+    print("Directions API error: ${data['status']}");
+  }
+}
+
+
 
   Future<void> _makePhoneCall(String phoneNumber) async {
   final Uri launchUri = Uri(
@@ -321,6 +380,15 @@ class _MapScreenState extends State<MapScreen> {
                       urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                       subdomains: ['a', 'b', 'c'],
                     ),
+                    PolylineLayer(
+                      polylines: [
+                        Polyline(
+                          points: _polylineCoordinates,
+                          strokeWidth: 4.0,
+                          color: Colors.blue,
+                        ),
+                      ],
+                    ),
                     MarkerLayer(
                       markers: [
                         Marker(
@@ -338,7 +406,8 @@ class _MapScreenState extends State<MapScreen> {
                               onTap: () {
                                 setState(() {
                                   _selectedCenter = center;
-                                  _showReviews = false; // Reset reviews visibility when selecting new center
+                                  _showReviews = false;
+                                  _isCardCollapsed = false; // Reset reviews visibility when selecting new center
                                 });
                               },
                               child: const Icon(Icons.location_on, color: Colors.red, size: 40),
@@ -382,6 +451,15 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                 ),
 
+                if (_distanceText.isNotEmpty)
+                Padding(
+                 padding: const EdgeInsets.all(8.0),
+                 child: Text(
+                   "Distance: $_distanceText",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                   ),
+                   ),
+
                 // Bottom card when a center is selected
                 if (_selectedCenter != null)
                   Positioned(
@@ -391,146 +469,167 @@ class _MapScreenState extends State<MapScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        
                         // Service Center Info Card
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: _showReviews 
-                                ? BorderRadius.only(
-                                    topLeft: Radius.circular(24),
-                                    topRight: Radius.circular(24),
-                                  )
-                                : BorderRadius.vertical(top: Radius.circular(24)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black26,
-                                blurRadius: 10,
-                                offset: Offset(0, -2),
-                              ),
-                            ],
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Drag indicator
-                              Center(
-                                child: Container(
-                                  width: 40,
-                                  height: 5,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[300],
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 12),
+AnimatedContainer(
+  duration: Duration(milliseconds: 300),
+  curve: Curves.easeInOut,
+  height: _isCardCollapsed ? 150 : null, // Collapsed height or natural
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: _showReviews
+        ? BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          )
+        : BorderRadius.vertical(top: Radius.circular(24)),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black26,
+        blurRadius: 10,
+        offset: Offset(0, -2),
+      ),
+    ],
+  ),
+  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+  child: SingleChildScrollView(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Drag indicator
+        Center(
+          child: Container(
+            width: 40,
+            height: 5,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+        SizedBox(height: 12),
 
-                              // Title & location
-                              Text(
-                                _selectedCenter!['name'],
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Icon(Icons.location_on, size: 16, color: Colors.red),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    "(${_selectedCenter!['lat']}, ${_selectedCenter!['lng']})",
-                                    style: TextStyle(color: Colors.grey[700], fontSize: 14),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 12),
+        // Title & location
+        Text(
+          _selectedCenter!['name'],
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 4),
+        Row(
+          children: [
+            Icon(Icons.location_on, size: 16, color: Colors.red),
+            SizedBox(width: 4),
+            Text(
+              "(${_selectedCenter!['lat']}, ${_selectedCenter!['lng']})",
+              style: TextStyle(color: Colors.grey[700], fontSize: 14),
+            ),
+          ],
+        ),
+        SizedBox(height: 12),
 
-                              // Description
-                              Text(
-                                _selectedCenter!['description'],
-                                style: TextStyle(fontSize: 14),
-                              ),
-                              SizedBox(height: 12),
+        // Description
+        Text(
+          _selectedCenter!['description'],
+          style: TextStyle(fontSize: 14),
+        ),
+        SizedBox(height: 12),
 
-                          
+        // Buttons Row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildCardButton(
+              Icons.arrow_back,
+              "Back",
+              Colors.red,
+              onPressed: () {
+                setState(() {
+                  _selectedCenter = null;
+                  _isCardCollapsed = false; // reset on back
+                });
+              },
+            ),
+            _buildCardButton(
+              Icons.phone,
+              "Call",
+              Colors.green,
+              onPressed: () {
+                if (_selectedCenter!['phone'] != null) {
+                  _makePhoneCall(_selectedCenter!['phone']);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("No phone number available.")),
+                  );
+                }
+              },
+            ),
+            _buildCardButton(
+              Icons.directions,
+              "Directions",
+              Colors.blue,
+              onPressed: () {
+                final LatLng centerLocation = LatLng(
+                  _selectedCenter!["lat"],
+                  _selectedCenter!["lng"],
+                );
+                _getRoute(centerLocation);
 
-                              // Buttons Row
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  _buildCardButton(
-                                   Icons.arrow_back,
-                                   "Back",
-                                  Colors.red,
-                                   onPressed: () {
-                                   setState(() {
-                                   _selectedCenter = null;
-                                 });
-                                },
-                               ),
-                                  _buildCardButton(Icons.phone, "Call", Colors.green,
-                                    onPressed: () {
-                                      if (_selectedCenter!['phone'] != null) {
-                                        _makePhoneCall(_selectedCenter!['phone']);
-                                      } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text("No phone number available.")),
-                                        );
-                                      }
-                                    },
-                                  ),
-                               
-                                  _buildCardButton(Icons.directions, "Directions", Colors.blue),
-                                  _buildCardButton(Icons.bookmark, "Save", const Color.fromARGB(255, 9, 21, 43)),
-                                  _buildCardButton(
-                                    Icons.feedback, 
-                                    "Feedbacks", 
-                                    Colors.green,
-                                    onPressed: () async {
-                                      setState(() {
-                                        _showReviews = !_showReviews;
-                                      });
-                                      
-                                      if (!_showReviews) {
-                                        // If hiding reviews, navigate to rating screen
-                                        final result = await Navigator.push(
-                                          context, 
-                                          MaterialPageRoute(
-                                            builder: (context) => RatingScreen(
-                                              serviceCenterId: _selectedCenter!['name'],
-                                            )
-                                          )
-                                        );
-                                        
-                                        // Show reviews after returning from rating screen
-                                        setState(() {
-                                          _showReviews = true;
-                                        });
-                                      }
-                                    }
-                                  ),
-                                 
-                                ],
-                              ),
-                        Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Center(
-                        child: ClipRRect(
-                         borderRadius: BorderRadius.circular(12),
-                         child: Image.asset(
-                        _selectedCenter!['image'],
-                        height: 200,
-                        width: 500,
-                        fit: BoxFit.cover,
+                setState(() {
+                  _isCardCollapsed = !_isCardCollapsed; // toggle size
+                });
+              },
+            ),
+            _buildCardButton(Icons.bookmark, "Save", const Color.fromARGB(255, 9, 21, 43)),
+            _buildCardButton(
+              Icons.feedback,
+              "Feedbacks",
+              Colors.green,
+              onPressed: () async {
+                setState(() {
+                  _showReviews = !_showReviews;
+                });
+
+                if (!_showReviews) {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RatingScreen(
+                        serviceCenterId: _selectedCenter!['name'],
                       ),
-                   ),
-                 ),
-                ),
-             
-                       SizedBox(height: 12),
-                            ],
-                          ),
-                        ),
+                    ),
+                  );
+
+                  setState(() {
+                    _showReviews = true;
+                  });
+                }
+              },
+            ),
+          ],
+        ),
+
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                _selectedCenter!['image'],
+                height: 200,
+                width: 500,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
+
+        SizedBox(height: 12),
+      ],
+    ),
+  ),
+),
+
                     
 
                         // Reviews Section
