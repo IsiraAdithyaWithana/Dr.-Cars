@@ -380,6 +380,44 @@ Future<void> _getRoute(LatLng destination) async {
                       urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                       subdomains: ['a', 'b', 'c'],
                     ),
+                    if (_distanceText.isNotEmpty)
+  Positioned(
+    top: 100, // adjust vertically
+    left: 0,
+    right: 0,
+    child: Center(
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.directions, color: Colors.blue, size: 20),
+            SizedBox(width: 6),
+            Text(
+              "Distance: $_distanceText",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  ),
+
                     PolylineLayer(
                       polylines: [
                         Polyline(
@@ -389,6 +427,8 @@ Future<void> _getRoute(LatLng destination) async {
                         ),
                       ],
                     ),
+                   
+
                     MarkerLayer(
                       markers: [
                         Marker(
@@ -415,9 +455,27 @@ Future<void> _getRoute(LatLng destination) async {
                           ),
                       ],
                     ),
+                     Positioned(
+                     top: 20,
+                     right: 10,
+                     child: FloatingActionButton(
+                     mini: true,
+                     backgroundColor: Colors.white,
+                     child: Icon(Icons.refresh, color: Colors.black),
+                     onPressed: () {
+                    setState(() {
+                   _polylineCoordinates.clear();        
+                   _isCardCollapsed = false;   
+                   _showReviews = false;       
+                    _distanceText = ""; 
+      });
+    },
+  ),
+),
                   ],
                 ),
-
+                
+                
                 // Zoom controls
                 Positioned(
                   top: 20,
@@ -451,15 +509,7 @@ Future<void> _getRoute(LatLng destination) async {
                   ),
                 ),
 
-                if (_distanceText.isNotEmpty)
-                Padding(
-                 padding: const EdgeInsets.all(8.0),
-                 child: Text(
-                   "Distance: $_distanceText",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                   ),
-                   ),
-
+                
                 // Bottom card when a center is selected
                 if (_selectedCenter != null)
                   Positioned(
@@ -471,19 +521,19 @@ Future<void> _getRoute(LatLng destination) async {
                       children: [
                         
                         // Service Center Info Card
-AnimatedContainer(
-  duration: Duration(milliseconds: 300),
-  curve: Curves.easeInOut,
-  height: _isCardCollapsed ? 150 : null, // Collapsed height or natural
-  decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: _showReviews
+        AnimatedContainer(
+         duration: Duration(milliseconds: 300),
+         curve: Curves.easeInOut,
+         height: _isCardCollapsed ? 150 : null, // Collapsed height or natural
+         decoration: BoxDecoration(
+         color: Colors.white,
+         borderRadius: _showReviews
         ? BorderRadius.only(
             topLeft: Radius.circular(24),
             topRight: Radius.circular(24),
           )
         : BorderRadius.vertical(top: Radius.circular(24)),
-    boxShadow: [
+       boxShadow: [
       BoxShadow(
         color: Colors.black26,
         blurRadius: 10,
@@ -580,7 +630,7 @@ AnimatedContainer(
                 });
               },
             ),
-            _buildCardButton(Icons.bookmark, "Save", const Color.fromARGB(255, 9, 21, 43)),
+           
             _buildCardButton(
               Icons.feedback,
               "Feedbacks",
