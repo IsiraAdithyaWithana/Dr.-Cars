@@ -1,57 +1,148 @@
-import 'package:dr_cars/interface/Service%20History.dart';
-import 'package:dr_cars/interface/service_history.dart';
+// interface/settings_screen.dart
+
 import 'package:flutter/material.dart';
-import 'package:dr_cars/interface/obd2.dart';
-import 'package:dr_cars/interface/dashboard.dart';
-import 'package:dr_cars/interface/mapscreen.dart';
-import 'package:dr_cars/interface/profile.dart';
-import 'package:dr_cars/interface/rating.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dr_cars/main/signin.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dr_cars/main.dart'; // for themeNotifier
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: themeNotifier,
-      builder: (_, ThemeMode currentMode, __) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData.light(),
-          darkTheme: ThemeData.dark(),
-          themeMode: currentMode,
-          home: const SettingsScreen(),
-        );
-      },
-    );
-  }
-}
+import 'package:dr_cars/interface/dashboard.dart';
+import 'package:dr_cars/interface/mapscreen.dart';
+import 'package:dr_cars/interface/obd2.dart';
+import 'package:dr_cars/interface/service_history.dart';
+import 'package:dr_cars/interface/profile.dart';
+import 'package:dr_cars/main/signin.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
-
+  const SettingsScreen({Key? key}) : super(key: key);
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+
   bool _notificationsEnabled = true;
   bool _darkMode = false;
-  String _selectedLanguage = 'English';
-  final List<String> _languages = ['English', 'Sinhala', 'Tamil'];
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
+  String _selectedLanguage = 'en'; // 'en', 'si', 'ta'
   bool _isLoading = false;
-  final String _supportEmail = 'mailto:support@drcars.com';
-  final String _supportPhone = 'tel:+94772111426';
-  final String _supportChat = 'https://wa.me/+94772111426';
+
+  static const Map<String, Map<String, String>> translations = {
+    'en': {
+      'settings': 'Settings',
+      'account_settings': 'Account Settings',
+      'personal_information': 'Personal Information',
+      'notifications': 'Notifications',
+      'language': 'Language',
+      'dark_mode': 'Dark Mode',
+      'privacy_security': 'Privacy & Security',
+      'privacy_policy': 'Privacy Policy',
+      'security': 'Security',
+      'change_password': 'Change Password',
+      'support': 'Support',
+      'help_support': 'Help & Support',
+      'terms': 'Terms and Conditions',
+      'about': 'About',
+      'account_actions': 'Account Actions',
+      'delete_account': 'Delete account',
+      'logout': 'Log Out',
+      'save': 'Save',
+      'cancel': 'Cancel',
+      'close': 'Close',
+      'yes': 'Yes',
+      'no': 'No',
+      'change': 'Change',
+      'current_password': 'Current Password',
+      'new_password': 'New Password',
+      'confirm_password': 'Confirm Password',
+      'contact_email': 'Email Support',
+      'contact_call': 'Call Support',
+      'contact_chat': 'Live Chat',
+      'delete_confirm': 'This action cannot be undone.',
+      'logout_confirm': 'Are you sure you want to log out?',
+      'delete_confirm_title': 'Delete Account',
+      'logout_confirm_title': 'Log Out',
+      'two_factor_soon': 'Two-factor auth coming soon',
+    },
+    'si': {
+      'settings': 'සැකසුම්',
+      'account_settings': 'ගිණුම් සැකසුම්',
+      'personal_information': 'පෞද්ගලික තොරතුරු',
+      'notifications': 'නොටිෆිකේෂන්ස්',
+      'language': 'භාෂාව',
+      'dark_mode': 'අඳුරු තේමාව',
+      'privacy_security': 'පෞද්ගලිකත්වය සහ ආරක්ෂාව',
+      'privacy_policy': 'පෞද්ගලිකත්ව ප්‍රතිපත්තිය',
+      'security': 'ආරක්ෂාව',
+      'change_password': 'මුරපදය වෙනස් කරන්න',
+      'support': 'සහාය',
+      'help_support': 'උදව් සහ සහාය',
+      'terms': 'නියම හා කොන්දේසි',
+      'about': 'අප ගැන',
+      'account_actions': 'ගිණුම් ක්‍රියා',
+      'delete_account': 'ගිණුම මකන්න',
+      'logout': 'ලොග් අවුට් ',
+      'save': 'සේව් කරන්න',
+      'cancel': 'අවලංගු කරන්න',
+      'close': 'වසන්න',
+      'yes': 'ඔව්',
+      'no': 'නැහැ',
+      'change': 'වෙනස් කරන්න',
+      'current_password': 'වත්මන් මුරපදය',
+      'new_password': 'නව මුරපදය',
+      'confirm_password': 'නව මුරපදය තහවුරු කරන්න',
+      'contact_email': 'විද්යුත් තැපැල් සහය',
+      'contact_call': 'කතා කරන්න',
+      'contact_chat': 'සජීවී චැට්',
+      'delete_confirm': 'මෙම ක්‍රියාව නැවත ආපසු හැරවිය නොහැක.',
+      'logout_confirm': 'ඔබට ලොග් අවුට් වීමට අවශ්‍ය ද?',
+      'delete_confirm_title': 'ගිණුම මකන්න',
+      'logout_confirm_title': 'ලොග් අවුට් වන්න',
+      'two_factor_soon': 'දෙ-පියවර ඉක්මනින්',
+    },
+    'ta': {
+      'settings': 'அமைப்புகள்',
+      'account_settings': 'கணக்கு அமைப்புகள்',
+      'personal_information': 'தனிப்பட்ட தகவல்கள்',
+      'notifications': 'அறிவிப்புகள்',
+      'language': 'மொழி',
+      'dark_mode': 'இருண்ட தீம்',
+      'privacy_security': 'தனியுரிமை மற்றும் பாதுகாப்பு',
+      'privacy_policy': 'தனியுரிமை கொள்கை',
+      'security': 'பாதுகாப்பு',
+      'change_password': 'மறைச்சொல்லை மாற்றவும்',
+      'support': 'ஆதரவு',
+      'help_support': 'உதவி மற்றும் ஆதரவு',
+      'terms': 'கடிதப்பதிவுகள் மற்றும் நிபந்தனைகள்',
+      'about': 'பற்றி',
+      'account_actions': 'கணக்கு நடவடிக்கைகள்',
+      'delete_account': 'கணக்கை நீக்கவும்',
+      'logout': 'வெளியேறு',
+      'save': 'சேமிக்கவும்',
+      'cancel': 'ரத்துசெய்',
+      'close': 'மூடு',
+      'yes': 'ஆம்',
+      'no': 'இல்லை',
+      'change': 'மாற்றவும்',
+      'current_password': 'தற்போதைய மறைச்சொல்',
+      'new_password': 'புதிய மறைச்சொல்',
+      'confirm_password': 'மறைச்சொல்லை உறுதி செய்',
+      'contact_email': 'மின்னஞ்சல் ஆதரவு',
+      'contact_call': 'அழைப்பு ஆதரவு',
+      'contact_chat': 'நேரடி உரையாடல்',
+      'delete_confirm': 'இந்த செயலைத் திருப்ப முடியாது.',
+      'logout_confirm': 'வெளியேற வேண்டுமா?',
+      'delete_confirm_title': 'கணக்கை நீக்கு',
+      'logout_confirm_title': 'வெளியேறு',
+      'two_factor_soon': 'இரு-படி விரைவில் வருகிறது',
+    },
+  };
+
+  String t(String key) =>
+      translations[_selectedLanguage]?[key] ?? translations['en']![key]!;
 
   @override
   void initState() {
@@ -61,9 +152,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
+    final p = await SharedPreferences.getInstance();
     setState(() {
-      _darkMode = prefs.getBool('darkMode') ?? false;
+      _darkMode = p.getBool('darkMode') ?? false;
+      _selectedLanguage = p.getString('language') ?? 'en';
+      _notificationsEnabled = p.getBool('notificationsEnabled') ?? true;
       themeNotifier.value = _darkMode ? ThemeMode.dark : ThemeMode.light;
     });
   }
@@ -71,347 +164,120 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadUserData() async {
     setState(() => _isLoading = true);
     try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        DocumentSnapshot userData =
+      final u = FirebaseAuth.instance.currentUser;
+      if (u != null) {
+        final doc =
             await FirebaseFirestore.instance
                 .collection('Users')
-                .doc(user.uid)
+                .doc(u.uid)
                 .get();
-
-        if (userData.exists) {
-          setState(() {
-            _nameController.text = userData['Name'] ?? '';
-            _emailController.text = userData['Email'] ?? '';
-            _phoneController.text = userData['Contact'] ?? '';
-            _notificationsEnabled = userData['notificationsEnabled'] ?? true;
-            _selectedLanguage = userData['language'] ?? 'English';
-          });
+        if (doc.exists) {
+          _nameController.text = doc['Name'] ?? '';
+          _emailController.text = doc['Email'] ?? '';
+          _phoneController.text = doc['Contact'] ?? '';
         }
       }
-    } catch (e) {
-      print('Error loading user data: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
+    } catch (_) {}
+    setState(() => _isLoading = false);
   }
 
-  Future<void> _updateUserData() async {
+  Future<void> _saveSettings() async {
     setState(() => _isLoading = true);
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(user.uid)
-            .update({
-              'Name': _nameController.text,
-              'Email': _emailController.text,
-              'Contact': _phoneController.text,
-              'notificationsEnabled': _notificationsEnabled,
-              'language': _selectedLanguage,
-            });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('darkMode', _darkMode);
+    await prefs.setString('language', _selectedLanguage);
+    themeNotifier.value = _darkMode ? ThemeMode.dark : ThemeMode.light;
 
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('darkMode', _darkMode);
-        themeNotifier.value = _darkMode ? ThemeMode.dark : ThemeMode.light;
+    final u = FirebaseAuth.instance.currentUser;
+    if (u != null) {
+      await FirebaseFirestore.instance.collection('Users').doc(u.uid).update({
+        'Name': _nameController.text.trim(),
+        'Email': _emailController.text.trim(),
+        'Contact': _phoneController.text.trim(),
+        'language': _selectedLanguage,
+      });
+    }
 
-        _showSnackBar('Settings Updated Successfully');
-      }
-    } catch (e) {
-      _showSnackBar('Error Updating Settings');
-    } finally {
-      setState(() => _isLoading = false);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(t('save'))));
+    setState(() => _isLoading = false);
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw 'Could not launch $url';
     }
   }
 
-  void _showSnackBar(String message) {
-    final isError = message.toLowerCase().contains('error');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _isLoading ? null : _updateUserData,
-          ),
-        ],
-      ),
-      body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ListView(
-                children: [
-                  _buildSectionHeader('Account Settings'),
-                  _buildSettingItem(
-                    Icons.person_outline,
-                    "Personal Information",
-                    onTap: () => _showPersonalInfoDialog(context),
-                  ),
-                  _buildSettingItem(
-                    Icons.notifications_outlined,
-                    "Notifications",
-                    trailing: Switch(
-                      value: _notificationsEnabled,
-                      onChanged:
-                          (v) => setState(() => _notificationsEnabled = v),
-                    ),
-                  ),
-                  _buildSettingItem(
-                    Icons.language,
-                    "Language",
-                    trailing: DropdownButton<String>(
-                      value: _selectedLanguage,
-                      items:
-                          _languages
-                              .map(
-                                (lang) => DropdownMenuItem(
-                                  value: lang,
-                                  child: Text(lang),
-                                ),
-                              )
-                              .toList(),
-                      onChanged: (v) {
-                        if (v != null) {
-                          setState(() => _selectedLanguage = v);
-                        }
-                      },
-                    ),
-                  ),
-                  _buildSettingItem(
-                    Icons.dark_mode,
-                    "Dark Mode",
-                    trailing: Switch(
-                      value: _darkMode,
-                      onChanged:
-                          (v) => setState(() {
-                            _darkMode = v;
-                            themeNotifier.value =
-                                v ? ThemeMode.dark : ThemeMode.light;
-                          }),
-                    ),
-                  ),
-                  _buildSectionHeader('Privacy & Security'),
-                  _buildSettingItem(
-                    Icons.lock_outline,
-                    "Privacy policy",
-                    onTap: () => _showPrivacyPolicy(context),
-                  ),
-                  _buildSettingItem(
-                    Icons.security,
-                    "Security",
-                    onTap: () => _showSecuritySettings(context),
-                  ),
-                  _buildSettingItem(
-                    Icons.password,
-                    "Change Password",
-                    onTap: () => _showChangePasswordDialog(context),
-                  ),
-                  _buildSectionHeader('Support'),
-                  _buildSettingItem(
-                    Icons.help_outline,
-                    "Help & Support",
-                    onTap: () => _showHelpSupport(context),
-                  ),
-                  _buildSettingItem(
-                    Icons.description_outlined,
-                    "Terms and conditions",
-                    onTap: () => _showTermsAndConditions(context),
-                  ),
-                  _buildSettingItem(
-                    Icons.info_outline,
-                    "About",
-                    onTap: () => _showAboutDialog(context),
-                  ),
-                  _buildSectionHeader('Account Actions'),
-                  _buildSettingItem(
-                    Icons.delete_outline,
-                    "Delete account",
-                    color: Colors.red,
-                    onTap: () => _showDeleteAccountDialog(context),
-                  ),
-                  _buildSettingItem(
-                    Icons.logout,
-                    "Log Out",
-                    onTap: () => _showLogoutDialog(context),
-                  ),
-                ],
-              ),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: theme.colorScheme.secondary,
-        unselectedItemColor: theme.iconTheme.color,
-        currentIndex: 4,
-        onTap: (i) {
-          switch (i) {
-            case 0:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => DashboardScreen()),
-              );
-              break;
-            case 1:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => MapScreen()),
-              );
-              break;
-            case 2:
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => OBD2Page()),
-              );
-              break;
-            case 3:
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => ServiceHistorypage()),
-              );
-              break;
-            case 4:
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => ProfileScreen()),
-              );
-              break;
-          }
-        },
-        items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          const BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
-          BottomNavigationBarItem(
-            icon: Image.asset('images/logo.png', width: 30, height: 30),
-            label: '',
-          ),
-          const BottomNavigationBarItem(icon: Icon(Icons.history), label: ''),
-          const BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-      child: Text(
-        title,
-        style: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSettingItem(
-    IconData icon,
-    String title, {
-    Color? color,
-    VoidCallback? onTap,
-    Widget? trailing,
-  }) {
-    final theme = Theme.of(context);
-    final itemColor = color ?? theme.iconTheme.color;
-    return ListTile(
-      leading: Icon(icon, color: itemColor),
-      title: Text(
-        title,
-        style: theme.textTheme.bodyMedium?.copyWith(color: itemColor),
-      ),
-      trailing:
-          trailing ??
-          Icon(Icons.arrow_forward_ios, size: 16, color: theme.iconTheme.color),
-      onTap: onTap,
-    );
-  }
-
-  void _showPersonalInfoDialog(BuildContext ctx) {
+  void _showPersonalInfoDialog() {
     showDialog(
-      context: ctx,
+      context: context,
       builder:
           (_) => AlertDialog(
-            title: const Text('Personal Information'),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(labelText: 'Name'),
+            title: Text(t('personal_information')),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: t('personal_information'),
                   ),
-                  TextField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                  ),
-                  TextField(
-                    controller: _phoneController,
-                    decoration: const InputDecoration(labelText: 'Phone'),
-                  ),
-                ],
-              ),
+                ),
+                TextField(
+                  controller: _emailController,
+                  decoration: InputDecoration(labelText: 'Email'),
+                ),
+                TextField(
+                  controller: _phoneController,
+                  decoration: InputDecoration(labelText: 'Phone'),
+                ),
+              ],
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancel'),
+                onPressed: () => Navigator.pop(context),
+                child: Text(t('cancel')),
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.pop(ctx);
-                  _updateUserData();
+                  Navigator.pop(context);
+                  _saveSettings();
                 },
-                child: const Text('Save'),
+                child: Text(t('save')),
               ),
             ],
           ),
     );
   }
 
-  void _showChangePasswordDialog(BuildContext context) {
-    final TextEditingController currentPasswordController =
-        TextEditingController();
-    final TextEditingController newPasswordController = TextEditingController();
-    final TextEditingController confirmPasswordController =
-        TextEditingController();
-
+  void _showChangePasswordDialog() {
+    final cur = TextEditingController();
+    final neu = TextEditingController();
+    final conf = TextEditingController();
     showDialog(
       context: context,
       builder:
-          (context) => AlertDialog(
-            title: Text('Change Password'),
+          (_) => AlertDialog(
+            title: Text(t('change_password')),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
-                  controller: currentPasswordController,
-                  decoration: InputDecoration(labelText: 'Current Password'),
+                  controller: cur,
+                  decoration: InputDecoration(labelText: t('current_password')),
                   obscureText: true,
                 ),
                 TextField(
-                  controller: newPasswordController,
-                  decoration: InputDecoration(labelText: 'New Password'),
+                  controller: neu,
+                  decoration: InputDecoration(labelText: t('new_password')),
                   obscureText: true,
                 ),
                 TextField(
-                  controller: confirmPasswordController,
-                  decoration: InputDecoration(
-                    labelText: 'Confirm New Password',
-                  ),
+                  controller: conf,
+                  decoration: InputDecoration(labelText: t('confirm_password')),
                   obscureText: true,
                 ),
               ],
@@ -419,57 +285,177 @@ class _SettingsScreenState extends State<SettingsScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Cancel'),
+                child: Text(t('cancel')),
               ),
               TextButton(
-                onPressed: () {
-                  if (newPasswordController.text ==
-                      confirmPasswordController.text) {
-                    _changePassword(
-                      currentPasswordController.text,
-                      newPasswordController.text,
+                onPressed: () async {
+                  if (neu.text != conf.text) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Passwords do not match')),
                     );
-                    Navigator.pop(context);
-                  } else {
-                    _showSnackBar('Passwords do not match');
+                    return;
+                  }
+                  Navigator.pop(context);
+                  try {
+                    final u = FirebaseAuth.instance.currentUser!;
+                    final cred = EmailAuthProvider.credential(
+                      email: u.email!,
+                      password: cur.text,
+                    );
+                    await u.reauthenticateWithCredential(cred);
+                    await u.updatePassword(neu.text);
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('Password changed')));
+                  } catch (e) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('Error: $e')));
                   }
                 },
-                child: Text('Change'),
+                child: Text(t('change')),
               ),
             ],
           ),
     );
   }
 
-  Future<void> _changePassword(
-    String currentPassword,
-    String newPassword,
-  ) async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        // Reauthenticate user before changing password
-        AuthCredential credential = EmailAuthProvider.credential(
-          email: user.email!,
-          password: currentPassword,
-        );
-        await user.reauthenticateWithCredential(credential);
-
-        // Change password
-        await user.updatePassword(newPassword);
-        _showSnackBar('Password changed successfully');
-      }
-    } catch (e) {
-      _showSnackBar('Error changing password: $e');
-    }
-  }
-
-  void _showPrivacyPolicy(BuildContext context) {
+  void _showHelpSupportDialog() {
     showDialog(
       context: context,
       builder:
-          (context) => AlertDialog(
-            title: Text('Privacy Policy'),
+          (_) => AlertDialog(
+            title: Text(t('help_support')),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.email),
+                  title: Text(t('contact_email')),
+                  subtitle: const Text('support@drcars.com'),
+                  onTap: () => _launchUrl('mailto:support@drcars.com'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.phone),
+                  title: Text(t('contact_call')),
+                  subtitle: const Text('+94 77 211 1426'),
+                  onTap: () => _launchUrl('tel:+94772111426'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.chat),
+                  title: Text(t('contact_chat')),
+                  subtitle: const Text('WhatsApp'),
+                  onTap: () => _launchUrl('https://wa.me/+94772111426'),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(t('close')),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showAboutDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            title: Text(t('about')),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('images/logo.png', height: 80),
+                const SizedBox(height: 12),
+                const Text('Dr. Cars v1.0.0'),
+                const Text('© 2025 Dr. Cars. All rights reserved.'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(t('close')),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showLogoutConfirm() {
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            title: Text(t('logout_confirm_title')),
+            content: Text(t('logout_confirm')),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(t('no')),
+              ),
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await FirebaseAuth.instance.signOut();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => SignInScreen()),
+                    (_) => false,
+                  );
+                },
+                child: Text(t('yes')),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showDeleteConfirm() {
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            title: Text(t('delete_confirm_title')),
+            content: Text(t('delete_confirm')),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(t('no')),
+              ),
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  final u = FirebaseAuth.instance.currentUser!;
+                  await FirebaseFirestore.instance
+                      .collection('Users')
+                      .doc(u.uid)
+                      .delete();
+                  await u.delete();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => SignInScreen()),
+                    (_) => false,
+                  );
+                },
+                child: Text(
+                  t('yes'),
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showPrivacyPolicy() {
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Privacy Policy'),
             content: SingleChildScrollView(
               child: Text('''Privacy Policy for Dr Cars
 
@@ -526,110 +512,20 @@ If you have any questions or concerns about this Privacy Policy, please contact 
             ),
             actions: [
               TextButton(
-                onPressed: () => _launchUrl('mailto:support@drcars.com'),
-                child: Text('Email Us'),
-              ),
-              TextButton(
-                onPressed: () => _launchUrl('tel:+94772111426'),
-                child: Text('Call Us'),
-              ),
-              TextButton(
-                onPressed: () => _launchUrl('https://wa.me/+94772111426'),
-                child: Text('Chat Support'),
-              ),
-              TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Close'),
+                child: Text(t('close')),
               ),
             ],
           ),
     );
   }
 
-  void _showSecuritySettings(BuildContext context) {
+  void _showTerms() {
     showDialog(
       context: context,
       builder:
-          (context) => AlertDialog(
-            title: Text('Security Settings'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SwitchListTile(
-                  title: Text('Two-Factor Authentication'),
-                  subtitle: Text(
-                    'Add an extra layer of security to your account',
-                  ),
-                  value: false,
-                  onChanged: (value) {
-                    // This will be implemented later
-                    _showSnackBar('This feature will be available soon');
-                  },
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Close'),
-              ),
-            ],
-          ),
-    );
-  }
-
-  void _showHelpSupport(BuildContext context) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Help & Support'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: Icon(Icons.email),
-                  title: Text('Email Support'),
-                  subtitle: Text(_supportEmail),
-                  onTap: () => _launchUrl('mailto:$_supportEmail'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.phone),
-                  title: Text('Call Support'),
-                  subtitle: Text(_supportPhone),
-                  onTap: () => _launchUrl('tel:$_supportPhone'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.chat),
-                  title: Text('Live Chat'),
-                  subtitle: Text('Click to start chat'),
-                  onTap: () => _launchUrl(_supportChat),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Close'),
-              ),
-            ],
-          ),
-    );
-  }
-
-  Future<void> _launchUrl(String url) async {
-    final Uri uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      throw 'Could not launch $url';
-    }
-  }
-
-  void _showTermsAndConditions(BuildContext context) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Terms and Conditions'),
+          (_) => AlertDialog(
+            title: const Text('Terms and Conditions'),
             content: SingleChildScrollView(
               child: Text('''Terms and Conditions for Dr Cars
 
@@ -673,162 +569,200 @@ Chat: https://wa.me/+94772111426
             ),
             actions: [
               TextButton(
-                onPressed: () => _launchUrl('mailto:support@drcars.com'),
-                child: Text('Email Us'),
-              ),
-              TextButton(
-                onPressed: () => _launchUrl('tel:+94772111426'),
-                child: Text('Call Us'),
-              ),
-              TextButton(
-                onPressed: () => _launchUrl('https://wa.me/+94772111426'),
-                child: Text('Chat Support'),
-              ),
-              TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Close'),
+                child: Text(t('close')),
               ),
             ],
           ),
     );
   }
 
-  void _showAboutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('About'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset('images/logo.png', height: 100),
-                SizedBox(height: 16),
-                Text('Dr. Cars v1.0.0'),
-                Text('© 2025 Dr. Cars. All rights reserved.'),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Close'),
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(t('settings')),
+        elevation: 0,
+        leading: BackButton(),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: _isLoading ? null : _saveSettings,
+          ),
+        ],
+      ),
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  _sectionHeader(t('account_settings')),
+                  ListTile(
+                    leading: const Icon(Icons.person_outline),
+                    title: Text(t('personal_information')),
+                    onTap: _showPersonalInfoDialog,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.notifications_outlined),
+                    title: Text(t('notifications')),
+                    trailing: Switch(
+                      value: _notificationsEnabled,
+                      onChanged: (v) async {
+                        // 1) Update OneSignal subscription
+                        if (v) {
+                          await OneSignal.User.pushSubscription.optIn();
+                        } else {
+                          await OneSignal.User.pushSubscription.optOut();
+                        }
+
+                        // 2) Persist locally
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('notificationsEnabled', v);
+
+                        // 3) Update UI
+                        setState(() => _notificationsEnabled = v);
+                      },
+                    ),
+                  ),
+
+                  ListTile(
+                    leading: const Icon(Icons.language),
+                    title: Text(t('language')),
+                    trailing: DropdownButton<String>(
+                      value: _selectedLanguage,
+                      items: const [
+                        DropdownMenuItem(value: 'en', child: Text('English')),
+                        DropdownMenuItem(value: 'si', child: Text('සිංහල')),
+                        DropdownMenuItem(value: 'ta', child: Text('தமிழ்')),
+                      ],
+                      onChanged: (v) {
+                        if (v != null) setState(() => _selectedLanguage = v);
+                      },
+                    ),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.dark_mode),
+                    title: Text(t('dark_mode')),
+                    trailing: Switch(
+                      value: _darkMode,
+                      onChanged:
+                          (v) => setState(() {
+                            _darkMode = v;
+                            themeNotifier.value =
+                                v ? ThemeMode.dark : ThemeMode.light;
+                          }),
+                    ),
+                  ),
+
+                  _sectionHeader(t('privacy_security')),
+                  ListTile(
+                    leading: const Icon(Icons.lock_outline),
+                    title: Text(t('privacy_policy')),
+                    onTap: _showPrivacyPolicy,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.security),
+                    title: Text(t('security')),
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(t('two_factor_soon'))),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.password),
+                    title: Text(t('change_password')),
+                    onTap: _showChangePasswordDialog,
+                  ),
+
+                  _sectionHeader(t('support')),
+                  ListTile(
+                    leading: const Icon(Icons.help_outline),
+                    title: Text(t('help_support')),
+                    onTap: _showHelpSupportDialog,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.description_outlined),
+                    title: Text(t('terms')),
+                    onTap: _showTerms,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.info_outline),
+                    title: Text(t('about')),
+                    onTap: _showAboutDialog,
+                  ),
+
+                  _sectionHeader(t('account_actions')),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.red,
+                    ),
+                    title: Text(
+                      t('delete_account'),
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    onTap: _showDeleteConfirm,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.logout),
+                    title: Text(t('logout')),
+                    onTap: _showLogoutConfirm,
+                  ),
+                ],
               ),
-            ],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 4,
+        selectedItemColor: theme.colorScheme.secondary,
+        unselectedItemColor: theme.iconTheme.color,
+        onTap: (i) {
+          final routes = [
+            () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => DashboardScreen()),
+            ),
+            () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => MapScreen()),
+            ),
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => OBD2Page()),
+            ),
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ServiceHistoryPage()),
+            ),
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ProfileScreen()),
+            ),
+          ];
+          routes[i]();
+        },
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
+          BottomNavigationBarItem(
+            icon: Image.asset('images/logo.png', width: 30, height: 30),
+            label: '',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+        ],
+      ),
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Log Out"),
-          content: Text("Are you sure you want to log out?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                _logout(context);
-              },
-              child: Text("Log Out", style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showDeleteAccountDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Delete Account"),
-          content: Text(
-            "Are you sure you want to delete your account? This action cannot be undone.",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                _deleteAccount(context);
-              },
-              child: Text("Delete", style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _logout(BuildContext context) async {
-    try {
-      await FirebaseAuth.instance.signOut();
-      Navigator.pop(context); // Close the dialog
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Successfully logged out!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      // Navigate to signin page and remove all previous routes
-      Navigator.pushAndRemoveUntil(
+  Widget _sectionHeader(String title) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+    child: Text(
+      title,
+      style: Theme.of(
         context,
-        MaterialPageRoute(builder: (context) => SignInScreen()),
-        (route) => false,
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error logging out: $e"),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  void _deleteAccount(BuildContext context) async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        // Delete user data from Firestore
-        await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(user.uid)
-            .delete();
-        // Delete the user account
-        await user.delete();
-
-        Navigator.pop(context); // Close the dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Successfully Deleted Account!"),
-            backgroundColor: const Color.fromARGB(255, 99, 215, 103),
-          ),
-        );
-
-        // Navigate to signin page and remove all previous routes
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => SignInScreen()),
-          (route) => false,
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error deleting account: $e"),
-          backgroundColor: const Color.fromARGB(255, 242, 55, 22),
-        ),
-      );
-    }
-  }
+      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+    ),
+  );
 }

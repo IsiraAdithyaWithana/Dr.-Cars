@@ -1,3 +1,5 @@
+// lib/interface/dashboard.dart
+import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dr_cars/interface/Service%20History.dart';
 import 'package:dr_cars/interface/VehicleDashboard.dart';
@@ -11,18 +13,24 @@ import 'package:dr_cars/interface/obd2.dart';
 import 'package:dr_cars/interface/servicerecords.dart';
 import 'package:dr_cars/interface/appointments.dart';
 import 'package:rxdart/rxdart.dart';
-import 'dart:ui';
+
+// reuse the same color constants
+const Color kAppBarColor = Colors.black;
+const Color kAccentOrange = Color.fromARGB(255, 255, 99, 32);
+const Color kBlueTint = Colors.blue;
+const Color kVehicleCardBg = Color(0xFFFAF7F7);
+const Color kErrorRed = Colors.red;
+const Color kIconBgOpacityBlue = Color.fromRGBO(0, 0, 255, .1);
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
-
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
   String userName = "Loading...";
   int _selectedIndex = 0;
   Map<String, dynamic>? vehicleData;
@@ -30,217 +38,95 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? errorMessage;
   String? _vehicleImageUrl;
   bool _hasVehicleInfo = false;
-bool _checkingVehicleInfo = true;
+  bool _checkingVehicleInfo = true;
 
   @override
   void initState() {
     super.initState();
     _fetchUserData();
     _fetchVehicleData();
-     _checkVehicleSetup();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _fetchVehicleData();
+    _checkVehicleSetup();
   }
 
   Future<void> _fetchUserData() async {
-    User? user = _auth.currentUser;
-    if (user != null) {
-      try {
-        DocumentSnapshot userData =
-            await _firestore.collection("Users").doc(user.uid).get();
-
-        if (userData.exists) {
-          setState(() {
-            userName = userData["Name"] ?? "User";
-          });
-        } else {
-          print("User document does not exist");
-          setState(() {
-            userName = "User";
-          });
-        }
-      } catch (e) {
-        print("Error fetching user data: $e");
-        setState(() {
-          userName = "User";
-          errorMessage = "Failed to load user data: $e";
-        });
-      }
+    final user = _auth.currentUser;
+    if (user == null) return;
+    try {
+      final doc = await _firestore.collection("Users").doc(user.uid).get();
+      setState(() {
+        userName = (doc.exists ? doc["Name"] : null) ?? "User";
+      });
+    } catch (e) {
+      setState(() => userName = "User");
+      debugPrint("Error fetching user data: $e");
     }
   }
 
   Future<void> _fetchVehicleData() async {
-    User? user = _auth.currentUser;
-    if (user != null) {
-      try {
-        DocumentSnapshot vehicleDoc =
-            await _firestore.collection("Vehicle").doc(user.uid).get();
-
-        if (vehicleDoc.exists) {
-          setState(() {
-            vehicleData = vehicleDoc.data() as Map<String, dynamic>;
-            _vehicleImageUrl = vehicleData?['vehiclePhotoUrl'];
-            isLoading = false;
-          });
-        } else {
-          print("Vehicle document does not exist");
-          setState(() {
-            isLoading = false;
-            errorMessage =
-                "No vehicle data found. Please add your vehicle in the profile section.";
-          });
-        }
-      } catch (e) {
-        print("Error fetching vehicle data: $e");
-        setState(() {
-          isLoading = false;
-          errorMessage = "Failed to load vehicle data: $e";
-        });
+    final user = _auth.currentUser;
+    if (user == null) return;
+    try {
+      final doc = await _firestore.collection("Vehicle").doc(user.uid).get();
+      if (doc.exists) {
+        vehicleData = doc.data() as Map<String, dynamic>?;
+        _vehicleImageUrl = vehicleData?['vehiclePhotoUrl'];
+      } else {
+        errorMessage =
+            "No vehicle data found. Please add your vehicle in your profile.";
       }
+    } catch (e) {
+      errorMessage = "Failed to load vehicle data.";
+      debugPrint("Error fetching vehicle data: $e");
+    } finally {
+      setState(() => isLoading = false);
     }
   }
-  Future<void> _checkVehicleSetup() async {
-  setState(() {
-    _checkingVehicleInfo = true;
-  });
-  
-  try {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final vehicleDoc = await FirebaseFirestore.instance
-          .collection('Vehicle')
-          .doc(user.uid)
-          .get();
-          
-      setState(() {
-        _hasVehicleInfo = vehicleDoc.exists;
-      });
-    }
-  } catch (e) {
-    print("Error checking vehicle setup: $e");
-  } finally {
-    setState(() {
-      _checkingVehicleInfo = false;
-    });
-  }
-}
 
-  int getNextMaintenanceMileage(int currentMileage) {
-    return ((currentMileage ~/ 5000) + 1) * 5000;
+  Future<void> _checkVehicleSetup() async {
+    setState(() => _checkingVehicleInfo = true);
+    final user = _auth.currentUser;
+    if (user != null) {
+      final doc = await _firestore.collection('Vehicle').doc(user.uid).get();
+      _hasVehicleInfo = doc.exists;
+    }
+    setState(() => _checkingVehicleInfo = false);
   }
-Widget _buildVehicleDashboardButton() {
-  return Card(
-    elevation: 3,
-    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    child: InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => VehicleDashboardScreen()),
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: EdgeInsets.all(12),
-              child: Icon(
-                Icons.dashboard_customize,
-                color: Colors.blue,
-                size: 32,
-              ),
-            ),
-            SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Vehicle Dashboard',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'View real-time vehicle metrics and status',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.grey,
-              size: 16,
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-Widget _buildSmartVehicleDashboardButton() {
-  if (_checkingVehicleInfo) {
+
+  int getNextMaintenanceMileage(int current) => ((current ~/ 5000) + 1) * 5000;
+
+  Widget _buildVehicleDashboardButton() {
     return Card(
       elevation: 3,
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
-      ),
-    );
-  }
-  
-  if (!_hasVehicleInfo) {
-    return Card(
-      elevation: 3,
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ProfileScreen()),
-          );
-        },
+        onTap:
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const VehicleDashboardScreen()),
+            ),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: kIconBgOpacityBlue,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding: EdgeInsets.all(12),
-                child: Icon(
-                  Icons.directions_car,
-                  color: Colors.orange,
+                padding: const EdgeInsets.all(12),
+                child: const Icon(
+                  Icons.dashboard_customize,
+                  color: kBlueTint,
                   size: 32,
                 ),
               ),
-              SizedBox(width: 16),
-              Expanded(
+              const SizedBox(width: 16),
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Set Up Your Vehicle',
+                      'Vehicle Dashboard',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -248,94 +134,92 @@ Widget _buildSmartVehicleDashboardButton() {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Complete your vehicle profile to access the dashboard',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      'View real-time vehicle metrics and status',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.grey,
-                size: 16,
-              ),
+              const Icon(Icons.arrow_forward_ios, size: 16),
             ],
           ),
         ),
       ),
     );
   }
-  
-  return Card(
-    elevation: 3,
-    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    child: InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => VehicleDashboardScreen()),
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+
+  Widget _buildSmartVehicleDashboardButton() {
+    if (_checkingVehicleInfo) {
+      return const Padding(
+        padding: EdgeInsets.all(16),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (!_hasVehicleInfo) {
+      return Card(
+        elevation: 3,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: InkWell(
+          onTap:
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
               ),
-              padding: EdgeInsets.all(12),
-              child: Icon(
-                Icons.dashboard_customize,
-                color: Colors.blue,
-                size: 32,
-              ),
-            ),
-            SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Vehicle Dashboard',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  SizedBox(height: 4),
-                  Text(
-                    'View real-time vehicle metrics and status',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                  padding: const EdgeInsets.all(12),
+                  child: const Icon(
+                    Icons.directions_car,
+                    color: Colors.orange,
+                    size: 32,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Set Up Your Vehicle',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Complete your vehicle profile to access the dashboard',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios, size: 16),
+              ],
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.grey,
-              size: 16,
-            ),
-          ],
+          ),
         ),
-      ),
-    ),
-  );
-}
+      );
+    }
+    return _buildVehicleDashboardButton();
+  }
+
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
+    final theme = Theme.of(context);
+    final w = MediaQuery.of(context).size.width;
+    final text = theme.textTheme;
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: kAppBarColor,
         automaticallyImplyLeading: false,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -354,26 +238,30 @@ Widget _buildSmartVehicleDashboardButton() {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Welcome Back',
-                      style: TextStyle(fontSize: 16, color: Colors.white70),
+                      style: text.bodyLarge?.copyWith(
+                        color: Colors.white70,
+                        fontSize: 16,
+                      ),
                     ),
                     Text(
                       userName,
                       style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
                         color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-            if (vehicleData != null && vehicleData!['vehicleNumber'] != null)
+
+            if (vehicleData?['vehicleNumber'] != null)
               StreamBuilder<List<QuerySnapshot>>(
                 stream: Rx.combineLatest2(
-                  FirebaseFirestore.instance
+                  _firestore
                       .collection('Service_Receipts')
                       .where(
                         'vehicleNumber',
@@ -381,7 +269,7 @@ Widget _buildSmartVehicleDashboardButton() {
                       )
                       .where('status', whereIn: ['not confirmed', 'finished'])
                       .snapshots(),
-                  FirebaseFirestore.instance
+                  _firestore
                       .collection('appointments')
                       .where(
                         'vehicleNumber',
@@ -389,18 +277,13 @@ Widget _buildSmartVehicleDashboardButton() {
                       )
                       .where('status', whereIn: ['accepted', 'rejected'])
                       .snapshots(),
-                  (QuerySnapshot receipts, QuerySnapshot appointments) => [
-                    receipts,
-                    appointments,
-                  ],
+                  (a, b) => [a, b],
                 ),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) return Container();
-
-                  final receipts = snapshot.data![0];
-                  final appointments = snapshot.data![1];
-
-                  int totalCount = receipts.size + appointments.size;
+                builder: (_, snap) {
+                  if (!snap.hasData) return const SizedBox();
+                  final receipts = snap.data![0];
+                  final appointments = snap.data![1];
+                  final totalCount = receipts.size + appointments.size;
 
                   return Stack(
                     children: [
@@ -413,134 +296,137 @@ Widget _buildSmartVehicleDashboardButton() {
                           showDialog(
                             context: context,
                             barrierDismissible: true,
-                            builder: (BuildContext context) {
-                              return BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                                child: Dialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                            builder:
+                                (_) => BackdropFilter(
+                                  filter: ImageFilter.blur(
+                                    sigmaX: 4,
+                                    sigmaY: 4,
                                   ),
-                                  backgroundColor: Colors.white,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 20,
-                                      horizontal: 8,
+                                  child: Dialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
                                     ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Text(
-                                          "Select Notification Type",
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
+                                    backgroundColor: Colors.white,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 20,
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text(
+                                            "Select Notification Type",
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                        const Divider(),
-                                        ListTile(
-                                          leading: const Icon(
-                                            Icons.receipt_long,
-                                          ),
-                                          title: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              const Text(
-                                                "Receipt Notifications",
-                                              ),
-                                              if (receipts.size > 0)
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 6,
-                                                        vertical: 2,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.red,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
+                                          const Divider(),
+                                          ListTile(
+                                            leading: const Icon(
+                                              Icons.receipt_long,
+                                            ),
+                                            title: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                const Text(
+                                                  "Receipt Notifications",
+                                                ),
+                                                if (receipts.size > 0)
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 2,
                                                         ),
-                                                  ),
-                                                  child: Text(
-                                                    '${receipts.size}',
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                                    decoration: BoxDecoration(
+                                                      color: kErrorRed,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                    ),
+                                                    child: Text(
+                                                      '${receipts.size}',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 12,
+                                                      ),
                                                     ),
                                                   ),
+                                              ],
+                                            ),
+                                            onTap: () {
+                                              Navigator.pop(context);
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder:
+                                                      (_) =>
+                                                          const ReceiptNotificationPage(),
                                                 ),
-                                            ],
+                                              );
+                                            },
                                           ),
-                                          onTap: () {
-                                            Navigator.pop(context);
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder:
-                                                    (_) =>
-                                                        const ReceiptNotificationPage(),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                        ListTile(
-                                          leading: const Icon(
-                                            Icons.calendar_today,
-                                          ),
-                                          title: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              const Text(
-                                                "Appointment Notifications",
-                                              ),
-                                              if (appointments.size > 0)
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 6,
-                                                        vertical: 2,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.red,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
+                                          ListTile(
+                                            leading: const Icon(
+                                              Icons.calendar_today,
+                                            ),
+                                            title: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                const Text(
+                                                  "Appointment Notifications",
+                                                ),
+                                                if (appointments.size > 0)
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 2,
                                                         ),
-                                                  ),
-                                                  child: Text(
-                                                    '${appointments.size}',
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                                    decoration: BoxDecoration(
+                                                      color: kErrorRed,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                    ),
+                                                    child: Text(
+                                                      '${appointments.size}',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 12,
+                                                      ),
                                                     ),
                                                   ),
+                                              ],
+                                            ),
+                                            onTap: () {
+                                              Navigator.pop(context);
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder:
+                                                      (_) =>
+                                                          const AppointmentNotificationPage(),
                                                 ),
-                                            ],
+                                              );
+                                            },
                                           ),
-                                          onTap: () {
-                                            Navigator.pop(context);
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder:
-                                                    (_) =>
-                                                        const AppointmentNotificationPage(),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              );
-                            },
                           );
                         },
                       ),
@@ -551,7 +437,7 @@ Widget _buildSmartVehicleDashboardButton() {
                           child: Container(
                             padding: const EdgeInsets.all(4),
                             decoration: const BoxDecoration(
-                              color: Colors.red,
+                              color: kErrorRed,
                               shape: BoxShape.circle,
                             ),
                             constraints: const BoxConstraints(
@@ -576,310 +462,252 @@ Widget _buildSmartVehicleDashboardButton() {
           ],
         ),
       ),
+
       body: SingleChildScrollView(
         child: Column(
           children: [
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
-              'Your vehicle',
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              'Your Vehicle',
+              style: text.headlineSmall?.copyWith(fontSize: 32),
             ),
-            SizedBox(height: 10),
-            isLoading
-                ? Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: CircularProgressIndicator(),
-                )
-                : errorMessage != null
-                ? Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    errorMessage!,
-                    style: TextStyle(fontSize: 18, color: Colors.red),
-                  ),
-                )
-                : vehicleData == null
-                ? Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    "No vehicle data available",
-                    style: TextStyle(fontSize: 18),
-                  ),
-                )
-                : Container(
-                  width: screenWidth,
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: screenWidth * 1,
-                        margin: EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 250, 247, 247),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 10,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(16),
+            const SizedBox(height: 10),
+
+            if (isLoading)
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: CircularProgressIndicator(),
+              )
+            else if (errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  errorMessage!,
+                  style: text.bodyLarge?.copyWith(color: kErrorRed),
+                ),
+              )
+            else if (vehicleData == null)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text("No vehicle data available", style: text.bodyLarge),
+              )
+            else
+              Container(
+                width: w,
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  children: [
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(16),
+                      ),
+                      child:
+                          _vehicleImageUrl != null
+                              ? Image.network(
+                                _vehicleImageUrl!,
+                                width: w,
+                                height: 250,
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (_, __, ___) => Image.asset(
+                                      'images/dashcar.png',
+                                      width: w,
+                                      height: 250,
+                                      fit: BoxFit.cover,
+                                    ),
+                              )
+                              : Image.asset(
+                                'images/dashcar.png',
+                                width: w,
+                                height: 250,
+                                fit: BoxFit.cover,
                               ),
-                              child:
-                                  _vehicleImageUrl != null
-                                      ? Image.network(
-                                        _vehicleImageUrl!,
-                                        width: screenWidth * 0.9,
-                                        height: 250,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (
-                                          context,
-                                          error,
-                                          stackTrace,
-                                        ) {
-                                          return Image.asset(
-                                            'images/dashcar.png',
-                                            width: screenWidth * 0.9,
-                                            height: 250,
-                                            fit: BoxFit.cover,
-                                          );
-                                        },
-                                      )
-                                      : Image.asset(
-                                        'images/dashcar.png',
-                                        width: screenWidth * 0.9,
-                                        height: 250,
-                                        fit: BoxFit.cover,
-                                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${vehicleData!['year'] ?? 'Year not specified'}",
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
                             ),
+                          ),
+                          Text(
+                            "${vehicleData!['selectedBrand'] ?? ''} ${vehicleData!['selectedModel'] ?? ''}",
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '⚙️ ${vehicleData!['mileage'] ?? '0'} KM',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                '🚗 ${vehicleData!['vehicleType'] ?? ''}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (vehicleData!['vehicleNumber'] != null)
                             Padding(
-                              padding: EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "${vehicleData!['year']?.toString() ?? 'Year not specified'}",
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    "${vehicleData!['selectedBrand'] ?? 'Brand'} ${vehicleData!['selectedModel'] ?? 'Model'}",
-                                    style: TextStyle(
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(height: 10),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        '⚙️ ${vehicleData!['mileage']?.toString() ?? '0'} KM',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      Text(
-                                        '🚗 ${vehicleData!['vehicleType'] ?? 'Type not specified'}',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  if (vehicleData!['vehicleNumber'] != null)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                        '🚗 ${vehicleData!['vehicleNumber']}',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                ],
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                '🚗 ${vehicleData!['vehicleNumber']}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
-                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            const SizedBox(height: 20),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed:
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AppointmentsPage(),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-            SizedBox(height: 20),
-            Container(
-              width: screenWidth * 0.9,
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AppointmentsPage(),
+                  icon: const Icon(Icons.calendar_today),
+                  label: const Text(
+                    'Make an Appointment',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16.0,
                     ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
                   ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.calendar_today, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'Make an Appointment',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ),
 
-            SizedBox(height: 10),
-            Container(
-              width: screenWidth * 0.9,
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ServiceRecordsPage(),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 255, 99, 32),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.add, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'Add a Service Record',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            SizedBox(height: 20),
+            const SizedBox(height: 10),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Upcoming maintenance',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kAccentOrange,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  onPressed:
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => ServiceRecordsPage()),
+                      ),
+                  icon: const Icon(Icons.add),
+                  label: const Text(
+                    'Add a Service Record',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16.0, // Match the previous button
+                    ),
+                  ),
+                ),
               ),
+            ),
+            const SizedBox(height: 10),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text('Upcoming maintenance', style: text.titleMedium),
             ),
             InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ServiceRecordsPage()),
-                );
-              },
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => ServiceRecordsPage()),
+                  ),
               child: ListTile(
                 title: Text(
                   vehicleData != null
-                      ? "${vehicleData!['selectedBrand'] ?? ''} ${vehicleData!['selectedModel'] ?? ''} (${vehicleData!['year']?.toString() ?? 'Year not specified'})"
-                      : 'Vehicle not loaded',
+                      ? "${vehicleData!['selectedBrand']} ${vehicleData!['selectedModel']} (${vehicleData!['year']})"
+                      : '',
                 ),
                 subtitle: Text(
                   vehicleData != null
-                      ? 'Next maintenance at: ${getNextMaintenanceMileage(int.tryParse(vehicleData!['mileage']?.toString() ?? '0') ?? 0)} KM'
+                      ? 'Next maintenance at: ${getNextMaintenanceMileage(int.tryParse(vehicleData!['mileage'].toString()) ?? 0)} KM'
                       : '',
                 ),
-                trailing: Icon(Icons.build, color: Colors.orange),
+                trailing: const Icon(Icons.build, color: Colors.orange),
               ),
             ),
-             _buildVehicleDashboardButton(),
+
+            _buildSmartVehicleDashboardButton(),
           ],
         ),
       ),
-      
+
       bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.black,
+        // backgroundColor: kAppBarColor,
+        selectedItemColor: kAccentOrange,
+        unselectedItemColor:
+            theme.brightness == Brightness.light
+                ? Colors.black
+                : Colors.white70,
         currentIndex: _selectedIndex,
-        onTap: (index) {
-          if (index == _selectedIndex)
-            return; // Don't navigate if already on the same screen
-
-          setState(() {
-            _selectedIndex = index;
-          });
-
-          switch (index) {
-            case 0:
-              // Already on dashboard
-              break;
+        onTap: (i) {
+          if (i == _selectedIndex) return;
+          setState(() => _selectedIndex = i);
+          Widget target = widget;
+          switch (i) {
             case 1:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => MapScreen()),
-              );
+              target = MapScreen();
               break;
             case 2:
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => OBD2Page()),
-              );
+              target = const OBD2Page();
               break;
             case 3:
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ServiceHistorypage()),
-              );
+              target = const ServiceHistorypage();
               break;
             case 4:
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfileScreen()),
-              );
+              target = const ProfileScreen();
               break;
           }
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => target),
+          );
         },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
           BottomNavigationBarItem(
-            icon: Image.asset('images/logo.png', height: 30),
+            icon: Image.asset('images/logo.png', width: 30, height: 30),
             label: '',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.history), label: ''),
@@ -887,6 +715,5 @@ Widget _buildSmartVehicleDashboardButton() {
         ],
       ),
     );
-    
   }
 }

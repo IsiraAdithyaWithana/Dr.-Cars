@@ -52,6 +52,9 @@ dependencies:
   fluttertoast: ^8.2.12
   rxdart: ^0.28.0
   shared_preferences: ^2.0.15
+  onesignal_flutter:
+    git:
+      url: https://github.com/milansurelia/OneSignal-Flutter-SDK.git
 
 dev_dependencies:
 
