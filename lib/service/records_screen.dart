@@ -18,9 +18,13 @@ class _RecordsScreenState extends State<RecordsScreen> {
       appBar: AppBar(
         title: const Text(
           "Records",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
         backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.black),
         centerTitle: true,
       ),
       body: Container(

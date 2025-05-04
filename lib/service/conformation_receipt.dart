@@ -85,7 +85,11 @@ class _RecieptPageState extends State<RecieptPage> {
       appBar: AppBar(
         title: Text(
           "Receipt to- ${widget.vehicleNumber}",
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: Colors.black,
+          ),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,

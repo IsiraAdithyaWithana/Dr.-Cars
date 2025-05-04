@@ -39,7 +39,11 @@ class _AddServiceState extends State<AddService> {
       appBar: AppBar(
         title: Text(
           "Add Service: ${widget.vehicleNumber}",
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: Colors.black,
+          ),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
