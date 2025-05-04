@@ -201,7 +201,7 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
       // BMW indicators
       'images/BMW/123.png': 'ABS Warning: Indicates a problem with the Anti-lock Braking System.',
       'images/BMW/ABS.png': 'Anti-lock Braking System Warning: ABS may not be functioning properly.',
-      'images/BMW/airbag warning.png': 'Airbag System Warning: Service required for airbag system.',
+      'images/BMW/airbag waring.png': 'Airbag System Warning: Service required for airbag system.',
       'images/BMW/breake.png': 'Brake System Warning: Check brake fluid level and brake function.',
       'images/BMW/check engine.png': 'Check Engine Warning: Engine issue detected, service needed.',
       'images/BMW/e brake.png': 'Automatic Brake Hold: This system is active.',
@@ -350,7 +350,7 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
             Colors.green,
           ),
           _buildDashboardTileWithImage(
-            'images/BMW/tire presure warning.png',
+            'images/BMW/tire presure waring.png',
             'Tire Pressure',
             '35 PSI',
             Colors.green,
@@ -376,27 +376,6 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
         ];
         break;
     }
-    // You can still add vehicle type-specific widgets if needed
-    if (vehicleType == 'SUV') {
-      widgets.add(
-        _buildDashboardTile(
-          Icons.terrain,
-          'Terrain Mode',
-          'Normal',
-          Colors.brown,
-        ),
-      );
-    } else if (vehicleType == 'Truck') {
-      widgets.add(
-        _buildDashboardTile(
-          Icons.line_weight,
-          'Load Weight',
-          '0 kg',
-          Colors.indigo,
-        ),
-      );
-    }
-
     return widgets;
   }
 
@@ -406,9 +385,9 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
       appBar: AppBar(
         title: Text(
           'Vehicle Dashboard',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.black,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.black),
       ),
@@ -439,24 +418,7 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
                     crossAxisSpacing: 16,
                     children: _buildVehicleSpecificWidgets(),
                   ),
-                  SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // This would typically connect to OBD-II or fetch real data
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Connecting to vehicle systems...')),
-                        );
-                      },
-                      child: Text('Sync with Vehicle'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        minimumSize: Size(double.infinity, 50),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 20),
+                  
                 ],
               ),
             ),
