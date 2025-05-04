@@ -17,7 +17,7 @@ import 'package:rxdart/rxdart.dart';
 // reuse the same color constants
 const Color kAppBarColor = Colors.black;
 const Color kAccentOrange = Color.fromARGB(255, 255, 99, 32);
-const Color kBlueTint = Colors.blue;
+const Color kBlueTint = Color.fromARGB(255, 243, 72, 33);
 const Color kVehicleCardBg = Color(0xFFFAF7F7);
 const Color kErrorRed = Colors.red;
 const Color kIconBgOpacityBlue = Color.fromRGBO(0, 0, 255, .1);
@@ -116,7 +116,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.all(12),
                 child: const Icon(
                   Icons.dashboard_customize,
-                  color: kBlueTint,
+                  color: Color.fromARGB(255, 243, 96, 33),
                   size: 32,
                 ),
               ),
@@ -135,7 +135,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     SizedBox(height: 4),
                     Text(
                       'View real-time vehicle metrics and status',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   ],
                 ),
