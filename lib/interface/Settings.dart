@@ -25,7 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   bool _notificationsEnabled = true;
   bool _darkMode = false;
-  String _selectedLanguage = 'en'; // 'en', 'si', 'ta'
+  String _selectedLanguage = 'en';
   bool _isLoading = false;
 
   static const Map<String, Map<String, String>> translations = {
@@ -608,18 +608,15 @@ Chat: https://wa.me/+94772111426
                     trailing: Switch(
                       value: _notificationsEnabled,
                       onChanged: (v) async {
-                        // 1) Update OneSignal subscription
                         if (v) {
                           await OneSignal.User.pushSubscription.optIn();
                         } else {
                           await OneSignal.User.pushSubscription.optOut();
                         }
 
-                        // 2) Persist locally
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.setBool('notificationsEnabled', v);
 
-                        // 3) Update UI
                         setState(() => _notificationsEnabled = v);
                       },
                     ),
