@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dr_cars/interface/dashboard.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -388,8 +389,18 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.black),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => DashboardScreen()),
+            );
+          },
+        )
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
