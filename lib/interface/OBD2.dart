@@ -174,17 +174,17 @@ class _OBD2PageState extends State<OBD2Page> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         width: 80,
-        height: 80,
+        height: 100,
         padding: EdgeInsets.all(8),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               value,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 6),
-            Text(label, style: TextStyle(fontSize: 14)),
+            Text(label, style: TextStyle(fontSize: 12)),
           ],
         ),
       ),
