@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ServiceReceiptsPage extends StatelessWidget {
   const ServiceReceiptsPage({super.key});
@@ -32,11 +33,14 @@ class ServiceReceiptsPage extends StatelessWidget {
   }
 
   Widget _buildReceiptList(String status) {
+    final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
     return StreamBuilder<QuerySnapshot>(
       stream:
           FirebaseFirestore.instance
               .collection('Service_Receipts')
               .where('status', isEqualTo: status)
+              .where('serviceCenterId', isEqualTo: currentUserId)
               .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {

@@ -68,6 +68,10 @@ class HomeScreen extends StatelessWidget {
                       FirebaseFirestore.instance
                           .collection('Service_Receipts')
                           .where('status', whereIn: ['confirmed', 'rejected'])
+                          .where(
+                            'serviceCenterId',
+                            isEqualTo: FirebaseAuth.instance.currentUser!.uid,
+                          )
                           .snapshots(),
                   builder: (context, snapshot) {
                     int count =

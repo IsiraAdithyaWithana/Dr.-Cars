@@ -151,108 +151,131 @@ class _AppointmentNotificationPageState
               .where('status', isEqualTo: status)
               .snapshots(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(child: Text("No $status appointments found."));
-        }
-
         final appointments = snapshot.data!.docs;
+
+        if (appointments.isEmpty) {
+          return const Center(child: Text('No appointments found.'));
+        }
 
         return ListView.builder(
           itemCount: appointments.length,
           itemBuilder: (context, index) {
             final doc = appointments[index];
             final appointment = doc.data() as Map<String, dynamic>;
+            final serviceCenterUid = appointment['serviceCenterUid'];
 
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Model: ${appointment['vehicleModel'] ?? '-'}"),
-                    Text(
-                      "Date: ${appointment['date']?.toString().split('T').first ?? '-'}",
-                    ),
-                    Text("Time: ${appointment['time'] ?? '-'}"),
-                    Text("Status: ${appointment['status'] ?? '-'}"),
-                    const SizedBox(height: 6),
-                    Text(
-                      "Services: ${(appointment['serviceTypes'] as List).join(', ')}",
-                    ),
-                    const SizedBox(height: 12),
-                    if (status == 'pending') ...[
-                      ElevatedButton(
-                        onPressed: () {
-                          FirebaseFirestore.instance
-                              .collection('appointments')
-                              .doc(doc.id)
-                              .delete();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
+            return FutureBuilder<DocumentSnapshot>(
+              future:
+                  FirebaseFirestore.instance
+                      .collection('Users')
+                      .doc(serviceCenterUid)
+                      .get(),
+              builder: (context, snapshot) {
+                String serviceCenterName = 'Loading...';
+                if (snapshot.connectionState == ConnectionState.done &&
+                    snapshot.hasData) {
+                  final userData =
+                      snapshot.data!.data() as Map<String, dynamic>?;
+                  serviceCenterName =
+                      userData?['Service Center Name'] ?? 'Unknown';
+                }
+
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Appointment ${index + 1}: $serviceCenterName"),
+                        Text("Model: ${appointment['vehicleModel'] ?? '-'}"),
+                        Text(
+                          "Date: ${appointment['date']?.toString().split('T').first ?? '-'}",
                         ),
-                        child: const Text("Cancel Appointment"),
-                      ),
-                    ] else if (status == 'accepted') ...[
-                      ElevatedButton(
-                        onPressed: () {
-                          FirebaseFirestore.instance
-                              .collection('appointments')
-                              .doc(doc.id)
-                              .delete();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
+                        Text("Time: ${appointment['time'] ?? '-'}"),
+                        Text("Status: ${appointment['status'] ?? '-'}"),
+                        const SizedBox(height: 6),
+                        Text(
+                          "Services: ${(appointment['serviceTypes'] as List).join(', ')}",
                         ),
-                        child: const Text("Handed Over Vehicle"),
-                      ),
-                    ] else if (status == 'rejected') ...[
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                FirebaseFirestore.instance
-                                    .collection('appointments')
-                                    .doc(doc.id)
-                                    .update({'status': 'pending'});
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
-                                foregroundColor: Colors.white,
-                              ),
-                              child: const Text("Resend Appointment"),
+                        const SizedBox(height: 12),
+                        if (status == 'pending') ...[
+                          ElevatedButton(
+                            onPressed: () {
+                              FirebaseFirestore.instance
+                                  .collection('appointments')
+                                  .doc(doc.id)
+                                  .delete();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
                             ),
+                            child: const Text("Cancel"),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                FirebaseFirestore.instance
-                                    .collection('appointments')
-                                    .doc(doc.id)
-                                    .delete();
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
-                              ),
-                              child: const Text("Delete"),
+                        ] else if (status == 'accepted') ...[
+                          ElevatedButton(
+                            onPressed: () {
+                              FirebaseFirestore.instance
+                                  .collection('appointments')
+                                  .doc(doc.id)
+                                  .delete();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              foregroundColor: Colors.white,
                             ),
+                            child: const Text("Handed Over Vehicle"),
+                          ),
+                        ] else if (status == 'rejected') ...[
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    FirebaseFirestore.instance
+                                        .collection('appointments')
+                                        .doc(doc.id)
+                                        .update({'status': 'pending'});
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: const Text("Resend Appointment"),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    FirebaseFirestore.instance
+                                        .collection('appointments')
+                                        .doc(doc.id)
+                                        .delete();
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: const Text("Delete"),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             );
           },
         );

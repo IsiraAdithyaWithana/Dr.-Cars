@@ -114,7 +114,7 @@ class _ReceiptNotificationPageState extends State<ReceiptNotificationPage> {
                 }
 
                 return TabBar(
-                  isScrollable: false,
+                  isScrollable: true,
                   labelColor: Colors.amber,
                   unselectedLabelColor: Colors.white70,
                   indicatorColor: Colors.amber,
