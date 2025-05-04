@@ -26,7 +26,7 @@ class ServiceCenterApprovalPage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => SignInScreen()),
                 );
               },
-              icon: const Icon(Icons.logout),
+              icon: const Icon(Icons.logout, color: Colors.white),
               tooltip: 'Sign Out',
             ),
           ],
