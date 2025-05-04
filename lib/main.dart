@@ -130,7 +130,7 @@ class MyApp extends StatelessWidget {
           fontSize: 32,
           fontWeight: FontWeight.bold,
         ),
-        titleMedium: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        titleMedium: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
       colorScheme: ColorScheme.fromSwatch(
         brightness: brightness,
