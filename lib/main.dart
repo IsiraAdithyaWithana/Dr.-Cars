@@ -95,7 +95,7 @@ class MyApp extends StatelessWidget {
           hintStyle: TextStyle(color: hintColor),
           labelStyle: TextStyle(color: labelColor),
         ),
-        textStyle: TextStyle(color: labelColor, fontSize: 12),
+        textStyle: TextStyle(color: labelColor, fontSize: 14),
         menuStyle: MenuStyle(
           backgroundColor: MaterialStatePropertyAll(fillColor),
         ),
