@@ -13,7 +13,6 @@ import 'package:dr_cars/interface/servicerecords.dart';
 import 'package:dr_cars/interface/appointments.dart';
 import 'package:rxdart/rxdart.dart';
 
-// reuse the same color constants
 const Color kAppBarColor = Colors.black;
 const Color kAccentOrange = Color.fromARGB(255, 255, 99, 32);
 const Color kBlueTint = Color.fromARGB(255, 243, 72, 33);
