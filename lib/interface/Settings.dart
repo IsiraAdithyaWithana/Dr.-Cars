@@ -629,13 +629,25 @@ Chat: https://wa.me/+94772111426
 
                   ListTile(
                     leading: const Icon(Icons.language),
-                    title: Text(t('language')),
+                    title: Text(t('language'), style: TextStyle(fontSize: 16)),
                     trailing: DropdownButton<String>(
                       value: _selectedLanguage,
                       items: const [
-                        DropdownMenuItem(value: 'en', child: Text('English')),
-                        DropdownMenuItem(value: 'si', child: Text('සිංහල')),
-                        DropdownMenuItem(value: 'ta', child: Text('தமிழ்')),
+                        DropdownMenuItem(
+                          value: 'en',
+                          child: Text(
+                            'English',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: 'si',
+                          child: Text('සිංහල', style: TextStyle(fontSize: 16)),
+                        ),
+                        DropdownMenuItem(
+                          value: 'ta',
+                          child: Text('தமிழ்', style: TextStyle(fontSize: 16)),
+                        ),
                       ],
                       onChanged: (v) {
                         if (v != null) setState(() => _selectedLanguage = v);
@@ -662,15 +674,7 @@ Chat: https://wa.me/+94772111426
                     title: Text(t('privacy_policy')),
                     onTap: _showPrivacyPolicy,
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.security),
-                    title: Text(t('security')),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(t('two_factor_soon'))),
-                      );
-                    },
-                  ),
+
                   ListTile(
                     leading: const Icon(Icons.password),
                     title: Text(t('change_password')),
