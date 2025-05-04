@@ -1,10 +1,12 @@
 import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dr_cars/interface/OBD2.dart';
+import 'package:dr_cars/interface/Service%20History.dart';
 import 'package:dr_cars/interface/dashboard.dart';
+import 'package:dr_cars/interface/mapscreen.dart';
+import 'package:dr_cars/interface/profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'dart:io';
 import 'package:flutter/services.dart';
 
 class VehicleDashboardScreen extends StatefulWidget {
@@ -20,6 +22,7 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
   String? vehicleType;
   String? vehicleBrand;
   String? vehicleModel;
+  int _selectedIndex = 0;
   List<String> brandIndicatorImages = [];
 
   // Status mapping - can be updated from Firestore in a real implementation
@@ -330,7 +333,14 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(title),
+          title: Text(
+            title,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -343,7 +353,14 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
                 },
               ),
               SizedBox(height: 16),
-              Text(explanation),
+              Text(
+                explanation,
+                style: TextStyle(
+                  fontSize: 18,
+                  height: 1.3,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
           actions: [
@@ -351,7 +368,10 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Close'),
+              child: Text(
+                'Close',
+                style: TextStyle(fontSize: 18),
+              ),
             ),
           ],
         );
@@ -469,6 +489,69 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
                 ],
               ),
             ),
-    );
+         bottomNavigationBar: BottomNavigationBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        selectedItemColor: Colors.red,
+        unselectedItemColor: Colors.black,
+        currentIndex: _selectedIndex,
+        type: BottomNavigationBarType.fixed,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+
+          if (index == 0) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DashboardScreen()),
+            );
+          }
+          else if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MapScreen()),
+            );
+          }
+          else if (index == 4) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+            );
+          }
+          else if (index == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ServiceHistorypage()),
+            );
+          }
+        },
+        items: [
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.home, size: 24),
+            label: '',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.map, size: 24),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Image.asset('images/logo.png', height: 24),
+            label: '',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.history, size: 24),
+            label: '',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.person, size: 24),
+            label: '',
+          ),
+        ],
+      ),
+            
+ );
   }
 }
