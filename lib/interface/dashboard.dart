@@ -634,7 +634,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     'Add a Service Record',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      fontSize: 16.0, // Match the previous button
+                      fontSize: 16.0,
                     ),
                   ),
                 ),
