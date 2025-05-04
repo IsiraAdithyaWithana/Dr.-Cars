@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 // ------------------------------------------------------------------
-// COLOR CONSTANTS — used everywhere
+// COLOR CONSTANTS
 // ------------------------------------------------------------------
 const Color kAppBarColor = Colors.black;
 const Color kAccentOrange = Color.fromARGB(255, 255, 99, 32);
@@ -28,7 +28,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  // OneSignal initialization (no assignment needed)
   OneSignal.initialize("fd5e46c1-2563-4dd9-8b53-931517023f89");
 
   final prefs = await SharedPreferences.getInstance();
@@ -41,99 +40,103 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  ThemeData _lightTheme() => ThemeData(
-    brightness: Brightness.light,
-    primaryColor: kAppBarColor,
-    scaffoldBackgroundColor: Colors.white,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: kAppBarColor,
-      foregroundColor: Colors.white,
-      centerTitle: true,
-      elevation: 4,
-      titleTextStyle: TextStyle(
-        color: Colors.white,
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
-      iconTheme: IconThemeData(color: Colors.white),
-    ),
-    switchTheme: SwitchThemeData(
-      thumbColor: MaterialStateProperty.resolveWith<Color>(
-        (states) =>
-            states.contains(MaterialState.selected)
-                ? kAccentOrange
-                : Colors.grey.shade400,
-      ),
-      trackColor: MaterialStateProperty.resolveWith<Color>(
-        (states) =>
-            states.contains(MaterialState.selected)
-                ? kAccentOrange.withOpacity(0.5)
-                : Colors.grey.shade300,
-      ),
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: kAppBarColor,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        padding: const EdgeInsets.symmetric(vertical: 16),
-      ),
-    ),
-    textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: Colors.black87),
-      headlineSmall: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-      titleMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-    ),
-    colorScheme: ColorScheme.fromSwatch().copyWith(secondary: kAccentOrange),
-  );
+  ThemeData _baseTheme(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    final fillColor = isDark ? Colors.grey[850] : Colors.grey[100];
+    final labelColor = isDark ? Colors.white70 : Colors.black87;
+    final hintColor = Colors.grey;
 
-  ThemeData _darkTheme() => ThemeData(
-    brightness: Brightness.dark,
-    primaryColor: kAppBarColor,
-    scaffoldBackgroundColor: Colors.black,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: kAppBarColor,
-      foregroundColor: Colors.white,
-      centerTitle: true,
-      elevation: 4,
-      titleTextStyle: TextStyle(
-        color: Colors.white,
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
-      iconTheme: IconThemeData(color: Colors.white),
-    ),
-    switchTheme: SwitchThemeData(
-      thumbColor: MaterialStateProperty.resolveWith<Color>(
-        (states) =>
-            states.contains(MaterialState.selected)
-                ? kAccentOrange
-                : Colors.grey.shade600,
-      ),
-      trackColor: MaterialStateProperty.resolveWith<Color>(
-        (states) =>
-            states.contains(MaterialState.selected)
-                ? kAccentOrange.withOpacity(0.5)
-                : Colors.grey.shade800,
-      ),
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
+    return ThemeData(
+      brightness: brightness,
+      primaryColor: kAppBarColor,
+      scaffoldBackgroundColor: isDark ? Colors.black : Colors.white,
+      appBarTheme: AppBarTheme(
         backgroundColor: kAppBarColor,
         foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        centerTitle: true,
+        elevation: 4,
+        titleTextStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-    ),
-    textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: Colors.white70),
-      headlineSmall: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-      titleMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-    ),
-    colorScheme: ColorScheme.fromSwatch(
-      brightness: Brightness.dark,
-    ).copyWith(secondary: kAccentOrange),
-  );
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: fillColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark ? Colors.white24 : Colors.black12,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kAccentOrange, width: 2),
+        ),
+        hintStyle: TextStyle(color: hintColor),
+        labelStyle: TextStyle(color: labelColor),
+      ),
+      dropdownMenuTheme: DropdownMenuThemeData(
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: fillColor,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: isDark ? Colors.white24 : Colors.black12,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: kAccentOrange, width: 2),
+          ),
+          hintStyle: TextStyle(color: hintColor),
+          labelStyle: TextStyle(color: labelColor),
+        ),
+        textStyle: TextStyle(color: labelColor, fontSize: 12),
+        menuStyle: MenuStyle(
+          backgroundColor: MaterialStatePropertyAll(fillColor),
+        ),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: MaterialStateProperty.resolveWith<Color>(
+          (states) =>
+              states.contains(MaterialState.selected)
+                  ? kAccentOrange
+                  : (isDark ? Colors.grey.shade600 : Colors.grey.shade400),
+        ),
+        trackColor: MaterialStateProperty.resolveWith<Color>(
+          (states) =>
+              states.contains(MaterialState.selected)
+                  ? kAccentOrange.withOpacity(0.5)
+                  : (isDark ? Colors.grey.shade800 : Colors.grey.shade300),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: kAppBarColor,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+      ),
+      textTheme: TextTheme(
+        bodyLarge: TextStyle(color: labelColor),
+        headlineSmall: const TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.bold,
+        ),
+        titleMedium: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      ),
+      colorScheme: ColorScheme.fromSwatch(
+        brightness: brightness,
+      ).copyWith(secondary: kAccentOrange),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -142,8 +145,8 @@ class MyApp extends StatelessWidget {
       builder: (_, ThemeMode mode, __) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          theme: _lightTheme(),
-          darkTheme: _darkTheme(),
+          theme: _baseTheme(Brightness.light),
+          darkTheme: _baseTheme(Brightness.dark),
           themeMode: mode,
           home: const AuthCheck(),
         );
