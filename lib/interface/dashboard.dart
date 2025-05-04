@@ -673,7 +673,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
 
       bottomNavigationBar: BottomNavigationBar(
-        // backgroundColor: kAppBarColor,
         selectedItemColor: kAccentOrange,
         unselectedItemColor:
             theme.brightness == Brightness.light
