@@ -18,6 +18,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   //  used this controller for save the vehicle number in the fire base
   final TextEditingController _vehicleNumberController =
       TextEditingController();
+  bool _isLoading = true;
 
   final List<String> vehicleModels = [
     'Car',
@@ -163,10 +164,50 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   void initState() {
     super.initState();
     _loadUserData();
+    _loadVehicleData();
+  }
+
+  Future<void> _loadVehicleData() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        DocumentSnapshot vehicleDoc =
+            await FirebaseFirestore.instance
+                .collection('Vehicle')
+                .doc(user.uid)
+                .get();
+
+        if (vehicleDoc.exists) {
+          setState(() {
+            _vehicleNumberController.text = vehicleDoc['vehicleNumber'] ?? '';
+            _selectedModel = vehicleDoc['vehicleType'] ?? '';
+            _isLoading = false;
+          });
+        } else {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'No vehicle information found. Please set up your vehicle first.',
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading vehicle data: $e')));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -215,14 +256,41 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         const SizedBox(height: 16),
 
                         _buildLabel('Vehicle Number '),
-                        _buildTextField(),
+                        TextField(
+                          controller: _vehicleNumberController,
+                          enabled: false,
+                          decoration: InputDecoration(
+                            hintText: "EX: CAD-0896",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                          ),
+                        ),
 
                         const SizedBox(height: 16),
                         _buildLabel('Vehicle Model '),
-                        _buildDropdown(
-                          vehicleModels,
-                          _selectedModel,
-                          (value) => setState(() => _selectedModel = value),
+                        DropdownButtonFormField<String>(
+                          value: _selectedModel,
+                          items:
+                              vehicleModels
+                                  .map(
+                                    (item) => DropdownMenuItem(
+                                      value: item,
+                                      child: Text(item),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged: null,
+                          decoration: InputDecoration(
+                            hintText: "SELECT",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                          ),
                         ),
                         const SizedBox(height: 16),
 
@@ -483,18 +551,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     return Text(
       text,
       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-    );
-  }
-
-  Widget _buildTextField() {
-    return TextField(
-      controller: _vehicleNumberController,
-      decoration: InputDecoration(
-        hintText: "EX: CAD-0896",
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
-        filled: true,
-        fillColor: Colors.grey[200],
-      ),
     );
   }
 
