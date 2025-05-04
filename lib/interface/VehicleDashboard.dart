@@ -291,26 +291,27 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
             children: [
               Image.asset(
                 imagePath,
-                height: 40,
-                width: 40,
+                height: 60,
+                width: 60,
                 errorBuilder: (context, error, stackTrace) {
                   print("Error loading image $imagePath: $error");
-                  return Icon(Icons.error_outline, size: 40, color: Colors.red);
+                  return Icon(Icons.error_outline, size: 60, color: Colors.red);
                 },
               ),
               SizedBox(height: 8),
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
+                textAlign: TextAlign.center,
               ),
               SizedBox(height: 4),
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: color,
                 ),
@@ -335,10 +336,10 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
             children: [
               Image.asset(
                 imagePath,
-                height: 60,
-                width: 60,
+                height: 80,
+                width: 80,
                 errorBuilder: (context, error, stackTrace) {
-                  return Icon(Icons.error_outline, size: 60, color: Colors.red);
+                  return Icon(Icons.error_outline, size: 80, color: Colors.red);
                 },
               ),
               SizedBox(height: 16),
@@ -457,7 +458,7 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
                   ),
                   GridView.count(
                     crossAxisCount: 2,
-                    childAspectRatio: 1.2,
+                    childAspectRatio: 1.0,
                     physics: NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
                     padding: EdgeInsets.all(16),
