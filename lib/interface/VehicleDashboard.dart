@@ -43,36 +43,62 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
   // Indicator explanations
   final Map<String, String> explanations = {
     // BMW indicators
-    'images/BMW/123.png': 'ABS Warning: Indicates a problem with the Anti-lock Braking System.',
-    'images/BMW/ABS.png': 'Anti-lock Braking System Warning: ABS may not be functioning properly.',
-    'images/BMW/airbag waring.png': 'Airbag System Warning: Service required for airbag system.',
-    'images/BMW/breake.png': 'Brake System Warning: Check brake fluid level and brake function.',
-    'images/BMW/check engine.png': 'Check Engine Warning: Engine issue detected, service needed.',
+    'images/BMW/123.png':
+        'Battery Warning: Issue with battery or charging system',
+    'images/BMW/ABS.png':
+        'Anti-lock Braking System Warning: ABS may not be functioning properly.',
+    'images/BMW/airbag waring.png':
+        'Airbag System Warning: Service required for airbag system.',
+    'images/BMW/breake.png':
+        'Brake System Warning: Check brake fluid level and brake function.',
+    'images/BMW/check engine.png':
+        'Check Engine Warning: Engine issue detected, service needed.',
     'images/BMW/e brake.png': 'Automatic Brake Hold: This system is active.',
-    'images/BMW/fog lights.png': 'Fog Lights: Fog lights are currently turned on.',
-    'images/BMW/fuel low.png': 'Low Fuel Warning: Fuel level is low, refuel soon.',
-    'images/BMW/glow.png': 'Diesel Pre-heating: Diesel glow plug indicator is active.',
-    'images/BMW/high heat.png': 'Engine Temperature Warning: Engine is overheating.',
-    'images/BMW/oil light.png': 'Oil Pressure Warning: Check oil level immediately.',
-    'images/BMW/seatbelt.png': 'Seatbelt Reminder: One or more seatbelts are not fastened.',
-    'images/BMW/tire presure waring.png': 'Tire Pressure Warning: Check tire pressure in one or more tires.',
-    'images/BMW/TRC.png': 'Traction Control: Traction control system is active or has an issue.',
+    'images/BMW/fog lights.png':
+        'Fog Lights: Fog lights are currently turned on.',
+    'images/BMW/fuel low.png':
+        'Low Fuel Warning: Fuel level is low, refuel soon.',
+    'images/BMW/glow.png':
+        'Diesel Pre-heating: Diesel glow plug indicator is active.',
+    'images/BMW/high heat.png':
+        'Engine Temperature Warning: Engine is overheating.',
+    'images/BMW/oil light.png':
+        'Oil Pressure Warning: Check oil level immediately.',
+    'images/BMW/seatbelt.png':
+        'Seatbelt Reminder: One or more seatbelts are not fastened.',
+    'images/BMW/tire presure waring.png':
+        'Tire Pressure Warning: Check tire pressure in one or more tires.',
+    'images/BMW/TRC.png':
+        'Traction Control: Traction control system is active or has an issue.',
     'images/BMW/warning.png': 'General Warning: Check vehicle systems.',
-    'images/BMW/window heater.png': 'Window Defroster: Rear window defroster is active.',
-    
+    'images/BMW/window heater.png':
+        'Window Defroster: Rear window defroster is active.',
+
     // Toyota indicators
-    'images/Toyota/ABS.png': 'ABS Warning: Indicates a problem with the Anti-lock Braking System.',
-    'images/Toyota/BATTERY CHECK.png': 'Battery Warning: Issue with battery or charging system.',
-    'images/Toyota/DOORS OPEND.png': 'Door Ajar Warning: One or more doors are not fully closed.',
-    'images/Toyota/ENGINE CHECK LIGHT.png': 'Check Engine Warning: Engine malfunction detected.',
-    'images/Toyota/HAND BREAK.png': 'Parking Brake: Parking brake is currently engaged.',
-    'images/Toyota/HAZARD.png': 'Hazard Lights: Hazard warning lights are active.',
-    'images/Toyota/HEAD BEAM.png': 'High Beam: High beam headlights are currently active.',
-    'images/Toyota/LOW BEAM.png': 'Low Beam: Low beam headlights are currently active.',
-    'images/Toyota/LOW FUEL.png': 'Low Fuel Warning: Fuel level is low, refuel soon.',
-    'images/Toyota/seat bealts.png': 'Seatbelt Reminder: One or more seatbelts are not fastened.',
-    'images/Toyota/WATER HEAT.png': 'Engine Temperature Warning: Engine is overheating.',
-    'images/Toyota/WINDSCREEN WASHER LIQUID LOW.png': 'Washer Fluid Warning: Windshield washer fluid is low.',
+    'images/Toyota/ABS.png':
+        'ABS Warning: Indicates a problem with the Anti-lock Braking System.',
+    'images/Toyota/BATTERY CHECK.png':
+        'Battery Warning: Issue with battery or charging system.',
+    'images/Toyota/DOORS OPEND.png':
+        'Door Ajar Warning: One or more doors are not fully closed.',
+    'images/Toyota/ENGINE CHECK LIGHT.png':
+        'Check Engine Warning: Engine malfunction detected.',
+    'images/Toyota/HAND BREAK.png':
+        'Parking Brake: Parking brake is currently engaged.',
+    'images/Toyota/HAZARD.png':
+        'Hazard Lights: Hazard warning lights are active.',
+    'images/Toyota/HEAD BEAM.png':
+        'High Beam: High beam headlights are currently active.',
+    'images/Toyota/LOW BEAM.png':
+        'Low Beam: Low beam headlights are currently active.',
+    'images/Toyota/LOW FUEL.png':
+        'Low Fuel Warning: Fuel level is low, refuel soon.',
+    'images/Toyota/seat bealts.png':
+        'Seatbelt Reminder: One or more seatbelts are not fastened.',
+    'images/Toyota/WATER HEAT.png':
+        'Engine Temperature Warning: Engine is overheating.',
+    'images/Toyota/WINDSCREEN WASHER LIQUID LOW.png':
+        'Washer Fluid Warning: Windshield washer fluid is low.',
   };
 
   // Indicator title mapping
@@ -86,7 +112,7 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
     'images/BMW/breake.png': 'Brake System',
     'images/BMW/ABS.png': 'ABS Status',
     'images/BMW/seatbelt.png': 'Seatbelts',
-    'images/BMW/123.png': 'ABS Warning',
+    'images/BMW/123.png': 'Battery Warning',
     'images/BMW/airbag waring.png': 'Airbag Warning',
     'images/BMW/e brake.png': 'Auto Brake Hold',
     'images/BMW/fog lights.png': 'Fog Lights',
@@ -124,10 +150,11 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        final vehicleDoc = await FirebaseFirestore.instance
-            .collection('Vehicle')
-            .doc(user.uid)
-            .get();
+        final vehicleDoc =
+            await FirebaseFirestore.instance
+                .collection('Vehicle')
+                .doc(user.uid)
+                .get();
 
         if (vehicleDoc.exists) {
           setState(() {
@@ -136,21 +163,25 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
             vehicleBrand = vehicleData!['selectedBrand'];
             vehicleModel = vehicleData!['selectedModel'];
           });
-          
+
           // Load all indicator images for the selected brand
           await _loadIndicatorImages();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No vehicle information found. Please set up your vehicle first.')),
+            SnackBar(
+              content: Text(
+                'No vehicle information found. Please set up your vehicle first.',
+              ),
+            ),
           );
           Navigator.pop(context);
         }
       }
     } catch (e) {
       print("Error loading vehicle data: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading vehicle data')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading vehicle data')));
     } finally {
       setState(() {
         _isLoading = false;
@@ -161,31 +192,39 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
   Future<void> _loadIndicatorImages() async {
     // Clear previous list
     brandIndicatorImages = [];
-    
+
     if (vehicleBrand == null) return;
-    
+
     try {
       // Load all images from the brand's folder
       final manifestContent = await rootBundle.loadString('AssetManifest.json');
       final Map<String, dynamic> manifestMap = Map<String, dynamic>.from(
-          jsonDecode(manifestContent) as Map);
-          
-      final imagePaths = manifestMap.keys
-          .where((String key) => key.contains('images/${vehicleBrand}/') && key.endsWith('.png'))
-          .toList();
-          
+        jsonDecode(manifestContent) as Map,
+      );
+
+      final imagePaths =
+          manifestMap.keys
+              .where(
+                (String key) =>
+                    key.contains('images/${vehicleBrand}/') &&
+                    key.endsWith('.png'),
+              )
+              .toList();
+
       setState(() {
         brandIndicatorImages = imagePaths;
       });
-      
-      print("Loaded ${brandIndicatorImages.length} indicators for $vehicleBrand");
+
+      print(
+        "Loaded ${brandIndicatorImages.length} indicators for $vehicleBrand",
+      );
     } catch (e) {
       print("Error loading indicator images: $e");
       // Fallback to hardcoded paths if needed
       _loadFallbackImages();
     }
   }
-  
+
   void _loadFallbackImages() {
     // Fallback images if dynamic loading fails
     if (vehicleBrand?.toLowerCase() == 'bmw') {
@@ -234,9 +273,10 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundImage: vehicleData?['vehiclePhotoUrl'] != null
-                  ? NetworkImage(vehicleData!['vehiclePhotoUrl'])
-                  : AssetImage('images/logo.png') as ImageProvider,
+              backgroundImage:
+                  vehicleData?['vehiclePhotoUrl'] != null
+                      ? NetworkImage(vehicleData!['vehiclePhotoUrl'])
+                      : AssetImage('images/logo.png') as ImageProvider,
               radius: 30,
             ),
             SizedBox(width: 16),
@@ -246,25 +286,16 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
                 children: [
                   Text(
                     '$vehicleBrand $vehicleModel',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 4),
                   Text(
                     vehicleData?['vehicleNumber'] ?? 'Unknown',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[700],
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                   ),
                   Text(
                     'Type: $vehicleType | Year: ${vehicleData?['year']}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -304,10 +335,7 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
               SizedBox(height: 8),
               Text(
                 title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 4),
@@ -327,18 +355,17 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
   }
 
   void _showIndicatorInfo(String imagePath, String title) {
-    final String explanation = explanations[imagePath] ?? 'No additional information available for this indicator.';
-    
+    final String explanation =
+        explanations[imagePath] ??
+        'No additional information available for this indicator.';
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
             title,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           content: Column(
@@ -355,10 +382,7 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
               SizedBox(height: 16),
               Text(
                 explanation,
-                style: TextStyle(
-                  fontSize: 18,
-                  height: 1.3,
-                ),
+                style: TextStyle(fontSize: 18, height: 1.3),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -368,10 +392,7 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text(
-                'Close',
-                style: TextStyle(fontSize: 18),
-              ),
+              child: Text('Close', style: TextStyle(fontSize: 18)),
             ),
           ],
         );
@@ -381,7 +402,7 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
 
   List<Widget> _buildAllIndicatorTiles() {
     List<Widget> widgets = [];
-    
+
     if (brandIndicatorImages.isEmpty) {
       return [
         Center(
@@ -392,18 +413,20 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
               style: TextStyle(fontSize: 16),
             ),
           ),
-        )
+        ),
       ];
     }
-    
+
     for (String imagePath in brandIndicatorImages) {
       // Get title from mapping or use fallback
-      String title = indicatorTitles[imagePath] ?? 
-                    imagePath.split('/').last.replaceAll('.png', '').replaceAll('_', ' ');
-      
+      String title =
+          indicatorTitles[imagePath] ??
+          imagePath.split('/').last.replaceAll('.png', '').replaceAll('_', ' ');
+
       // Get status from mapping or use default
-      Map<String, dynamic> status = statusInfo[title] ?? {'value': 'Normal', 'color': Colors.green};
-      
+      Map<String, dynamic> status =
+          statusInfo[title] ?? {'value': 'Normal', 'color': Colors.green};
+
       widgets.add(
         _buildDashboardTileWithImage(
           imagePath,
@@ -413,7 +436,7 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
         ),
       );
     }
-    
+
     return widgets;
   }
 
@@ -421,10 +444,7 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Vehicle Dashboard',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: Text('Vehicle Dashboard', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -447,49 +467,50 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildVehicleInfo(),
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Dashboard Indicators',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+      body:
+          _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildVehicleInfo(),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Dashboard Indicators',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        Text(
-                          '${brandIndicatorImages.length} indicators',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[700],
+                          Text(
+                            '${brandIndicatorImages.length} indicators',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[700],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  GridView.count(
-                    crossAxisCount: 2,
-                    childAspectRatio: 1.0,
-                    physics: NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    padding: EdgeInsets.all(16),
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    children: _buildAllIndicatorTiles(),
-                  ),
-                ],
+                    GridView.count(
+                      crossAxisCount: 2,
+                      childAspectRatio: 1.0,
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      padding: EdgeInsets.all(16),
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      children: _buildAllIndicatorTiles(),
+                    ),
+                  ],
+                ),
               ),
-            ),
-         bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: BottomNavigationBar(
         elevation: 0,
         backgroundColor: Colors.white,
         selectedItemColor: Colors.red,
@@ -508,20 +529,17 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
               context,
               MaterialPageRoute(builder: (context) => const DashboardScreen()),
             );
-          }
-          else if (index == 1) {
+          } else if (index == 1) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => MapScreen()),
             );
-          }
-          else if (index == 4) {
+          } else if (index == 4) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const ProfileScreen()),
             );
-          }
-          else if (index == 3) {
+          } else if (index == 3) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => ServiceHistorypage()),
@@ -551,7 +569,6 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
           ),
         ],
       ),
-            
- );
+    );
   }
 }
