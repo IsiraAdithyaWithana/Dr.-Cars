@@ -118,9 +118,33 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   String? _selectedBranch;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+  int _appointmentsCount = 0;
 
   String? _userPhoneNumber;
   String? _userId;
+
+  Future<void> _fetchAppointmentsForDate(DateTime date) async {
+    try {
+      // Convert date to start and end of day
+      DateTime startOfDay = DateTime(date.year, date.month, date.day);
+      DateTime endOfDay = startOfDay.add(const Duration(days: 1));
+
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('appointments')
+          .where('date', isGreaterThanOrEqualTo: startOfDay.toIso8601String())
+          .where('date', isLessThan: endOfDay.toIso8601String())
+          .get();
+
+      setState(() {
+        _appointmentsCount = snapshot.docs.length;
+      });
+    } catch (e) {
+      print('Error fetching appointments: $e');
+      setState(() {
+        _appointmentsCount = 0;
+      });
+    }
+  }
 
   Future<void> _pickDate() async {
     DateTime? pickedDate = await showDatePicker(
@@ -131,6 +155,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     );
     if (pickedDate != null) {
       setState(() => _selectedDate = pickedDate);
+      await _fetchAppointmentsForDate(pickedDate);
     }
   }
 
@@ -599,28 +624,60 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   }
 
   Widget _buildDatePicker() {
-    return InkWell(
-      onTap: _pickDate,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(25),
-          color: Colors.grey[200],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              _selectedDate == null
-                  ? 'SELECT DATE'
-                  : _selectedDate!.toLocal().toString().split(' ')[0],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: _pickDate,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(25),
+              color: Colors.grey[200],
             ),
-            const Icon(Icons.calendar_today, color: Colors.grey),
-          ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _selectedDate == null
+                      ? 'SELECT DATE'
+                      : _selectedDate!.toLocal().toString().split(' ')[0],
+                ),
+                const Icon(Icons.calendar_today, color: Colors.grey),
+              ],
+            ),
+          ),
         ),
-      ),
+        if (_selectedDate != null && _appointmentsCount > 0)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.orange[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.orange[800]),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'There are $_appointmentsCount appointment(s) already scheduled for this date.',
+                      style: TextStyle(
+                        color: Colors.orange[900],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 
