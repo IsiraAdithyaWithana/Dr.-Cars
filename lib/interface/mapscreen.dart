@@ -145,12 +145,124 @@ Future<void> _getRoute(LatLng destination) async {
     },
   ];
 
+  final List<Map<String, dynamic>> fuelCenters = [
+  {
+    "fid": "f1",
+    "fname": "LankaFuel Colombo",
+    "flat": 6.9147,
+    "flng": 79.8636,
+    "fdescription": "Fuel station near Borella junction, Colombo.",
+    "fphone": "0771234567"
+  },
+  {
+    "fid": "f2",
+    "fname": "LankaFuel Kurunegala",
+    "flat": 7.4863,
+    "flng": 80.3621,
+    "fdescription": "24-hour fuel station in Kurunegala town.",
+    "fphone": "0772345678"
+  },
+  {
+    "fid": "f3",
+    "fname": "LankaFuel Badulla",
+    "flat": 6.9934,
+    "flng": 81.0550,
+    "fdescription": "Badulla main road station, diesel and petrol available.",
+    "fphone": "0773456789"
+  },
+  {
+    "fid": "f4",
+    "fname": "LankaFuel Matara",
+    "flat": 5.9485,
+    "flng": 80.5353,
+    "fdescription": "Matara beach-side station with 24/7 service.",
+    "fphone": "0774567890"
+  },
+  {
+    "fid": "f5",
+    "fname": "LankaFuel Trincomalee",
+    "flat": 8.5880,
+    "flng": 81.2152,
+    "fdescription": "Located near the Trinco clock tower.",
+    "fphone": "0775678901"
+  },
+  {
+    "fid": "f6",
+    "fname": "LankaFuel Ratnapura",
+    "flat": 6.6828,
+    "flng": 80.3996,
+    "fdescription": "Gem city main fuel center on Pelmadulla road.",
+    "fphone": "0776789012"
+  },
+];
+
+
   @override
   void initState() {
     super.initState();
     _getUserLocation();
     _trackUserLocation();
   }
+
+// fuel centers card
+  void _showFuelBottomSheet(BuildContext context, String fname, String fdescription, String fphone) {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) => Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 50,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          const SizedBox(height: 15),
+          Text(
+            fname,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            fdescription,
+            style: const TextStyle(fontSize: 16),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              const Icon(Icons.phone, color: Colors.green),
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap: () => _makePhoneCall(fphone),
+                child: Text(
+                  fphone,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    ),
+  );
+}
+
+
 
   Future<void> _getUserLocation() async {
     bool serviceEnabled = await _location.serviceEnabled();
@@ -430,31 +542,49 @@ Future<void> _getRoute(LatLng destination) async {
                    
 
                     MarkerLayer(
-                      markers: [
-                        Marker(
-                          point: LatLng(_userLocation!.latitude!, _userLocation!.longitude!),
-                          width: 50,
-                          height: 50,
-                          child: const Icon(Icons.person_pin_circle, color: Colors.blue, size: 50),
-                        ),
-                        for (var center in serviceCenters)
-                          Marker(
-                            point: LatLng(center["lat"], center["lng"]),
-                            width: 40,
-                            height: 40,
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _selectedCenter = center;
-                                  _showReviews = false;
-                                  _isCardCollapsed = false; // Reset reviews visibility when selecting new center
-                                });
-                              },
-                              child: const Icon(Icons.location_on, color: Colors.red, size: 40),
-                            ),
-                          ),
-                      ],
-                    ),
+  markers: [
+    //  User location 
+    Marker(
+      point: LatLng(_userLocation!.latitude!, _userLocation!.longitude!),
+      width: 50,
+      height: 50,
+      child: const Icon(Icons.person_pin_circle, color: Colors.blue, size: 50),
+    ),
+
+    // Service centers
+    for (var center in serviceCenters)
+      Marker(
+        point: LatLng(center["lat"], center["lng"]),
+        width: 40,
+        height: 40,
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedCenter = center;
+              _showReviews = false;
+              _isCardCollapsed = false;
+            });
+          },
+          child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+        ),
+      ),
+
+    // Fuel centers 
+    for (var fcenter in fuelCenters)
+      Marker(
+        point: LatLng(fcenter["flat"], fcenter["flng"]),
+        width: 40,
+        height: 40,
+        child: GestureDetector(
+          onTap: () {
+            _showFuelBottomSheet(context, fcenter["fname"], fcenter["fdescription"], fcenter["fphone"]);
+          },
+          child: const Icon(Icons.local_gas_station, color: Color.fromARGB(255, 1, 11, 2), size: 40),
+        ),
+      ),
+  ],
+),
+
                      Positioned(
                      top: 20,
                      right: 10,
@@ -520,7 +650,7 @@ Future<void> _getRoute(LatLng destination) async {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         
-                        // Service Center Info Card
+        // Service Center Info Card
         AnimatedContainer(
          duration: Duration(milliseconds: 300),
          curve: Curves.easeInOut,
