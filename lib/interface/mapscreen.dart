@@ -8,6 +8,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -240,45 +241,57 @@ Future<void> _getRoute(LatLng destination) async {
           const SizedBox(height: 20),
 
           
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildCardButton(
-                Icons.arrow_back,
-                "Back",
-                Colors.red,
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-              _buildCardButton(
-                Icons.phone,
-                "Call",
-                Colors.green,
-                onPressed: () {
-                  if (_selectedCenter!['fphone'] != null) {
-                    _makePhoneCall(_selectedCenter!['fphone']);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("No phone number available.")),
-                    );
-                  }
-                },
-              ),
-              _buildCardButton(
-                Icons.directions,
-                "Directions",
-                Colors.blue,
-                onPressed: () {
-                  final LatLng centerLocation = LatLng(flat, flng);
-                  _getRoute(centerLocation);
-                  setState(() {
-                    _isCardCollapsed = !_isCardCollapsed;
-                  });
-                },
-              ),
-            ],
-          ),
+         Row(
+  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  children: [
+    _buildCardButton(
+      Icons.arrow_back,
+      "Back",
+      Colors.red,
+      onPressed: () {
+        Navigator.pop(context);
+      },
+    ),
+    _buildCardButton(
+      Icons.phone,
+      "Call",
+      Colors.green,
+      onPressed: () {
+        if (_selectedCenter!['fphone'] != null) {
+          _makePhoneCall(_selectedCenter!['fphone']);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("No phone number available.")),
+          );
+        }
+      },
+    ),
+    _buildCardButton(
+      Icons.directions,
+      "Directions",
+      Colors.blue,
+      onPressed: () {
+        final LatLng centerLocation = LatLng(flat, flng);
+        _getRoute(centerLocation);
+        setState(() {
+          _isCardCollapsed = !_isCardCollapsed;
+        });
+      },
+    ),
+    _buildCardButton(
+      Icons.share,
+      "Share",
+      Colors.orange,
+      onPressed: () {
+        final shareText = 'Check out this fuel center:\n'
+                          '$fname\n$fdescription\n'
+                          'Location: https://www.google.com/maps/search/?api=1&query=$flat,$flng';
+        Share.share(shareText);
+      },
+    ),
+  ],
+),
+
 
           const SizedBox(height: 20),
         ],
@@ -812,6 +825,18 @@ Future<void> _getRoute(LatLng destination) async {
                 }
               },
             ),
+            _buildCardButton(
+              Icons.share,
+              "Share",
+              Colors.orange,
+              onPressed: () {
+                final shareText = 'Check out this service center:\n'
+                    '${_selectedCenter!['name']}\n${_selectedCenter!['description']}\n'
+                    'Location: https://www.google.com/maps/search/?api=1&query=${_selectedCenter!['lat']},${_selectedCenter!['lng']}';
+                Share.share(shareText);
+              },
+            ),
+
           ],
         ),
 
