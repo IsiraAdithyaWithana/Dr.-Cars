@@ -148,10 +148,10 @@ Future<void> _getRoute(LatLng destination) async {
   final List<Map<String, dynamic>> fuelCenters = [
   {
     "fid": "f1",
-    "fname": "LankaFuel Colombo",
-    "flat": 6.9147,
-    "flng": 79.8636,
-    "fdescription": "Fuel station near Borella junction, Colombo.",
+    "fname": "LankaFuel Maharagama",
+    "flat": 6.8510,
+    "flng": 79.9221,
+    "fdescription": "Fuel station near Maharagama Town",
     "fphone": "0771234567"
   },
   {
@@ -205,7 +205,7 @@ Future<void> _getRoute(LatLng destination) async {
   }
 
 // fuel centers card
-  void _showFuelBottomSheet(BuildContext context, String fname, String fdescription, String fphone) {
+ void _showFuelBottomSheet(BuildContext context, String fname, String fdescription, String fphone, double flat, double flng) {
   showModalBottomSheet(
     context: context,
     shape: const RoundedRectangleBorder(
@@ -238,29 +238,55 @@ Future<void> _getRoute(LatLng destination) async {
             style: const TextStyle(fontSize: 16),
           ),
           const SizedBox(height: 20),
+
+          
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              const Icon(Icons.phone, color: Colors.green),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: () => _makePhoneCall(fphone),
-                child: Text(
-                  fphone,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
+              _buildCardButton(
+                Icons.arrow_back,
+                "Back",
+                Colors.red,
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              _buildCardButton(
+                Icons.phone,
+                "Call",
+                Colors.green,
+                onPressed: () {
+                  if (_selectedCenter!['fphone'] != null) {
+                    _makePhoneCall(_selectedCenter!['fphone']);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("No phone number available.")),
+                    );
+                  }
+                },
+              ),
+              _buildCardButton(
+                Icons.directions,
+                "Directions",
+                Colors.blue,
+                onPressed: () {
+                  final LatLng centerLocation = LatLng(flat, flng);
+                  _getRoute(centerLocation);
+                  setState(() {
+                    _isCardCollapsed = !_isCardCollapsed;
+                  });
+                },
               ),
             ],
           ),
+
           const SizedBox(height: 20),
         ],
       ),
     ),
   );
 }
+
 
 
 
@@ -530,15 +556,15 @@ Future<void> _getRoute(LatLng destination) async {
     ),
   ),
 
-                    PolylineLayer(
-                      polylines: [
-                        Polyline(
-                          points: _polylineCoordinates,
-                          strokeWidth: 4.0,
-                          color: Colors.blue,
-                        ),
-                      ],
-                    ),
+  PolylineLayer(
+    polylines: [
+    Polyline(
+      points: _polylineCoordinates,
+      strokeWidth: 4.0,
+      color: Colors.blue,
+         ),
+      ],
+   ),
                    
 
                     MarkerLayer(
@@ -577,7 +603,7 @@ Future<void> _getRoute(LatLng destination) async {
         height: 40,
         child: GestureDetector(
           onTap: () {
-            _showFuelBottomSheet(context, fcenter["fname"], fcenter["fdescription"], fcenter["fphone"]);
+            _showFuelBottomSheet(context, fcenter["fname"], fcenter["fdescription"], fcenter["fphone"], fcenter["flat"], fcenter["flng"]);
           },
           child: const Icon(Icons.local_gas_station, color: Color.fromARGB(255, 1, 11, 2), size: 40),
         ),
@@ -599,11 +625,11 @@ Future<void> _getRoute(LatLng destination) async {
                    _showReviews = false;       
                     _distanceText = ""; 
       });
-    },
-  ),
+     },
+    ),
+   ),
+  ],
 ),
-                  ],
-                ),
                 
                 
                 // Zoom controls
@@ -654,7 +680,7 @@ Future<void> _getRoute(LatLng destination) async {
         AnimatedContainer(
          duration: Duration(milliseconds: 300),
          curve: Curves.easeInOut,
-         height: _isCardCollapsed ? 150 : null, // Collapsed height or natural
+         height: _isCardCollapsed ? 150 : null, 
          decoration: BoxDecoration(
          color: Colors.white,
          borderRadius: _showReviews
@@ -756,7 +782,7 @@ Future<void> _getRoute(LatLng destination) async {
                 _getRoute(centerLocation);
 
                 setState(() {
-                  _isCardCollapsed = !_isCardCollapsed; // toggle size
+                  _isCardCollapsed = !_isCardCollapsed;
                 });
               },
             ),
@@ -811,19 +837,19 @@ Future<void> _getRoute(LatLng destination) async {
 ),
 
                     
+ // Reviews Section
+   if (_showReviews)
+    Container(
+        height: MediaQuery.of(context).size.height * 0.4,
+        color: Colors.white,
+        child: _buildReviewsList(),
+          ),
+        ],
+      ),
+     ),
+   ],
+),
 
-                        // Reviews Section
-                        if (_showReviews)
-                          Container(
-                            height: MediaQuery.of(context).size.height * 0.4,
-                            color: Colors.white,
-                            child: _buildReviewsList(),
-                          ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
         child: const Icon(Icons.my_location, color: Colors.white),
