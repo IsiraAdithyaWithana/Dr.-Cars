@@ -5,8 +5,6 @@ import 'package:dr_cars/interface/profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-int _selectedIndex = 3;
-
 class ServiceHistorypage extends StatefulWidget {
   const ServiceHistorypage({super.key});
 
@@ -20,14 +18,25 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
   DateTime? _selectedDate;
   List<Map<String, dynamic>> _serviceRecords = [];
   bool _isLoading = true;
+  int _selectedIndex = 3;
 
   final List<String> _serviceTypes = [
+    'Full Service',
     'Oil Filter Change',
-    'Air Filter Change',
-    'Battery Performance Check',
-    'Brake Inspection',
-    'Coolant Change/Check',
-    'Tyre Pressure Check',
+    'Tire pressure and rotation check',
+    'Fluid level check',
+    'Battery check and replacements',
+    'Wiper blade replacement',
+    'Light bulb check',
+    'Brake system services',
+    'Suspension and alignment services',
+    'Exhaust system service',
+    'Air conditioning services',
+    'Electrical system services',
+    'Car detailing (Interior and exterior cleaning, waxing)',
+    'Tire sales and installation',
+    'Pre-purchase inspections',
+    'Diagnostic testing',
   ];
 
   @override
@@ -41,16 +50,18 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        QuerySnapshot snapshot = await FirebaseFirestore.instance
-            .collection('service_records')
-            .where('userId', isEqualTo: user.uid)
-            .orderBy('createdAt', descending: true)
-            .get();
+        QuerySnapshot snapshot =
+            await FirebaseFirestore.instance
+                .collection('service_records')
+                .where('userId', isEqualTo: user.uid)
+                .orderBy('createdAt', descending: true)
+                .get();
 
         setState(() {
-          _serviceRecords = snapshot.docs
-              .map((doc) => doc.data() as Map<String, dynamic>)
-              .toList();
+          _serviceRecords =
+              snapshot.docs
+                  .map((doc) => doc.data() as Map<String, dynamic>)
+                  .toList();
           _isLoading = false;
         });
       }
@@ -79,7 +90,8 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
 
       if (_selectedDate != null) {
         DateTime recordDate = (record['date'] as Timestamp).toDate();
-        matchesDate = recordDate.year == _selectedDate!.year &&
+        matchesDate =
+            recordDate.year == _selectedDate!.year &&
             recordDate.month == _selectedDate!.month &&
             recordDate.day == _selectedDate!.day;
       }
@@ -105,38 +117,52 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
   void _showRecordDetails(Map<String, dynamic> record) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Service Details'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildDetailRow('Service Type', record['serviceType']),
-              _buildDetailRow('Date', (record['date'] as Timestamp).toDate().toString().split(' ')[0]),
-              _buildDetailRow('Current Mileage', '${record['currentMileage']} KM'),
-              _buildDetailRow('Service Mileage', '${record['serviceMileage']} KM'),
-              _buildDetailRow('Service Provider', record['serviceProvider']),
-              if (record['serviceType'] == 'Oil Filter Change')
-                _buildDetailRow('Oil Type', record['oilType']),
-              if (record['notes'] != null && record['notes'].isNotEmpty)
-                _buildDetailRow('Notes', record['notes']),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Service Details'),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildDetailRow('Service Type', record['serviceType']),
+                  _buildDetailRow(
+                    'Date',
+                    (record['date'] as Timestamp).toDate().toString().split(
+                      ' ',
+                    )[0],
+                  ),
+                  _buildDetailRow(
+                    'Current Mileage',
+                    '${record['currentMileage']} KM',
+                  ),
+                  _buildDetailRow(
+                    'Service Mileage',
+                    '${record['serviceMileage']} KM',
+                  ),
+                  _buildDetailRow(
+                    'Service Provider',
+                    record['serviceProvider'],
+                  ),
+                  if (record['serviceType'] == 'Oil Filter Change')
+                    _buildDetailRow('Oil Type', record['oilType'] ?? ''),
+                  if (record['notes'] != null && record['notes'].isNotEmpty)
+                    _buildDetailRow('Notes', record['notes']),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
-          ),
-        ],
-      ),
     );
   }
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -144,12 +170,11 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
             label,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
+              color: Colors.grey[700],
             ),
           ),
           const SizedBox(height: 4),
           Text(value),
-          const SizedBox(height: 8),
         ],
       ),
     );
@@ -157,18 +182,16 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredRecords = _getFilteredRecords();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Service History', 
-        style: TextStyle(
-          fontSize: 24 , 
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-          ),
-          ),
+        title: const Text(
+          'Service History',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.black,
-        foregroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, size: 20),
@@ -176,11 +199,10 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search Bar
+            // Search bar
             Container(
               decoration: BoxDecoration(
                 color: Colors.grey[100],
@@ -192,30 +214,17 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
                   hintText: 'Search by service provider',
                   border: InputBorder.none,
                   prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 ),
-                onChanged: (value) => setState(() {}),
+                onChanged: (_) => setState(() {}),
               ),
             ),
             const SizedBox(height: 20),
-
-            // Filter Section
-            Text(
-              'Filter',
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
-            ),
-            const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey[300]!),
                       borderRadius: BorderRadius.circular(8),
@@ -224,21 +233,18 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
                       child: DropdownButton<String>(
                         isExpanded: true,
                         value: _selectedFilter,
-                        hint: Text(
-                          'Select Service Type',
-                          style: TextStyle(color: Colors.grey[800]),
-                        ),
-                        items: _serviceTypes.map((String type) {
-                          return DropdownMenuItem<String>(
-                            value: type,
-                            child: Text(type),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _selectedFilter = newValue;
-                          });
-                        },
+                        hint: const Text('Select Service Type'),
+                        items:
+                            _serviceTypes
+                                .map(
+                                  (type) => DropdownMenuItem(
+                                    value: type,
+                                    child: Text(type),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged:
+                            (value) => setState(() => _selectedFilter = value),
                       ),
                     ),
                   ),
@@ -250,7 +256,7 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
-                        vertical: 8,
+                        vertical: 12,
                       ),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey[300]!),
@@ -265,10 +271,10 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
                                 : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
                             style: TextStyle(color: Colors.grey[800]),
                           ),
-                          Icon(
+                          const Icon(
                             Icons.calendar_today,
                             size: 16,
-                            color: Colors.grey[600],
+                            color: Colors.grey,
                           ),
                         ],
                       ),
@@ -278,38 +284,39 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
               ],
             ),
             const SizedBox(height: 24),
-
-            // Record Details
-            const Text(
-              'Record Details',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Record Details',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _getFilteredRecords().isEmpty
-                      ? const Center(
-                          child: Text('No service records found'),
-                        )
+              child:
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : filteredRecords.isEmpty
+                      ? const Center(child: Text('No service records found'))
                       : ListView.builder(
-                          itemCount: _getFilteredRecords().length,
-                          itemBuilder: (context, index) {
-                            final record = _getFilteredRecords()[index];
-                            return GestureDetector(
-                              onTap: () => _showRecordDetails(record),
-                              child: ServiceRecordCard(
-                                date: (record['date'] as Timestamp)
-                                    .toDate()
-                                    .toString()
-                                    .split(' ')[0],
-                                mileage: record['serviceMileage'].toString(),
-                                provider: record['serviceProvider'],
-                                serviceType: record['serviceType'],
-                              ),
-                            );
-                          },
-                        ),
+                        itemCount: filteredRecords.length,
+                        itemBuilder: (context, index) {
+                          final record = filteredRecords[index];
+                          return GestureDetector(
+                            onTap: () => _showRecordDetails(record),
+                            child: ServiceRecordCard(
+                              date:
+                                  (record['date'] as Timestamp)
+                                      .toDate()
+                                      .toString()
+                                      .split(' ')[0],
+                              mileage: record['serviceMileage'].toString(),
+                              provider: record['serviceProvider'],
+                              serviceType: record['serviceType'],
+                            ),
+                          );
+                        },
+                      ),
             ),
           ],
         ),
@@ -324,56 +331,36 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
         showSelectedLabels: false,
         showUnselectedLabels: false,
         onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-
+          if (index == _selectedIndex) return;
+          setState(() => _selectedIndex = index);
           if (index == 0) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const DashboardScreen()),
-            );
-          }
-          else if (index == 1) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => MapScreen()),
+              MaterialPageRoute(builder: (_) => const DashboardScreen()),
             );
-          }
-          else if (index == 4) {
-            Navigator.push(
+          } else if (index == 1) {
+            Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              MaterialPageRoute(builder: (_) => MapScreen()),
             );
-          }
-          else if (index == 3) {
-            Navigator.push(
+          } else if (index == 3) {
+            // Already here
+          } else if (index == 4) {
+            Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => ServiceHistorypage()),
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
             );
           }
         },
         items: [
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.home, size: 24),
-            label: '',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.map, size: 24),
-            label: '',
-          ),
+          const BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          const BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
           BottomNavigationBarItem(
             icon: Image.asset('images/logo.png', height: 24),
             label: '',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.history, size: 24),
-            label: '',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.person, size: 24),
-            label: '',
-          ),
+          const BottomNavigationBarItem(icon: Icon(Icons.history), label: ''),
+          const BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
       ),
     );
