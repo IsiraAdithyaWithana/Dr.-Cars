@@ -50,23 +50,35 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        QuerySnapshot snapshot =
+        final querySnapshot =
             await FirebaseFirestore.instance
                 .collection('service_records')
                 .where('userId', isEqualTo: user.uid)
                 .orderBy('createdAt', descending: true)
                 .get();
 
+        final records =
+            querySnapshot.docs.map((doc) {
+              final data = doc.data();
+              data['id'] = doc.id; // include doc ID if needed later
+              return data;
+            }).toList();
+
         setState(() {
-          _serviceRecords =
-              snapshot.docs
-                  .map((doc) => doc.data() as Map<String, dynamic>)
-                  .toList();
+          _serviceRecords = records;
           _isLoading = false;
         });
+
+        if (_serviceRecords.isEmpty) {
+          print('No service records found for user: ${user.uid}');
+        }
+      } else {
+        print('User is null');
+        setState(() => _isLoading = false);
       }
-    } catch (e) {
-      print("Error loading service records: $e");
+    } catch (e, stackTrace) {
+      print('Error fetching service records: $e');
+      print(stackTrace);
       setState(() => _isLoading = false);
     }
   }
