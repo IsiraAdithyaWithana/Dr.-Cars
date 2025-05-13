@@ -36,12 +36,22 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
   DateTime? _selectedDate;
 
   final List<String> _serviceTypes = [
+    'Full Service',
     'Oil Filter Change',
-    'Air Filter Change',
-    'Battery Performance Check',
-    'Brake Inspection',
-    'Coolant Change/Check',
-    'Tyre Pressure Check',
+    'Tire pressure and rotation check',
+    'Fluid level check',
+    'Battery check and replacements',
+    'Wiper blade replacement',
+    'Light bulb check',
+    'Brake system services',
+    'Suspension and alignment services',
+    'Exhaust system service',
+    'Air conditioning services',
+    'Electrical system services',
+    'Car detailing (Interior and exterior cleaning, waxing)',
+    'Tire sales and installation',
+    'Pre-purchase inspections',
+    'Diagnostic testing',
   ];
 
   final List<String> _oilTypes = [
@@ -168,11 +178,16 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: _selectedServiceType,
+                isExpanded: true,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
                   hintText: 'Select service type',
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ), // Adjust padding
                 ),
                 items:
                     _serviceTypes.map((String service) {
@@ -447,4 +462,3 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
     );
   }
 }
-// test 
