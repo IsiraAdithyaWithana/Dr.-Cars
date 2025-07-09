@@ -6,6 +6,7 @@ import 'package:dr_cars/interface/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class AppointmentsPage extends StatefulWidget {
   const AppointmentsPage({Key? key}) : super(key: key);
@@ -123,17 +124,23 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   String? _userPhoneNumber;
   String? _userId;
 
+  List<DateTime> _unavailableDates = [];
+
   Future<void> _fetchAppointmentsForDate(DateTime date) async {
     try {
       // Convert date to start and end of day
       DateTime startOfDay = DateTime(date.year, date.month, date.day);
       DateTime endOfDay = startOfDay.add(const Duration(days: 1));
 
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('appointments')
-          .where('date', isGreaterThanOrEqualTo: startOfDay.toIso8601String())
-          .where('date', isLessThan: endOfDay.toIso8601String())
-          .get();
+      QuerySnapshot snapshot =
+          await FirebaseFirestore.instance
+              .collection('appointments')
+              .where(
+                'date',
+                isGreaterThanOrEqualTo: startOfDay.toIso8601String(),
+              )
+              .where('date', isLessThan: endOfDay.toIso8601String())
+              .get();
 
       setState(() {
         _appointmentsCount = snapshot.docs.length;
@@ -179,9 +186,61 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
               .doc(user.uid)
               .get();
       setState(() {
-        _userPhoneNumber =
-            userDoc['Contact']; // make sure this key matches your Firestore
+        _userPhoneNumber = userDoc['Contact'];
       });
+    }
+  }
+
+  Future<void> updateBookedDate(
+    String serviceCenterUid,
+    DateTime selectedDate,
+  ) async {
+    String dateKey =
+        '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}';
+    String docId = '${serviceCenterUid}_$dateKey';
+
+    DocumentReference bookedDateRef = FirebaseFirestore.instance
+        .collection('booked_dates')
+        .doc(docId);
+
+    DocumentSnapshot snapshot = await bookedDateRef.get();
+
+    if (snapshot.exists) {
+      // Increase count
+      await bookedDateRef.update({'count': FieldValue.increment(1)});
+    } else {
+      // First booking for this date
+      await bookedDateRef.set({
+        'serviceCenterUid': serviceCenterUid,
+        'date': dateKey,
+        'count': 1,
+        'maxAppointments': 5, // Change this based on your policy
+      });
+    }
+  }
+
+  Future<void> _loadUnavailableDates() async {
+    try {
+      QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collection('booked_dates').get();
+
+      List<DateTime> unavailable = [];
+
+      for (var doc in snapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        int count = data['count'] ?? 0;
+        int maxAppointments = data['maxAppointments'] ?? 5;
+
+        if (count >= maxAppointments) {
+          String dateStr = data['date']; // format: yyyy-MM-dd
+          DateTime date = DateTime.parse(dateStr);
+          unavailable.add(date);
+        }
+      }
+
+      setState(() => _unavailableDates = unavailable);
+    } catch (e) {
+      print('Error loading unavailable dates: $e');
     }
   }
 
@@ -190,6 +249,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     super.initState();
     _loadUserData();
     _loadVehicleData();
+    _loadUnavailableDates();
   }
 
   Future<void> _loadVehicleData() async {
@@ -406,8 +466,11 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
                         const SizedBox(height: 16),
                         _buildLabel('Preferred Date '),
+
                         _buildDatePicker(),
+
                         const SizedBox(height: 16),
+
                         _buildLabel('Preferred Time '),
                         _buildTimePicker(),
                         const SizedBox(height: 24),
@@ -627,27 +690,45 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        InkWell(
-          onTap: _pickDate,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-            width: double.infinity,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(25),
-              color: Colors.grey[200],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _selectedDate == null
-                      ? 'SELECT DATE'
-                      : _selectedDate!.toLocal().toString().split(' ')[0],
+        TableCalendar(
+          firstDay: DateTime.utc(2020, 1, 1),
+          lastDay: DateTime.utc(2030, 12, 31),
+          focusedDay: _selectedDate ?? DateTime.now(),
+          selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
+          onDaySelected: (selectedDay, focusedDay) {
+            if (!_unavailableDates.contains(selectedDay)) {
+              setState(() => _selectedDate = selectedDay);
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    "This date is fully booked. Please choose another.",
+                  ),
                 ),
-                const Icon(Icons.calendar_today, color: Colors.grey),
-              ],
-            ),
+              );
+            }
+          },
+          calendarBuilders: CalendarBuilders(
+            defaultBuilder: (context, date, _) {
+              bool isUnavailable = _unavailableDates.any(
+                (d) =>
+                    d.year == date.year &&
+                    d.month == date.month &&
+                    d.day == date.day,
+              );
+              if (isUnavailable) {
+                return Center(
+                  child: Text(
+                    '${date.day}',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              }
+              return null;
+            },
           ),
         ),
         if (_selectedDate != null && _appointmentsCount > 0)
@@ -667,10 +748,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   Expanded(
                     child: Text(
                       'There are $_appointmentsCount appointment(s) already scheduled for this date.',
-                      style: TextStyle(
-                        color: Colors.orange[900],
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.orange[900], fontSize: 12),
                     ),
                   ),
                 ],
