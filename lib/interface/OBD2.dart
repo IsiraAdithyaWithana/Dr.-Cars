@@ -471,6 +471,15 @@ class _OBD2PageState extends State<OBD2Page> {
     });
   }
 
+  void _clearTroubleCodes() async {
+    if (_isConnected) {
+      await btService.clearDTCs();
+      setState(() {
+        _dtcs.clear();
+      });
+    }
+  }
+
   void _startLiveDataPolling() {
     _liveDataTimer = Timer.periodic(Duration(seconds: 1), (_) async {
       final newRpm = await btService.getRPM();
@@ -521,6 +530,14 @@ class _OBD2PageState extends State<OBD2Page> {
       appBar: AppBar(
         title: Text('OBD2 Diagnostics'),
         backgroundColor: Colors.black,
+        actions: [
+          if (_dtcs.isNotEmpty && _isConnected)
+            IconButton(
+              icon: Icon(Icons.delete_forever),
+              tooltip: "Clear Trouble Codes",
+              onPressed: _clearTroubleCodes,
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -774,6 +791,10 @@ class BluetoothService {
       }
     } catch (_) {}
     return dtcs;
+  }
+
+  Future<void> clearDTCs() async {
+    await sendAndRead("04");
   }
 
   String _decodeDTC(String raw) {
