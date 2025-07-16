@@ -192,7 +192,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     }
   }
 
-  Future<void> updateBookedDate(
+  /*Future<void> updateBookedDate(
     String serviceCenterUid,
     DateTime selectedDate,
   ) async {
@@ -218,41 +218,52 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         'maxAppointments': 5, // Change this based on your policy
       });
     }
-  }
+  }*/
 
   Future<void> _loadUnavailableDates() async {
     if (_selectedServiceCenterId == null) {
       setState(() => _unavailableDates = []);
       return;
     }
+
     try {
-      // Find the selected center's uid
       final selectedCenter = _filteredServiceCenters.firstWhere(
         (center) => center['id'] == _selectedServiceCenterId,
       );
       String serviceCenterUid = selectedCenter['uid'];
       setState(() => _selectedServiceCenterName = selectedCenter['name']);
 
-      QuerySnapshot snapshot =
+      QuerySnapshot appointmentsSnapshot =
           await FirebaseFirestore.instance
-              .collection('booked_dates')
+              .collection('appointments')
               .where('serviceCenterUid', isEqualTo: serviceCenterUid)
               .get();
 
-      List<DateTime> unavailable = [];
-      for (var doc in snapshot.docs) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        int count = data['count'] ?? 0;
-        int maxAppointments = data['maxAppointments'] ?? 5;
-        if (count >= maxAppointments) {
-          String dateStr = data['date']; // format: yyyy-MM-dd
-          DateTime date = DateTime.parse(dateStr);
-          unavailable.add(date);
+      Map<String, int> dateCounts = {};
+
+      for (var doc in appointmentsSnapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final dateStr = data['date'];
+
+        if (dateStr != null) {
+          final date = DateTime.parse(dateStr);
+          final dateKey =
+              DateTime(date.year, date.month, date.day).toIso8601String();
+
+          dateCounts[dateKey] = (dateCounts[dateKey] ?? 0) + 1;
         }
       }
+
+      List<DateTime> unavailable = [];
+      for (var entry in dateCounts.entries) {
+        if (entry.value >= 5) {
+          unavailable.add(DateTime.parse(entry.key));
+        }
+      }
+
       setState(() => _unavailableDates = unavailable);
     } catch (e) {
-      print('Error loading unavailable dates: $e');
+      print('Error loading unavailable dates from appointments: $e');
     }
   }
 
@@ -527,13 +538,17 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                   return;
                                 }
 
-                                if (_unavailableDates.any((d) =>
-                                    d.year == _selectedDate!.year &&
-                                    d.month == _selectedDate!.month &&
-                                    d.day == _selectedDate!.day)) {
+                                if (_unavailableDates.any(
+                                  (d) =>
+                                      d.year == _selectedDate!.year &&
+                                      d.month == _selectedDate!.month &&
+                                      d.day == _selectedDate!.day,
+                                )) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('This date is fully booked. Please select another date.'),
+                                      content: Text(
+                                        'This date is fully booked. Please select another date.',
+                                      ),
                                     ),
                                   );
                                   return;
@@ -568,7 +583,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                         'status': 'pending',
                                       });
 
-                                  await updateBookedDate(selectedCenter['uid'], _selectedDate!);
+                                  /* await updateBookedDate(
+                                    selectedCenter['uid'],
+                                    _selectedDate!,
+                                  );*/
 
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
