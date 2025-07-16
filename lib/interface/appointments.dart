@@ -125,6 +125,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   String? _userId;
 
   List<DateTime> _unavailableDates = [];
+  String? _selectedServiceCenterName; // Add this for display
 
   Future<void> _fetchAppointmentsForDate(DateTime date) async {
     try {
@@ -191,7 +192,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     }
   }
 
-  Future<void> updateBookedDate(
+  /*Future<void> updateBookedDate(
     String serviceCenterUid,
     DateTime selectedDate,
   ) async {
@@ -217,30 +218,52 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         'maxAppointments': 5, // Change this based on your policy
       });
     }
-  }
+  }*/
 
   Future<void> _loadUnavailableDates() async {
+    if (_selectedServiceCenterId == null) {
+      setState(() => _unavailableDates = []);
+      return;
+    }
+
     try {
-      QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('booked_dates').get();
+      final selectedCenter = _filteredServiceCenters.firstWhere(
+        (center) => center['id'] == _selectedServiceCenterId,
+      );
+      String serviceCenterUid = selectedCenter['uid'];
+      setState(() => _selectedServiceCenterName = selectedCenter['name']);
+
+      QuerySnapshot appointmentsSnapshot =
+          await FirebaseFirestore.instance
+              .collection('appointments')
+              .where('serviceCenterUid', isEqualTo: serviceCenterUid)
+              .get();
+
+      Map<String, int> dateCounts = {};
+
+      for (var doc in appointmentsSnapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final dateStr = data['date'];
+
+        if (dateStr != null) {
+          final date = DateTime.parse(dateStr);
+          final dateKey =
+              DateTime(date.year, date.month, date.day).toIso8601String();
+
+          dateCounts[dateKey] = (dateCounts[dateKey] ?? 0) + 1;
+        }
+      }
 
       List<DateTime> unavailable = [];
-
-      for (var doc in snapshot.docs) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        int count = data['count'] ?? 0;
-        int maxAppointments = data['maxAppointments'] ?? 5;
-
-        if (count >= maxAppointments) {
-          String dateStr = data['date']; // format: yyyy-MM-dd
-          DateTime date = DateTime.parse(dateStr);
-          unavailable.add(date);
+      for (var entry in dateCounts.entries) {
+        if (entry.value >= 5) {
+          unavailable.add(DateTime.parse(entry.key));
         }
       }
 
       setState(() => _unavailableDates = unavailable);
     } catch (e) {
-      print('Error loading unavailable dates: $e');
+      print('Error loading unavailable dates from appointments: $e');
     }
   }
 
@@ -438,6 +461,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                   setState(
                                     () => _selectedServiceCenterId = value,
                                   );
+                                  _loadUnavailableDates(); // Update unavailable dates when service center changes
                                 },
                                 decoration: InputDecoration(
                                   hintText: "SELECT",
@@ -514,6 +538,22 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                   return;
                                 }
 
+                                if (_unavailableDates.any(
+                                  (d) =>
+                                      d.year == _selectedDate!.year &&
+                                      d.month == _selectedDate!.month &&
+                                      d.day == _selectedDate!.day,
+                                )) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'This date is fully booked. Please select another date.',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+
                                 try {
                                   final selectedCenter = _filteredServiceCenters
                                       .firstWhere(
@@ -542,6 +582,11 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                             selectedCenter['uid'],
                                         'status': 'pending',
                                       });
+
+                                  /* await updateBookedDate(
+                                    selectedCenter['uid'],
+                                    _selectedDate!,
+                                  );*/
 
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
@@ -696,16 +741,35 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           focusedDay: _selectedDate ?? DateTime.now(),
           selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
           onDaySelected: (selectedDay, focusedDay) {
-            if (!_unavailableDates.contains(selectedDay)) {
-              setState(() => _selectedDate = selectedDay);
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    "This date is fully booked. Please choose another.",
+            bool isUnavailable = _unavailableDates.any(
+              (d) =>
+                  d.year == selectedDay.year &&
+                  d.month == selectedDay.month &&
+                  d.day == selectedDay.day,
+            );
+            setState(() => _selectedDate = selectedDay);
+            if (_selectedServiceCenterName != null) {
+              if (isUnavailable) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      "This date is fully booked for $_selectedServiceCenterName.",
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    backgroundColor: Colors.red,
                   ),
-                ),
-              );
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      "This date is available for booking at $_selectedServiceCenterName.",
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
             }
           },
           calendarBuilders: CalendarBuilders(
@@ -717,14 +781,25 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                     d.day == date.day,
               );
               if (isUnavailable) {
-                return Center(
-                  child: Text(
-                    '${date.day}',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '${date.day}',
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
+                    const Text(
+                      'Full',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 );
               }
               return null;
