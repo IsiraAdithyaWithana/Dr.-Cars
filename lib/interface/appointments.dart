@@ -368,9 +368,23 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           controller: _vehicleNumberController,
                           enabled: false,
                           decoration: InputDecoration(
-                            hintText: "EX: CAD-0896",
+                            hintStyle: TextStyle(color: Colors.grey[600]),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
+                              borderSide: BorderSide(color: Colors.deepPurple),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(25),
+                              borderSide: BorderSide(
+                                color: Colors.deepPurpleAccent,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(25),
+                              borderSide: BorderSide(
+                                color: Colors.purple,
+                                width: 2,
+                              ),
                             ),
                             filled: true,
                             fillColor: Colors.grey[200],
@@ -392,7 +406,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                   .toList(),
                           onChanged: null,
                           decoration: InputDecoration(
-                            hintText: "SELECT",
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
                             ),
@@ -511,6 +524,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                   23,
                                   111,
                                 ),
+                                shadowColor: Colors.purpleAccent,
+                                elevation: 8,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 12,
                                 ),
@@ -614,6 +629,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.white,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
@@ -715,8 +731,20 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           serviceTypes.map((service) {
             final isSelected = _selectedServices.contains(service);
             return FilterChip(
-              label: Text(service, overflow: TextOverflow.ellipsis),
+              label: Text(
+                service,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.black,
+                ),
+              ),
               selected: isSelected,
+              backgroundColor: Colors.grey[300],
+              selectedColor: const Color.fromARGB(255, 103, 101, 237),
+              checkmarkColor: Colors.white,
+              elevation: 3,
+              shadowColor: Colors.black,
+
               onSelected: (bool selected) {
                 setState(() {
                   if (selected) {
@@ -772,6 +800,51 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
               }
             }
           },
+          calendarStyle: CalendarStyle(
+            todayDecoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color.fromARGB(255, 61, 168, 255),
+                  const Color.fromARGB(255, 146, 129, 222),
+                ],
+              ),
+              shape: BoxShape.circle,
+            ),
+            selectedDecoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.deepPurple,
+                  const Color.fromARGB(255, 204, 117, 219),
+                ],
+              ),
+              shape: BoxShape.circle,
+            ),
+            selectedTextStyle: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+            todayTextStyle: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+            weekendTextStyle: TextStyle(color: Colors.deepOrangeAccent),
+            outsideDaysVisible: false,
+          ),
+          headerStyle: HeaderStyle(
+            formatButtonVisible: false,
+            titleCentered: true,
+            titleTextStyle: TextStyle(
+              color: Colors.deepPurple,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+            leftChevronIcon: Icon(Icons.chevron_left, color: Colors.deepPurple),
+            rightChevronIcon: Icon(
+              Icons.chevron_right,
+              color: Colors.deepPurple,
+            ),
+          ),
+
           calendarBuilders: CalendarBuilders(
             defaultBuilder: (context, date, _) {
               bool isUnavailable = _unavailableDates.any(
