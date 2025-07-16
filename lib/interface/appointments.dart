@@ -318,11 +318,11 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: const Color.fromARGB(255, 72, 64, 122),
         title: const Text(
           'Book Your Appointment',
           style: TextStyle(
-            fontSize: 24,
+            fontSize: 25,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -333,316 +333,334 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         ),
         centerTitle: true,
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return Center(
-            child: FractionallySizedBox(
-              widthFactor: constraints.maxWidth > 600 ? 0.6 : 0.95,
-              child: Card(
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Vehicle Details',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                        const Divider(
-                          color: Color.fromARGB(255, 189, 7, 7),
-                          thickness: 1.5,
-                        ),
-                        const SizedBox(height: 16),
-
-                        _buildLabel('Vehicle Number '),
-                        TextField(
-                          controller: _vehicleNumberController,
-                          enabled: false,
-                          decoration: InputDecoration(
-                            hintStyle: TextStyle(color: Colors.grey[600]),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25),
-                              borderSide: BorderSide(color: Colors.deepPurple),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromARGB(255, 153, 113, 253), // light yellow
+              Color.fromARGB(255, 0, 136, 248), // gold
+              Color.fromARGB(255, 76, 37, 249), // vibrant orange
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Center(
+              child: FractionallySizedBox(
+                widthFactor: constraints.maxWidth > 600 ? 0.6 : 0.95,
+                child: Card(
+                  elevation: 10,
+                  shadowColor: const Color.fromARGB(255, 74, 3, 198),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Vehicle Details',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25),
-                              borderSide: BorderSide(
-                                color: Colors.deepPurpleAccent,
+                          ),
+                          const Divider(
+                            color: Color.fromARGB(255, 189, 7, 7),
+                            thickness: 1.5,
+                          ),
+                          const SizedBox(height: 16),
+
+                          _buildLabel('Vehicle Number '),
+                          TextField(
+                            controller: _vehicleNumberController,
+                            enabled: false,
+                            decoration: InputDecoration(
+                              hintStyle: TextStyle(color: Colors.grey[600]),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(25),
+                                borderSide: BorderSide(
+                                  color: Colors.deepPurple,
+                                ),
                               ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25),
-                              borderSide: BorderSide(
-                                color: Colors.purple,
-                                width: 2,
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(25),
+                                borderSide: BorderSide(
+                                  color: Colors.deepPurpleAccent,
+                                ),
                               ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(25),
+                                borderSide: BorderSide(
+                                  color: Colors.purple,
+                                  width: 2,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey[200],
                             ),
-                            filled: true,
-                            fillColor: Colors.grey[200],
                           ),
-                        ),
 
-                        const SizedBox(height: 16),
-                        _buildLabel('Vehicle Model '),
-                        DropdownButtonFormField<String>(
-                          value: _selectedModel,
-                          items:
-                              vehicleModels
-                                  .map(
-                                    (item) => DropdownMenuItem(
-                                      value: item,
-                                      child: Text(item),
-                                    ),
-                                  )
-                                  .toList(),
-                          onChanged: null,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey[200],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        _buildLabel('Type of Service '),
-                        _buildMultiSelect(),
-
-                        const SizedBox(height: 16),
-
-                        _buildLabel('City'),
-                        _buildDropdown(
-                          List<String>.from(branches)..sort(),
-                          _selectedBranch,
-                          (value) async {
-                            setState(() {
-                              _selectedBranch = value;
-                              _filteredServiceCenters = [];
-                              _selectedServiceCenterId = null;
-                            });
-
-                            QuerySnapshot snapshot =
-                                await FirebaseFirestore.instance
-                                    .collection('Users')
-                                    .where(
-                                      'User Type',
-                                      isEqualTo: 'Service Center',
+                          const SizedBox(height: 16),
+                          _buildLabel('Vehicle Model '),
+                          DropdownButtonFormField<String>(
+                            value: _selectedModel,
+                            items:
+                                vehicleModels
+                                    .map(
+                                      (item) => DropdownMenuItem(
+                                        value: item,
+                                        child: Text(item),
+                                      ),
                                     )
-                                    .where('City', isEqualTo: value)
-                                    .get();
-
-                            setState(() {
-                              _filteredServiceCenters =
-                                  snapshot.docs
-                                      .map(
-                                        (doc) => {
-                                          'id': doc.id,
-                                          'name': doc['Service Center Name'],
-                                          'uid': doc['uid'],
-                                        },
-                                      )
-                                      .toList();
-                            });
-                          },
-                        ),
-
-                        if (_filteredServiceCenters.isNotEmpty)
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildLabel('Select Service Center'),
-                              DropdownButtonFormField<String>(
-                                value: _selectedServiceCenterId,
-                                items:
-                                    _filteredServiceCenters.map((center) {
-                                      return DropdownMenuItem<String>(
-                                        value: center['id'],
-                                        child: Text(center['name']),
-                                      );
-                                    }).toList(),
-                                onChanged: (value) {
-                                  setState(
-                                    () => _selectedServiceCenterId = value,
-                                  );
-                                  _loadUnavailableDates(); // Update unavailable dates when service center changes
-                                },
-                                decoration: InputDecoration(
-                                  hintText: "SELECT",
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(25),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey[200],
-                                ),
+                                    .toList(),
+                            onChanged: null,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(25),
                               ),
-                            ],
-                          ),
-
-                        if (_filteredServiceCenters.isEmpty &&
-                            _selectedBranch != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              'No service centers available in this city.',
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              filled: true,
+                              fillColor: Colors.grey[200],
                             ),
                           ),
+                          const SizedBox(height: 16),
 
-                        const SizedBox(height: 16),
-                        _buildLabel('Preferred Date '),
+                          _buildLabel('Type of Service '),
+                          _buildMultiSelect(),
 
-                        _buildDatePicker(),
+                          const SizedBox(height: 16),
 
-                        const SizedBox(height: 16),
+                          _buildLabel('City'),
+                          _buildDropdown(
+                            List<String>.from(branches)..sort(),
+                            _selectedBranch,
+                            (value) async {
+                              setState(() {
+                                _selectedBranch = value;
+                                _filteredServiceCenters = [];
+                                _selectedServiceCenterId = null;
+                              });
 
-                        _buildLabel('Preferred Time '),
-                        _buildTimePicker(),
-                        const SizedBox(height: 24),
-
-                        Center(
-                          child: SizedBox(
-                            width: 180,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                minimumSize: const Size(180, 50),
-                                backgroundColor: const Color.fromARGB(
-                                  255,
-                                  9,
-                                  23,
-                                  111,
-                                ),
-                                shadowColor: Colors.purpleAccent,
-                                elevation: 8,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(25),
-                                ),
-                              ),
-                              onPressed: () async {
-                                if (_vehicleNumberController.text
-                                        .trim()
-                                        .isEmpty ||
-                                    _selectedModel == null ||
-                                    _selectedBranch == null ||
-                                    _selectedDate == null ||
-                                    _selectedTime == null ||
-                                    _selectedServices.isEmpty ||
-                                    _selectedServiceCenterId == null) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Please fill all required fields',
-                                      ),
-                                    ),
-                                  );
-                                  return;
-                                }
-
-                                if (_unavailableDates.any(
-                                  (d) =>
-                                      d.year == _selectedDate!.year &&
-                                      d.month == _selectedDate!.month &&
-                                      d.day == _selectedDate!.day,
-                                )) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'This date is fully booked. Please select another date.',
-                                      ),
-                                    ),
-                                  );
-                                  return;
-                                }
-
-                                try {
-                                  final selectedCenter = _filteredServiceCenters
-                                      .firstWhere(
-                                        (center) =>
-                                            center['id'] ==
-                                            _selectedServiceCenterId,
-                                      );
-
+                              QuerySnapshot snapshot =
                                   await FirebaseFirestore.instance
-                                      .collection('appointments')
-                                      .add({
-                                        'vehicleNumber':
-                                            _vehicleNumberController.text
-                                                .trim(),
-                                        'vehicleModel': _selectedModel,
-                                        'serviceTypes': _selectedServices,
-                                        'branch': _selectedBranch,
-                                        'date':
-                                            _selectedDate!.toIso8601String(),
-                                        'time': _selectedTime!.format(context),
-                                        'timestamp':
-                                            FieldValue.serverTimestamp(),
-                                        'Contact': _userPhoneNumber,
-                                        'userId': _userId,
-                                        'serviceCenterUid':
-                                            selectedCenter['uid'],
-                                        'status': 'pending',
-                                      });
+                                      .collection('Users')
+                                      .where(
+                                        'User Type',
+                                        isEqualTo: 'Service Center',
+                                      )
+                                      .where('City', isEqualTo: value)
+                                      .get();
 
-                                  /* await updateBookedDate(
-                                    selectedCenter['uid'],
-                                    _selectedDate!,
-                                  );*/
+                              setState(() {
+                                _filteredServiceCenters =
+                                    snapshot.docs
+                                        .map(
+                                          (doc) => {
+                                            'id': doc.id,
+                                            'name': doc['Service Center Name'],
+                                            'uid': doc['uid'],
+                                          },
+                                        )
+                                        .toList();
+                              });
+                            },
+                          ),
 
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Appointment booked successfully!',
-                                      ),
+                          if (_filteredServiceCenters.isNotEmpty)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildLabel('Select Service Center'),
+                                DropdownButtonFormField<String>(
+                                  value: _selectedServiceCenterId,
+                                  items:
+                                      _filteredServiceCenters.map((center) {
+                                        return DropdownMenuItem<String>(
+                                          value: center['id'],
+                                          child: Text(center['name']),
+                                        );
+                                      }).toList(),
+                                  onChanged: (value) {
+                                    setState(
+                                      () => _selectedServiceCenterId = value,
+                                    );
+                                    _loadUnavailableDates(); // Update unavailable dates when service center changes
+                                  },
+                                  decoration: InputDecoration(
+                                    hintText: "SELECT",
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(25),
                                     ),
-                                  );
+                                    filled: true,
+                                    fillColor: Colors.grey[200],
+                                  ),
+                                ),
+                              ],
+                            ),
 
-                                  // Redirect to dashboard after short delay
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => DashboardScreen(),
-                                    ),
-                                  );
-                                } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Error: $e')),
-                                  );
-                                }
-                              },
-                              child: const Text(
-                                'Schedule Appointment',
+                          if (_filteredServiceCenters.isEmpty &&
+                              _selectedBranch != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                'No service centers available in this city.',
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
+                                  color: Colors.red,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
+
+                          const SizedBox(height: 16),
+                          _buildLabel('Preferred Date '),
+
+                          _buildDatePicker(),
+
+                          const SizedBox(height: 16),
+
+                          _buildLabel('Preferred Time '),
+                          _buildTimePicker(),
+                          const SizedBox(height: 24),
+
+                          Center(
+                            child: SizedBox(
+                              width: 180,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  minimumSize: const Size(180, 50),
+                                  backgroundColor: const Color.fromARGB(
+                                    255,
+                                    9,
+                                    23,
+                                    111,
+                                  ),
+                                  shadowColor: Colors.purpleAccent,
+                                  elevation: 8,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  if (_vehicleNumberController.text
+                                          .trim()
+                                          .isEmpty ||
+                                      _selectedModel == null ||
+                                      _selectedBranch == null ||
+                                      _selectedDate == null ||
+                                      _selectedTime == null ||
+                                      _selectedServices.isEmpty ||
+                                      _selectedServiceCenterId == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Please fill all required fields',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  if (_unavailableDates.any(
+                                    (d) =>
+                                        d.year == _selectedDate!.year &&
+                                        d.month == _selectedDate!.month &&
+                                        d.day == _selectedDate!.day,
+                                  )) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'This date is fully booked. Please select another date.',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  try {
+                                    final selectedCenter =
+                                        _filteredServiceCenters.firstWhere(
+                                          (center) =>
+                                              center['id'] ==
+                                              _selectedServiceCenterId,
+                                        );
+
+                                    await FirebaseFirestore.instance
+                                        .collection('appointments')
+                                        .add({
+                                          'vehicleNumber':
+                                              _vehicleNumberController.text
+                                                  .trim(),
+                                          'vehicleModel': _selectedModel,
+                                          'serviceTypes': _selectedServices,
+                                          'branch': _selectedBranch,
+                                          'date':
+                                              _selectedDate!.toIso8601String(),
+                                          'time': _selectedTime!.format(
+                                            context,
+                                          ),
+                                          'timestamp':
+                                              FieldValue.serverTimestamp(),
+                                          'Contact': _userPhoneNumber,
+                                          'userId': _userId,
+                                          'serviceCenterUid':
+                                              selectedCenter['uid'],
+                                          'status': 'pending',
+                                        });
+
+                                    /* await updateBookedDate(
+                                      selectedCenter['uid'],
+                                      _selectedDate!,
+                                    );*/
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Appointment booked successfully!',
+                                        ),
+                                      ),
+                                    );
+
+                                    // Redirect to dashboard after short delay
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DashboardScreen(),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Error: $e')),
+                                    );
+                                  }
+                                },
+                                child: const Text(
+                                  'Schedule Appointment',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
@@ -708,18 +726,49 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     String? selectedValue,
     Function(String?) onChanged,
   ) {
-    return DropdownButtonFormField<String>(
-      value: selectedValue,
-      items:
-          items
-              .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-              .toList(),
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        hintText: "SELECT",
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
-        filled: true,
-        fillColor: Colors.grey[200],
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.deepPurple.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        elevation: 2,
+        borderRadius: BorderRadius.circular(25),
+        child: DropdownButtonFormField<String>(
+          value: selectedValue,
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: Colors.deepPurple,
+          ),
+          items:
+              items.map((item) {
+                return DropdownMenuItem<String>(value: item, child: Text(item));
+              }).toList(),
+          onChanged: onChanged,
+          decoration: InputDecoration(
+            hintText: "SELECT",
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 18,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(25),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          dropdownColor: Colors.white,
+        ),
       ),
     );
   }
