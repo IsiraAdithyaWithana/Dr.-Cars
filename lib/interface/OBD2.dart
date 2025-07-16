@@ -73,6 +73,7 @@ class _OBD2PageState extends State<OBD2Page> {
   }
 
   void _startLiveDataPolling() {
+    // update values every second
     _liveDataTimer = Timer.periodic(Duration(seconds: 1), (_) async {
       setState(() {
         _rpm = OBD2.getRPM();

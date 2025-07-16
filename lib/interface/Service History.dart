@@ -42,7 +42,7 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
   @override
   void initState() {
     super.initState();
-    _loadServiceRecords();
+    _loadServiceRecords(); // load record to the page.
   }
 
   Future<void> _loadServiceRecords() async {
@@ -53,14 +53,14 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
         final querySnapshot =
             await FirebaseFirestore.instance
                 .collection('service_records')
-                .where('userId', isEqualTo: user.uid)
+                .where('userId', isEqualTo: user.uid) //to foilter by user.
                 .orderBy('createdAt', descending: true)
                 .get();
 
         final records =
             querySnapshot.docs.map((doc) {
               final data = doc.data();
-              data['id'] = doc.id; // include doc ID if needed later
+              data['id'] = doc.id; // save doc id
               return data;
             }).toList();
 
@@ -83,7 +83,9 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
     }
   }
 
+  ////filter records
   List<Map<String, dynamic>> _getFilteredRecords() {
+    //matche the search
     return _serviceRecords.where((record) {
       bool matchesSearch = true;
       bool matchesFilter = true;
@@ -97,10 +99,12 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
       }
 
       if (_selectedFilter != null) {
+        //filter matche
         matchesFilter = record['serviceType'] == _selectedFilter;
       }
 
       if (_selectedDate != null) {
+        //date matche
         DateTime recordDate = (record['date'] as Timestamp).toDate();
         matchesDate =
             recordDate.year == _selectedDate!.year &&
