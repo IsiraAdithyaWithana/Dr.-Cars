@@ -116,9 +116,9 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: Colors.deepPurple.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+            color: const Color.fromARGB(255, 64, 4, 167).withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(2, 5),
           ),
         ],
       ),
@@ -128,7 +128,7 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
         decoration: InputDecoration(
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
           filled: true,
-          fillColor: Colors.grey[200],
+          fillColor: const Color.fromARGB(255, 255, 255, 255),
           hintText: hint,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -142,6 +142,101 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
         onChanged: onChanged,
         validator:
             (value) => (value == null || value.isEmpty) ? 'Required' : null,
+      ),
+    );
+  }
+
+  Widget _buildAnimatedTextField({
+    required TextEditingController controller,
+    required String hintText,
+    String? suffixText,
+    String? prefixText,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    bool required = true,
+    InputDecoration? decoration,
+    String? Function(String?)? validator,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromARGB(255, 68, 8, 172).withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(2, 5),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          hintText: hintText,
+          filled: true,
+          fillColor: const Color.fromARGB(255, 255, 255, 255),
+          suffixText: suffixText,
+          prefixText: prefixText,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+        ),
+        validator:
+            required
+                ? (value) => value == null || value.isEmpty ? 'Required' : null
+                : null,
+      ),
+    );
+  }
+
+  Widget _buildAnimatedDateField({
+    required BuildContext context,
+    required String labelText,
+    required String? dateText,
+    required VoidCallback onTap,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromARGB(255, 45, 1, 122).withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: onTap,
+        child: InputDecorator(
+          decoration: InputDecoration(
+            hintText: labelText,
+            filled: true,
+            fillColor: const Color.fromARGB(255, 255, 255, 255),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+            suffixIcon: const Icon(Icons.calendar_today),
+          ),
+          child: Text(
+            dateText ?? 'Select date',
+            style: TextStyle(
+              color: dateText != null ? Colors.black : Colors.grey[600],
+              fontSize: 16,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -180,7 +275,7 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
           child: FractionallySizedBox(
             widthFactor: MediaQuery.of(context).size.width > 600 ? 0.6 : 0.95,
             child: Card(
-              elevation: 10,
+              elevation: 15,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -197,9 +292,10 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
-                        TextFormField(
+                        _buildAnimatedTextField(
                           controller: _currentMileageController,
                           keyboardType: TextInputType.number,
+                          hintText: 'Enter current mileage',
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
@@ -207,7 +303,6 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                             filled: true,
                             fillColor: Colors.grey[200],
                             suffixText: 'KM',
-                            hintText: 'Enter current mileage',
                           ),
                           validator:
                               (value) => value!.isEmpty ? 'Required' : null,
@@ -247,14 +342,17 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
-                        InkWell(
+                        _buildAnimatedDateField(
+                          context: context,
+                          labelText: 'Date of Service',
+                          dateText:
+                              _selectedDate != null
+                                  ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
+                                  : null,
                           onTap: () => _selectDate(context),
-                          child: InputDecorator(
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              filled: true,
+                        ),
+
+                        /*filled: true,
                               fillColor: Colors.grey[200],
                               suffixIcon: const Icon(Icons.calendar_today),
                             ),
@@ -264,17 +362,17 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                                   : 'Select date',
                             ),
                           ),
-                        ),
-
+                        ),*/
                         const SizedBox(height: 16),
                         const Text(
                           'Service Mileage',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
-                        TextFormField(
+                        _buildAnimatedTextField(
                           controller: _serviceMileageController,
                           keyboardType: TextInputType.number,
+                          hintText: 'Enter service mileage',
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
@@ -282,7 +380,6 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                             filled: true,
                             fillColor: Colors.grey[200],
                             suffixText: 'KM',
-                            hintText: 'Enter service mileage',
                           ),
                           validator:
                               (value) => value!.isEmpty ? 'Required' : null,
@@ -294,15 +391,15 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
-                        TextFormField(
+                        _buildAnimatedTextField(
                           controller: _serviceProviderController,
+                          hintText: 'Enter provider name',
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
                             ),
                             filled: true,
                             fillColor: Colors.grey[200],
-                            hintText: 'Enter provider name',
                           ),
                           validator:
                               (value) => value!.isEmpty ? 'Required' : null,
@@ -314,9 +411,10 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
-                        TextFormField(
+                        _buildAnimatedTextField(
                           controller: _serviceCostController,
                           keyboardType: TextInputType.number,
+                          hintText: 'Enter service cost',
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
@@ -324,7 +422,6 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                             filled: true,
                             fillColor: Colors.grey[200],
                             prefixText: 'Rs.',
-                            hintText: 'Enter service cost',
                           ),
                           validator:
                               (value) => value!.isEmpty ? 'Required' : null,
@@ -336,16 +433,16 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
-                        TextFormField(
+                        _buildAnimatedTextField(
                           controller: _notesController,
                           maxLines: 3,
+                          hintText: 'Enter any additional notes',
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
                             ),
                             filled: true,
                             fillColor: Colors.grey[200],
-                            hintText: 'Enter any additional notes',
                           ),
                         ),
 
