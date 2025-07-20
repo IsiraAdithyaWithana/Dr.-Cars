@@ -363,6 +363,10 @@ class _OBD2PageState extends State<OBD2Page> {
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:dr_cars/interface/Service%20History.dart';
+import 'package:dr_cars/interface/dashboard.dart';
+import 'package:dr_cars/interface/mapscreen.dart';
+import 'package:dr_cars/interface/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
@@ -394,7 +398,7 @@ class _OBD2PageState extends State<OBD2Page> {
   double? _rpm;
   double? _coolantTemp;
   double? _speed;
-  List<String> _dtcs = [];
+  List<Map<String, String>> _dtcs = [];
   Timer? _liveDataTimer;
   BluetoothDevice? selectedDevice;
   List<BluetoothDevice> devices = [];
@@ -481,7 +485,7 @@ class _OBD2PageState extends State<OBD2Page> {
   }
 
   void _startLiveDataPolling() {
-    _liveDataTimer = Timer.periodic(Duration(seconds: 1), (_) async {
+    _liveDataTimer = Timer.periodic(Duration(milliseconds: 500), (_) async {
       final newRpm = await btService.getRPM();
       final newSpeed = await btService.getSpeed();
       final newCoolantTemp = await btService.getCoolantTemp();
@@ -490,7 +494,14 @@ class _OBD2PageState extends State<OBD2Page> {
         _rpm = newRpm.toDouble();
         _speed = newSpeed.toDouble();
         _coolantTemp = newCoolantTemp.toDouble();
-        _dtcs = newDtcs;
+        _dtcs =
+            newDtcs.map((code) {
+              return {
+                'code': code,
+                'description':
+                    btService.dtcDescriptions[code] ?? 'Unknown code',
+              };
+            }).toList();
       });
     });
   }
@@ -531,12 +542,12 @@ class _OBD2PageState extends State<OBD2Page> {
         title: Text('OBD2 Diagnostics'),
         backgroundColor: Colors.black,
         actions: [
-          if (_dtcs.isNotEmpty && _isConnected)
-            IconButton(
-              icon: Icon(Icons.delete_forever),
-              tooltip: "Clear Trouble Codes",
-              onPressed: _clearTroubleCodes,
-            ),
+          // if (_dtcs.isNotEmpty && _isConnected)
+          //   IconButton(
+          //     icon: Icon(Icons.delete_forever),
+          //     tooltip: "Clear Trouble Codes",
+          //     onPressed: _clearTroubleCodes,
+          //   ),
         ],
       ),
       body: SingleChildScrollView(
@@ -655,10 +666,50 @@ class _OBD2PageState extends State<OBD2Page> {
             if (_dtcs.isNotEmpty)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: _dtcs.map((code) => Text("DTC: $code")).toList(),
+                children:
+                    _dtcs
+                        .map(
+                          (entry) => ListTile(
+                            title: Text("Code: ${entry['code']}"),
+                            subtitle: Text(
+                              "Description: ${entry['description']}",
+                            ),
+                          ),
+                        )
+                        .toList(),
               )
             else
               Text("No trouble codes detected"),
+            SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed:
+                  _isConnected
+                      ? () async {
+                        await btService.clearDTCs();
+                        setState(() {
+                          _dtcs.clear();
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Trouble codes cleared successfully.',
+                            ),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
+                      : null,
+              icon: Icon(Icons.restart_alt),
+              label: Text("Reset Trouble Codes"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                textStyle: TextStyle(fontSize: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -666,8 +717,33 @@ class _OBD2PageState extends State<OBD2Page> {
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.black,
         currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() => _selectedIndex = index);
+        onTap: (i) {
+          if (i == _selectedIndex) return;
+          setState(() => _selectedIndex = i);
+          Widget target = widget;
+          switch (i) {
+            case 0:
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => DashboardScreen()),
+              );
+              break;
+            case 1:
+              target = MapScreen();
+              break;
+            case 2:
+              break;
+            case 3:
+              target = const ServiceHistorypage();
+              break;
+            case 4:
+              target = const ProfileScreen();
+              break;
+          }
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => target),
+          );
         },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
@@ -778,6 +854,55 @@ class BluetoothService {
     }
     return 0;
   }
+
+  final Map<String, String> dtcDescriptions = {
+    // Engine Management
+    'P0100': 'Mass/Volume Air Flow Circuit Malfunction',
+    'P0101': 'Mass/Volume Air Flow Circuit Range/Performance',
+    'P0102': 'Mass/Volume Air Flow Circuit Low Input',
+    'P0103': 'Mass/Volume Air Flow Circuit High Input',
+    'P0105': 'Manifold Pressure/Barometric Pressure Circuit Malfunction',
+    'P0106': 'Manifold Pressure/Barometric Pressure Range/Performance',
+    'P0110': 'Intake Air Temperature Circuit Malfunction',
+    'P0115': 'Engine Coolant Temperature Circuit Malfunction',
+    'P0120': 'Throttle Position Sensor Circuit Malfunction',
+    'P0130': 'O2 Sensor Circuit Malfunction (Bank 1 Sensor 1)',
+    'P0135': 'O2 Sensor Heater Circuit Malfunction',
+    // Fuel System
+    'P0170': 'Fuel Trim Malfunction (Bank 1)',
+    'P0171': 'System Too Lean (Bank 1)',
+    'P0172': 'System Too Rich (Bank 1)',
+    'P0201': 'Injector Circuit Malfunction – Cylinder 1',
+    'P0230': 'Fuel Pump Primary Circuit Malfunction',
+    'P0261': 'Cylinder 1 Injector Circuit Low',
+    'P0262': 'Cylinder 1 Injector Circuit High',
+    // Ignition
+    'P0300': 'Random/Multiple Cylinder Misfire Detected',
+    'P0301': 'Cylinder 1 Misfire Detected',
+    'P0325': 'Knock Sensor Circuit Malfunction',
+    'P0335': 'Crankshaft Position Sensor Circuit Malfunction',
+    'P0340': 'Camshaft Position Sensor Circuit Malfunction',
+    'P0350': 'Ignition Coil Primary/Secondary Circuit Malfunction',
+    // Emission
+    'P0400': 'Exhaust Gas Recirculation Flow Malfunction',
+    'P0420': 'Catalyst System Efficiency Below Threshold',
+    'P0440': 'Evaporative Emission Control System Malfunction',
+    'P0442': 'EVAP System Leak Detected (Small Leak)',
+    'P0455': 'EVAP System Leak Detected (Gross Leak)',
+    // Transmission
+    'P0700': 'Transmission Control System Malfunction',
+    'P0705': 'Transmission Range Sensor Circuit Malfunction',
+    'P0715': 'Input/Turbine Speed Sensor Circuit Malfunction',
+    'P0720': 'Output Speed Sensor Circuit Malfunction',
+    'P0730': 'Incorrect Gear Ratio',
+    'P0740': 'Torque Converter Clutch Circuit Malfunction',
+    // Vehicle Control
+    'P0500': 'Vehicle Speed Sensor Malfunction',
+    'P0505': 'Idle Control System Malfunction',
+    'P0560': 'System Voltage Malfunction',
+    'P0600': 'Serial Communication Link Malfunction',
+    'P0601': 'Control Module Memory Check Sum Error',
+  };
 
   Future<List<String>> getDTCs() async {
     final res = await sendAndRead("03");
