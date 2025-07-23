@@ -205,9 +205,13 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
       appBar: AppBar(
         title: const Text(
           'Service History',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: Colors.black,
+        backgroundColor: const Color.fromARGB(255, 72, 64, 122),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, size: 20),

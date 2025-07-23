@@ -310,6 +310,538 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     }
   }
 
+  /*Widget _buildAnimatedDropdown(
+    List<String> items,
+    String? selectedValue,
+    Function(String?) onChanged,
+    String hint,
+  ) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromARGB(255, 64, 4, 167).withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(2, 5),
+          ),
+        ],
+      ),
+      child: DropdownButtonFormField<String>(
+        value: selectedValue,
+        isExpanded: true,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+          filled: true,
+          fillColor: const Color.fromARGB(255, 255, 255, 255),
+          hintText: hint,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+        ),
+        items:
+            items
+                .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+                .toList(),
+        onChanged: onChanged,
+        validator:
+            (value) => (value == null || value.isEmpty) ? 'Required' : null,
+      ),
+    );
+  }
+
+  Widget _buildAnimatedTextField({
+    required TextEditingController controller,
+    required String hintText,
+    String? suffixText,
+    String? prefixText,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    bool required = true,
+    InputDecoration? decoration,
+    String? Function(String?)? validator,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromARGB(255, 68, 8, 172).withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(2, 5),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          hintText: hintText,
+          filled: true,
+          fillColor: const Color.fromARGB(255, 255, 255, 255),
+          suffixText: suffixText,
+          prefixText: prefixText,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+        ),
+        validator:
+            required
+                ? (value) => value == null || value.isEmpty ? 'Required' : null
+                : null,
+      ),
+    );
+  }
+
+   Widget _buildAnimatedTimePicker({
+    required BuildContext context,
+    required String labelText,
+    required String? dateText,
+    required VoidCallback onTap,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromARGB(255, 45, 1, 122).withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: onTap,
+        child: InputDecorator(
+          decoration: InputDecoration(
+            hintText: labelText,
+            filled: true,
+            fillColor: const Color.fromARGB(255, 255, 255, 255),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+            suffixIcon: const Icon(Icons.calendar_today),
+          ),
+          child: Text(
+            dateText ?? 'Select date',
+            style: TextStyle(
+              color: dateText != null ? Colors.black : Colors.grey[600],
+              fontSize: 16,
+            ),
+          ),
+        ),
+      ),
+    );
+  }*/
+
+  Widget _buildLabel(String text) {
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+    );
+  }
+
+  Widget _buildAnimatedDropdown({
+    required List<String> items,
+    required String? selectedValue,
+    required String hintText,
+    required Function(String?) onChanged,
+    InputDecoration? decoration,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.deepPurple.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(2, 4),
+          ),
+        ],
+      ),
+      child: DropdownButtonFormField<String>(
+        value: selectedValue,
+        isExpanded: true,
+        decoration: InputDecoration(
+          hintText: hintText,
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(25),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        dropdownColor: Colors.white,
+        icon: const Icon(
+          Icons.keyboard_arrow_down_rounded,
+          color: Colors.deepPurple,
+        ),
+        items:
+            items
+                .map(
+                  (item) =>
+                      DropdownMenuItem<String>(value: item, child: Text(item)),
+                )
+                .toList(),
+        onChanged: onChanged,
+        validator:
+            (value) => (value == null || value.isEmpty) ? 'Required' : null,
+      ),
+    );
+  }
+
+  Widget _buildMultiSelect() {
+    return Wrap(
+      spacing: 6.0,
+      children:
+          serviceTypes.map((service) {
+            final isSelected = _selectedServices.contains(service);
+            return FilterChip(
+              label: Text(
+                service,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.black,
+                ),
+              ),
+              selected: isSelected,
+              backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+              selectedColor: const Color.fromARGB(255, 103, 101, 237),
+              checkmarkColor: const Color.fromARGB(255, 216, 216, 216),
+              elevation: 5,
+              shadowColor: Colors.black,
+
+              onSelected: (bool selected) {
+                setState(() {
+                  if (selected) {
+                    _selectedServices.add(service);
+                  } else {
+                    _selectedServices.remove(service);
+                  }
+                });
+              },
+            );
+          }).toList(),
+    );
+  }
+
+  Widget buildStyledDropdown({
+    required List<String> items,
+    required String? selectedValue,
+    required String hintText,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromARGB(255, 68, 8, 172).withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(2, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        elevation: 0,
+        borderRadius: BorderRadius.circular(25),
+        child: DropdownButtonFormField<String>(
+          value: selectedValue,
+          onChanged: onChanged,
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: Colors.deepPurple,
+          ),
+          decoration: InputDecoration(
+            hintText: hintText,
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 18,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(25),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          items:
+              items.map((item) {
+                return DropdownMenuItem<String>(value: item, child: Text(item));
+              }).toList(),
+          dropdownColor: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedDatePicker() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TableCalendar(
+          firstDay: DateTime.utc(2020, 1, 1),
+          lastDay: DateTime.utc(2030, 12, 31),
+          focusedDay: _selectedDate ?? DateTime.now(),
+          selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
+          onDaySelected: (selectedDay, focusedDay) {
+            bool isUnavailable = _unavailableDates.any(
+              (d) =>
+                  d.year == selectedDay.year &&
+                  d.month == selectedDay.month &&
+                  d.day == selectedDay.day,
+            );
+            setState(() => _selectedDate = selectedDay);
+            if (_selectedServiceCenterName != null) {
+              if (isUnavailable) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      "This date is fully booked for $_selectedServiceCenterName.",
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      "This date is available for booking at $_selectedServiceCenterName.",
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            }
+          },
+          calendarStyle: CalendarStyle(
+            todayDecoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color.fromARGB(255, 61, 168, 255),
+                  const Color.fromARGB(255, 146, 129, 222),
+                ],
+              ),
+              shape: BoxShape.circle,
+            ),
+            selectedDecoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.deepPurple,
+                  const Color.fromARGB(255, 204, 117, 219),
+                ],
+              ),
+              shape: BoxShape.circle,
+            ),
+            selectedTextStyle: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+            todayTextStyle: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+            weekendTextStyle: TextStyle(color: Colors.deepOrangeAccent),
+            outsideDaysVisible: false,
+          ),
+          headerStyle: HeaderStyle(
+            formatButtonVisible: false,
+            titleCentered: true,
+            titleTextStyle: TextStyle(
+              color: Colors.deepPurple,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+            leftChevronIcon: Icon(Icons.chevron_left, color: Colors.deepPurple),
+            rightChevronIcon: Icon(
+              Icons.chevron_right,
+              color: Colors.deepPurple,
+            ),
+          ),
+
+          calendarBuilders: CalendarBuilders(
+            defaultBuilder: (context, date, _) {
+              bool isUnavailable = _unavailableDates.any(
+                (d) =>
+                    d.year == date.year &&
+                    d.month == date.month &&
+                    d.day == date.day,
+              );
+              if (isUnavailable) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '${date.day}',
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Text(
+                      'Full',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                );
+              }
+              return null;
+            },
+          ),
+        ),
+        if (_selectedDate != null && _appointmentsCount > 0)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.orange[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.orange[800]),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'There are $_appointmentsCount appointment(s) already scheduled for this date.',
+                      style: TextStyle(color: Colors.orange[900], fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildAnimatedTimePicker() {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.deepPurple.withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(2, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        borderRadius: BorderRadius.circular(25),
+        child: InkWell(
+          onTap: _pickTime,
+          borderRadius: BorderRadius.circular(25),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(25),
+              color: Colors.white,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _selectedTime == null
+                      ? 'SELECT TIME'
+                      : _selectedTime!.format(context),
+                  style: TextStyle(
+                    color: _selectedTime == null ? Colors.grey : Colors.black,
+                    fontSize: 16,
+                  ),
+                ),
+                const Icon(Icons.access_time, color: Colors.deepPurple),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedTextField({
+    required TextEditingController controller,
+    //required String hintText,
+    bool enabled = true,
+    int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+    InputDecoration? decoration,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.deepPurple.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(2, 5),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        enabled: enabled,
+        maxLines: maxLines,
+        keyboardType: keyboardType,
+        decoration:
+            decoration ??
+            InputDecoration(
+              //hintText: hintText,
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(25),
+                borderSide: BorderSide.none,
+              ),
+            ),
+        validator:
+            (value) => value == null || value.isEmpty ? 'Required' : null,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -377,8 +909,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           const SizedBox(height: 16),
 
                           _buildLabel('Vehicle Number '),
-                          TextField(
+                          _buildAnimatedTextField(
                             controller: _vehicleNumberController,
+
                             enabled: false,
                             decoration: InputDecoration(
                               hintStyle: TextStyle(color: Colors.grey[600]),
@@ -408,6 +941,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
                           const SizedBox(height: 16),
                           _buildLabel('Vehicle Model '),
+
                           DropdownButtonFormField<String>(
                             value: _selectedModel,
                             items:
@@ -436,10 +970,11 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           const SizedBox(height: 16),
 
                           _buildLabel('City'),
-                          _buildDropdown(
-                            List<String>.from(branches)..sort(),
-                            _selectedBranch,
-                            (value) async {
+                          _buildAnimatedDropdown(
+                            items: branches..sort(),
+                            hintText: 'Select City',
+                            selectedValue: _selectedBranch,
+                            onChanged: (value) async {
                               setState(() {
                                 _selectedBranch = value;
                                 _filteredServiceCenters = [];
@@ -519,12 +1054,12 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           const SizedBox(height: 16),
                           _buildLabel('Preferred Date '),
 
-                          _buildDatePicker(),
+                          _buildAnimatedDatePicker(),
 
                           const SizedBox(height: 16),
 
                           _buildLabel('Preferred Time '),
-                          _buildTimePicker(),
+                          _buildAnimatedTimePicker(),
                           const SizedBox(height: 24),
 
                           Center(
@@ -710,274 +1245,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           BottomNavigationBarItem(icon: Icon(Icons.history), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
-      ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-    );
-  }
-
-  Widget _buildDropdown(
-    List<String> items,
-    String? selectedValue,
-    Function(String?) onChanged,
-  ) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.deepPurple.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Material(
-        elevation: 2,
-        borderRadius: BorderRadius.circular(25),
-        child: DropdownButtonFormField<String>(
-          value: selectedValue,
-          icon: const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: Colors.deepPurple,
-          ),
-          items:
-              items.map((item) {
-                return DropdownMenuItem<String>(value: item, child: Text(item));
-              }).toList(),
-          onChanged: onChanged,
-          decoration: InputDecoration(
-            hintText: "SELECT",
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 18,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(25),
-              borderSide: BorderSide.none,
-            ),
-          ),
-          dropdownColor: Colors.white,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMultiSelect() {
-    return Wrap(
-      spacing: 6.0,
-      children:
-          serviceTypes.map((service) {
-            final isSelected = _selectedServices.contains(service);
-            return FilterChip(
-              label: Text(
-                service,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black,
-                ),
-              ),
-              selected: isSelected,
-              backgroundColor: Colors.grey[300],
-              selectedColor: const Color.fromARGB(255, 103, 101, 237),
-              checkmarkColor: Colors.white,
-              elevation: 3,
-              shadowColor: Colors.black,
-
-              onSelected: (bool selected) {
-                setState(() {
-                  if (selected) {
-                    _selectedServices.add(service);
-                  } else {
-                    _selectedServices.remove(service);
-                  }
-                });
-              },
-            );
-          }).toList(),
-    );
-  }
-
-  Widget _buildDatePicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TableCalendar(
-          firstDay: DateTime.utc(2020, 1, 1),
-          lastDay: DateTime.utc(2030, 12, 31),
-          focusedDay: _selectedDate ?? DateTime.now(),
-          selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
-          onDaySelected: (selectedDay, focusedDay) {
-            bool isUnavailable = _unavailableDates.any(
-              (d) =>
-                  d.year == selectedDay.year &&
-                  d.month == selectedDay.month &&
-                  d.day == selectedDay.day,
-            );
-            setState(() => _selectedDate = selectedDay);
-            if (_selectedServiceCenterName != null) {
-              if (isUnavailable) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      "This date is fully booked for $_selectedServiceCenterName.",
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      "This date is available for booking at $_selectedServiceCenterName.",
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              }
-            }
-          },
-          calendarStyle: CalendarStyle(
-            todayDecoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color.fromARGB(255, 61, 168, 255),
-                  const Color.fromARGB(255, 146, 129, 222),
-                ],
-              ),
-              shape: BoxShape.circle,
-            ),
-            selectedDecoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.deepPurple,
-                  const Color.fromARGB(255, 204, 117, 219),
-                ],
-              ),
-              shape: BoxShape.circle,
-            ),
-            selectedTextStyle: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-            todayTextStyle: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-            weekendTextStyle: TextStyle(color: Colors.deepOrangeAccent),
-            outsideDaysVisible: false,
-          ),
-          headerStyle: HeaderStyle(
-            formatButtonVisible: false,
-            titleCentered: true,
-            titleTextStyle: TextStyle(
-              color: Colors.deepPurple,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-            leftChevronIcon: Icon(Icons.chevron_left, color: Colors.deepPurple),
-            rightChevronIcon: Icon(
-              Icons.chevron_right,
-              color: Colors.deepPurple,
-            ),
-          ),
-
-          calendarBuilders: CalendarBuilders(
-            defaultBuilder: (context, date, _) {
-              bool isUnavailable = _unavailableDates.any(
-                (d) =>
-                    d.year == date.year &&
-                    d.month == date.month &&
-                    d.day == date.day,
-              );
-              if (isUnavailable) {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '${date.day}',
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Text(
-                      'Full',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                );
-              }
-              return null;
-            },
-          ),
-        ),
-        if (_selectedDate != null && _appointmentsCount > 0)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.orange[100],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, color: Colors.orange[800]),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'There are $_appointmentsCount appointment(s) already scheduled for this date.',
-                      style: TextStyle(color: Colors.orange[900], fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildTimePicker() {
-    return InkWell(
-      onTap: _pickTime,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(25),
-          color: Colors.grey[200],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              _selectedTime == null
-                  ? 'SELECT TIME'
-                  : _selectedTime!.format(context),
-            ),
-            const Icon(Icons.access_time, color: Colors.grey),
-          ],
-        ),
       ),
     );
   }
