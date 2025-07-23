@@ -485,15 +485,20 @@ class _OBD2PageState extends State<OBD2Page> {
   }
 
   void _startLiveDataPolling() {
-    _liveDataTimer = Timer.periodic(Duration(milliseconds: 500), (_) async {
+    _liveDataTimer = Timer.periodic(Duration(milliseconds: 1500), (_) async {
       final newRpm = await btService.getRPM();
       final newSpeed = await btService.getSpeed();
       final newCoolantTemp = await btService.getCoolantTemp();
       final newDtcs = await btService.getDTCs();
+
       setState(() {
-        _rpm = newRpm.toDouble();
-        _speed = newSpeed.toDouble();
-        _coolantTemp = newCoolantTemp.toDouble();
+        _rpm = (newRpm > 0 && newRpm < 10000) ? newRpm.toDouble() : 0.0;
+        _speed = (newSpeed >= 0 && newSpeed < 300) ? newSpeed.toDouble() : 0.0;
+        _coolantTemp =
+            (newCoolantTemp >= -40 && newCoolantTemp < 150)
+                ? newCoolantTemp.toDouble()
+                : null;
+
         _dtcs =
             newDtcs.map((code) {
               return {
@@ -523,9 +528,16 @@ class _OBD2PageState extends State<OBD2Page> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              value,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            AnimatedSwitcher(
+              duration: Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              child: Text(
+                value,
+                key: ValueKey(value), // Important for triggering animation
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ),
             SizedBox(height: 6),
             Text(label, style: TextStyle(fontSize: 12)),
@@ -546,8 +558,8 @@ class _OBD2PageState extends State<OBD2Page> {
           //   IconButton(
           //     icon: Icon(Icons.delete_forever),
           //     tooltip: "Clear Trouble Codes",
-          //     onPressed: _clearTroubleCodes,
-          //   ),
+          //     onPressed: _clearTroubleCodes,`
+          //   ),`
         ],
       ),
       body: SingleChildScrollView(
@@ -817,91 +829,247 @@ class BluetoothService {
   Future<String> sendAndRead(String command) async {
     _responseCompleter = Completer<String>();
     sendCommand(command);
-    return await _responseCompleter!.future.timeout(
+    final response = await _responseCompleter!.future.timeout(
       Duration(seconds: 5),
       onTimeout: () => 'TIMEOUT',
     );
+    if (response.trim().isEmpty || response == 'TIMEOUT') return '';
+    return response;
   }
 
   Future<int> getRPM() async {
     final res = await sendAndRead("010C");
-    if (res.length >= 6) {
+    print("RPM Raw: $res");
+
+    // Match valid RPM response like "41 0C 1A F8"
+    final match = RegExp(
+      r'41\s0C\s([0-9A-Fa-f]{2})\s([0-9A-Fa-f]{2})',
+    ).firstMatch(res);
+    if (match != null) {
       try {
-        var A = int.parse(res.substring(4, 6), radix: 16);
-        var B = int.parse(res.substring(6, 8), radix: 16);
-        return ((256 * A) + B) ~/ 4;
-      } catch (_) {}
+        final A = int.parse(match.group(1)!, radix: 16);
+        final B = int.parse(match.group(2)!, radix: 16);
+        final rpm = ((256 * A) + B) ~/ 4;
+
+        // Optional: Clamp out-of-range or fake values
+        if (rpm < 50 || rpm > 8000) {
+          return 0; // assume engine is off
+        }
+        return rpm;
+      } catch (e) {
+        print("RPM parse error: $e");
+      }
     }
+
+    // Fallback: invalid data or car off
     return 0;
   }
 
   Future<int> getSpeed() async {
     final res = await sendAndRead("010D");
-    if (res.length >= 4) {
-      try {
-        return int.parse(res.substring(4, 6), radix: 16);
-      } catch (_) {}
+    print("Speed Raw: $res");
+
+    final match = RegExp(r'41\s0D\s([0-9A-Fa-f]{2})').firstMatch(res);
+    if (match != null) {
+      return int.parse(match.group(1)!, radix: 16);
     }
     return 0;
   }
 
   Future<int> getCoolantTemp() async {
     final res = await sendAndRead("0105");
-    if (res.length >= 4) {
-      try {
-        return int.parse(res.substring(4, 6), radix: 16) - 40;
-      } catch (_) {}
+    print("Coolant Raw: $res");
+
+    final match = RegExp(r'41\s05\s([0-9A-Fa-f]{2})').firstMatch(res);
+    if (match != null) {
+      return int.parse(match.group(1)!, radix: 16) - 40;
     }
     return 0;
   }
 
   final Map<String, String> dtcDescriptions = {
-    // Engine Management
-    'P0100': 'Mass/Volume Air Flow Circuit Malfunction',
-    'P0101': 'Mass/Volume Air Flow Circuit Range/Performance',
-    'P0102': 'Mass/Volume Air Flow Circuit Low Input',
-    'P0103': 'Mass/Volume Air Flow Circuit High Input',
-    'P0105': 'Manifold Pressure/Barometric Pressure Circuit Malfunction',
-    'P0106': 'Manifold Pressure/Barometric Pressure Range/Performance',
-    'P0110': 'Intake Air Temperature Circuit Malfunction',
+    // Engine Management & Timing (Includes cam/crank sensors, VVT, valves)
+    'P0008': 'Engine Position System Misalignment Bank 1',
+    'P0009': 'Engine Position System Variation Bank 2',
+    'P0010': 'Camshaft Position Actuator “A” Circuit Malfunction (Bank 1)',
+    'P0011': 'Camshaft “A” Timing Problem',
+    'P0012': 'Camshaft “A” Over‑Retarded (Bank 1)',
+    'P0013': 'VVT Solenoid/Actuator Circuit Worn',
+    'P0014': 'Camshaft “B” Over‑Advanced (Bank 1)',
+    'P0015': 'Camshaft “B” Over‑Retarded (PCM)',
+    'P0016': 'Crank–Cam Correlation Bank 1 Sensor A',
+    'P0017': 'Camshaft and Crankshaft Correlation Issue',
+    'P0018': 'Crank–Cam Correlation Bank 2 Sensor A',
+    'P0019': 'Crank–Cam Correlation Bank 2 Sensor B',
+    'P0020': 'Camshaft Position Actuator “A” Circuit (Bank 2)',
+    'P0021': 'Incorrect Camshaft Variable Timing Solenoid',
+    'P0022': 'Camshaft “A” Timing Issue',
+    'P0023': 'Camshaft Position Actuator “B” Circuit',
+    'P0024': 'Camshaft “B” Over‑Advanced Timing',
+    'P0025': 'Camshaft “B” Over‑Retarded Timing',
+    'P0026': 'Intake Valve Control Solenoid Circuit Malfunction',
+    'P0027': 'Exhaust Valve Control Solenoid Circuit Problem',
+    'P0028': 'Intake Valve Control Malfunction (Bank 2)',
+    'P0029': 'Exhaust Valve Control Range/Performance',
+    'P0335': 'Crankshaft Position Sensor “A” Circuit Malfunction',
+    'P0340': 'Camshaft Position Sensor Circuit Malfunction',
+    'P0341': 'Camshaft Position Sensor “A” Circuit Range/Performance (Bank 1)',
+    'P06DE': 'Engine Oil Pressure Control Circuit Stuck On',
+
+    // Fuel System & Pressure / Injectors
+    'P0001': 'Fuel Volume Regulator Control Circuit/Open',
+    'P0002': 'Fuel Volume Regulator Range/Performance',
+    'P0003': 'Fuel Volume Regulator Low Circuit',
+    'P0004': 'Fuel Volume Regulator High Circuit',
+    'P0005': 'Fuel Shutoff Valve “A” Open Circuit',
+    'P0006': 'Fuel Shutoff Valve “A” Low Circuit',
+    'P0007': 'Fuel Shutoff Valve “A” High Circuit',
+    'P0087': 'Fuel Rail/System Low Pressure',
+    'P0088': 'Fuel Rail/System High Pressure',
+    'P0089': 'Fuel Pressure Regulator 1 Problem',
+    'P0090': 'Fuel Pressure Regulator 1 Control Circuit Malfunction',
+    'P0091': 'Fuel Pressure Regulator 1 Low Voltage Circuit',
+    'P0092': 'Fuel Pressure Regulator 1 High Voltage Circuit',
+    'P0093': 'Large Fuel System Leak Detected',
+    'P0094': 'Small Fuel System Leak Detected',
+    'P0148': 'Fuel Pressure Too Low or High',
+    'P0149': 'Fuel Timing Sequence Problem',
+    'P0611': 'Fuel Injector Control Module Performance Down',
+    'P2148': 'Fuel Injector Group “A” Supply Voltage High',
+
+    // Air Intake, MAF, MAP, Throttle & Sensors
+    'P0065': 'Air‑Assisted Injector Control Solenoid Valve Problem',
+    'P0066': 'Air‑Assisted Injector Control Circuit Low',
+    'P0067': 'Air‑Assisted Injector Control Circuit High Voltage',
+    'P0068': 'MAP/MAF–Throttle Position Mismatch',
+    'P0069': 'MAP–Barometric Pressure Mismatch',
+    'P0100': 'Mass Air Flow Circuit Malfunction',
+    'P0101': 'Mass Air Flow Circuit Range/Performance',
+    'P0102': 'MAF Low Input',
+    'P0103': 'MAF High Input',
+    'P0104': 'MAF “A” Circuit Intermittent',
+    'P0105': 'MAP/Barometric Pressure Circuit Malfunction',
+    'P0106': 'MAP/Barometric Pressure Range/Performance',
+    'P0107': 'MAP Low Input',
+    'P0108': 'MAP High Input',
+    'P0109': 'MAP, BPC Not Continuous',
+    'P0110': 'Intake Air Temp Sensor 1 Circuit Malfunction (Bank 1)',
+    'P0111': 'Intake Air Temp 1 Range/Performance Mismatch',
+    'P0112': 'Intake Air Temp 1 Voltage Too Low',
+    'P0113': 'Intake Air Temperature Sensor Problem',
+    'P0114': 'Intake Air Temperature Sensor 1 Bank 1 Malfunction',
     'P0115': 'Engine Coolant Temperature Circuit Malfunction',
-    'P0120': 'Throttle Position Sensor Circuit Malfunction',
-    'P0130': 'O2 Sensor Circuit Malfunction (Bank 1 Sensor 1)',
+    'P0116': 'ECT Range Incorrect',
+    'P0117': 'ECT Low Voltage Output',
+    'P0118': 'ECT High Voltage Output',
+    'P0119': 'ECT Sensor 1 Malfunction',
+    'P0120': 'Throttle/Pedal Position Sensor “A” Circuit Malfunction',
+    'P0121': 'Throttle/Pedal Position Sensor “A” Range/Performance',
+    'P0122': 'Throttle/Pedal Position “A” Low Voltage',
+    'P0123': 'Throttle/Pedal Position “A” High Voltage',
+    'P0124': 'Throttle/Pedal Position “A” Out of Range',
+    'P0125': 'Engine Not Reaching Proper Temperature',
+    'P0126': 'Low Coolant Temp or Bad Thermostat',
+    'P0127': 'High Intake Air Temperature',
+    'P0128': 'Engine Temperature Not Staying Hot Enough',
+    'P0129': 'Barometric Pressure Too Low',
+
+    // Turbocharger / Supercharger & Boost Control
+    'P0033': 'Turbocharger Bypass Valve Control Circuit',
+    'P0034': 'Turbocharger Bypass Valve Low Voltage',
+    'P0035': 'Turbocharger Bypass Valve High Voltage',
+    'P0039': 'Turbo/Supercharger Bypass Valve Circuit Malfunction',
+    'P0045': 'Turbo/Supercharger Boost Control Solenoid/Open',
+    'P0046': 'Turbo/Supercharger Boost Solenoid Range/Performance',
+    'P0047': 'Turbo/Supercharger Boost Low Voltage',
+    'P0048': 'Turbo/Supercharger Boost High Voltage',
+    'P0049': 'Turbo/Supercharger Turbine Overspeed',
+    'P0234': 'Turbocharger/Supercharger “A” Overboost Condition',
+    'P0299': 'Turbo or Supercharger Underperformance',
+    'P012B': 'Turbo/Supercharger Inlet Pressure Sensor Issue',
+
+    // Oxygen (O2/HO2S) & NOx Sensors
+    'P0030': 'Primary HO2S Heater Control Circuit Malfunction',
+    'P0031': 'HO2S Heater Low Voltage (B1S1)',
+    'P0032': 'HO2S Heater High Voltage (B1S1)',
+    'P0036': 'HO2S Heater Control Malfunction (B1S2)',
+    'P0037': 'Bank 1 Sensor 2 Oxygen Sensor Heater Issue',
+    'P0038': 'HO2S Heater High Voltage (B1S2)',
+    'P0040': 'O2 Sensor Signals Swapped B1S1/B2S1',
+    'P0041': 'O2 Sensor Issue Bank 1 S2 / Bank 2 S2',
+    'P0042': 'HO2S Heater Circuit (B1S3)',
+    'P0043': 'HO2S Heater Low Voltage (B1S3)',
+    'P0044': 'HO2S Heater High Voltage (B1S3)',
+    'P0050': 'HO2S Heater Control Malfunction (B2S1)',
+    'P0051': 'HO2S Heater Low Voltage (B2S1)',
+    'P0052': 'HO2S Heater High Voltage (B2S1)',
+    'P0053': 'HO2S Heater Resistance (B1S1)',
+    'P0054': 'HO2S Heater Resistance (B1S2)',
+    'P0055': 'HO2S Heater Resistance (B1S3)',
+    'P0056': 'HO2S Heater Circuit (B2S2)',
+    'P0057': 'HO2S Heater Low Voltage (B2S2)',
+    'P0058': 'HO2S Heater High Voltage (B2S2)',
+    'P0059': 'HO2S Heater Resistance (B2S1)',
+    'P0060': 'HO2S Heater Resistance (B2S2)',
+    'P0061': 'HO2S Heater Resistance (B2S3)',
+    'P0062': 'HO2S Heater Circuit (B2S3)',
+    'P0063': 'HO2S Heater Low Voltage (B2S3)',
+    'P0064': 'HO2S Heater High Voltage (B2S3)',
+    'P0130': 'O2 Sensor Circuit Malfunction (B1S1)',
+    'P0131': 'O2 Sensor Low Voltage (B1S1)',
+    'P0132': 'O2 Sensor High Voltage (B1S1)',
+    'P0133': 'O2 Sensor Slow Response (B1S1)',
+    'P0134': 'O2 Sensor Stops Working (B1S1)',
     'P0135': 'O2 Sensor Heater Circuit Malfunction',
-    // Fuel System
-    'P0170': 'Fuel Trim Malfunction (Bank 1)',
+    'P0136': 'O2 Sensor Circuit Malfunction (B1S2)',
+    'P0137': 'O2 Sensor Low Voltage (B1S2)',
+    'P0138': 'O2 Sensor High Voltage (B1S2)',
+    'P0139': 'O2 Sensor Slow Response (B1S2)',
+    'P0140': 'O2 Sensor Not Working',
+    'P0141': 'O2 Sensor Heater Circuit Faulty',
+    'P0142': 'O2 Sensor Circuit (B1S3)',
+    'P0143': 'O2 Sensor Low Voltage (B1S3)',
+    'P0144': 'O2 Sensor High Voltage (B1S3)',
+    'P0145': 'O2 Sensor Slow Response (B1S3)',
+    'P0146': 'O2 Sensor Not Responding (B1S3)',
+    'P0147': 'O2 Heater Circuit Malfunction (B1S3)',
+    'P0150': 'O2 Sensor Circuit Malfunction (B2S1)',
+    'P0151': 'O2 Sensor Low Voltage (B2S1)',
+    'P0161': 'O2 Sensor Circuit Malfunction (B2S2)',
+    'P2209': 'NOx Sensor Heater Circuit Range/Performance',
+
+    // Air‑Fuel Ratio / Fuel Trim Imbalance
     'P0171': 'System Too Lean (Bank 1)',
     'P0172': 'System Too Rich (Bank 1)',
-    'P0201': 'Injector Circuit Malfunction – Cylinder 1',
-    'P0230': 'Fuel Pump Primary Circuit Malfunction',
-    'P0261': 'Cylinder 1 Injector Circuit Low',
-    'P0262': 'Cylinder 1 Injector Circuit High',
-    // Ignition
+    'P2188': 'System Too Rich at Idle (Bank 1)',
+
+    // Misfire / Ignition
     'P0300': 'Random/Multiple Cylinder Misfire Detected',
-    'P0301': 'Cylinder 1 Misfire Detected',
-    'P0325': 'Knock Sensor Circuit Malfunction',
-    'P0335': 'Crankshaft Position Sensor Circuit Malfunction',
-    'P0340': 'Camshaft Position Sensor Circuit Malfunction',
-    'P0350': 'Ignition Coil Primary/Secondary Circuit Malfunction',
-    // Emission
-    'P0400': 'Exhaust Gas Recirculation Flow Malfunction',
-    'P0420': 'Catalyst System Efficiency Below Threshold',
-    'P0440': 'Evaporative Emission Control System Malfunction',
-    'P0442': 'EVAP System Leak Detected (Small Leak)',
-    'P0455': 'EVAP System Leak Detected (Gross Leak)',
-    // Transmission
+    'P0316': 'Misfire Detected on Startup',
+
+    // Emission & EVAP / EGR / Secondary Air
+    'P0401': 'EGR Flow Insufficient',
+    'P0440': 'EVAP System Malfunction',
+    'P0442': 'EVAP Small Leak Detected',
+    'P0446': 'EVAP Vent Control Circuit Issue',
+    'P0452': 'EVAP Low Pressure',
+    'P0455': 'EVAP Gross Leak Detected',
+    'P0456': 'EVAP Leak Detected',
+    'P2257': 'Secondary Air Injection Control “A” Low Circuit',
+    'P2448': 'Secondary Air Injection High Air Flow (Bank 1)',
+
+    // Transmission & Drivetrain
     'P0700': 'Transmission Control System Malfunction',
-    'P0705': 'Transmission Range Sensor Circuit Malfunction',
-    'P0715': 'Input/Turbine Speed Sensor Circuit Malfunction',
-    'P0720': 'Output Speed Sensor Circuit Malfunction',
-    'P0730': 'Incorrect Gear Ratio',
-    'P0740': 'Torque Converter Clutch Circuit Malfunction',
-    // Vehicle Control
-    'P0500': 'Vehicle Speed Sensor Malfunction',
-    'P0505': 'Idle Control System Malfunction',
-    'P0560': 'System Voltage Malfunction',
-    'P0600': 'Serial Communication Link Malfunction',
-    'P0601': 'Control Module Memory Check Sum Error',
+    'P0733': 'Incorrect Gear Ratio – 3rd Gear',
+
+    // Brake & Vehicle Control
+    'P0504': 'Brake Switch “A”/”B” Correlation',
+    'P2299': 'Brake Pedal Position Incorrect',
+
+    // Reductant / DEF & Exhaust Temp
+    'P2047': 'Reductant Injection Valve Circuit/Open Issue',
+    'P242B': 'Exhaust Gas Temperature Sensor Range/Performance (B1S3)',
+    'P246F': 'Exhaust Gas Temperature Sensor Bank 1 Sensor 4',
   };
 
   Future<List<String>> getDTCs() async {
@@ -926,9 +1094,11 @@ class BluetoothService {
     if (raw.length < 4) return "Invalid";
     final b1 = int.parse(raw.substring(0, 2), radix: 16);
     final b2 = raw.substring(2, 4);
-    String type = ['P', 'C', 'B', 'U'][(b1 & 0xC0) >> 6];
-    int firstDigit = (b1 & 0x30) >> 4;
-    int secondDigit = b1 & 0x0F;
-    return '$type$firstDigit${secondDigit.toRadixString(16).toUpperCase()}$b2';
+
+    final type = ['P', 'C', 'B', 'U'][(b1 & 0xC0) >> 6];
+    final digit1 = ((b1 & 0x30) >> 4).toString();
+    final digit2 = (b1 & 0x0F).toRadixString(16).toUpperCase();
+
+    return '$type$digit1$digit2$b2';
   }
 }
