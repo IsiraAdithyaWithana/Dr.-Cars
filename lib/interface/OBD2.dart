@@ -393,6 +393,7 @@ class OBD2Page extends StatefulWidget {
 
 class _OBD2PageState extends State<OBD2Page> {
   int _selectedIndex = 2;
+
   bool _isConnected = false;
   String? _selectedVehicle;
   double? _rpm;
@@ -428,6 +429,7 @@ class _OBD2PageState extends State<OBD2Page> {
   @override
   void initState() {
     super.initState();
+    _selectedIndex = 2;
     loadDevices();
   }
 
@@ -697,7 +699,7 @@ class _OBD2PageState extends State<OBD2Page> {
               onPressed:
                   _isConnected
                       ? () async {
-                        await btService.clearDTCs();
+                        await btService.clearDTCs(); // ✅ fixed line
                         setState(() {
                           _dtcs.clear();
                         });
@@ -729,38 +731,36 @@ class _OBD2PageState extends State<OBD2Page> {
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.black,
         currentIndex: _selectedIndex,
-        onTap: (i) {
-          if (i == _selectedIndex) return;
-          setState(() => _selectedIndex = i);
-          Widget target = widget;
-          switch (i) {
-            case 0:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => DashboardScreen()),
-              );
-              break;
-            case 1:
-              target = MapScreen();
-              break;
-            case 2:
-              break;
-            case 3:
-              target = const ServiceHistorypage();
-              break;
-            case 4:
-              target = const ProfileScreen();
-              break;
-          }
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => target),
-          );
+        onTap: (index) {
+          setState(() => _selectedIndex = index);
+          if (index == 0)
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => DashboardScreen()),
+            );
+          else if (index == 1)
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => MapScreen()),
+            );
+          else if (index == 3)
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ServiceHistorypage()),
+            );
+          else if (index == 4)
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ProfileScreen()),
+            );
         },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.car_repair), label: ''),
+          BottomNavigationBarItem(
+            icon: Image.asset('images/logo.png', height: 30),
+            label: '',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.history), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
