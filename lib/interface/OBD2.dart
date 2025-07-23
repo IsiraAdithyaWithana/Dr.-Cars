@@ -485,15 +485,20 @@ class _OBD2PageState extends State<OBD2Page> {
   }
 
   void _startLiveDataPolling() {
-    _liveDataTimer = Timer.periodic(Duration(milliseconds: 500), (_) async {
+    _liveDataTimer = Timer.periodic(Duration(milliseconds: 1500), (_) async {
       final newRpm = await btService.getRPM();
       final newSpeed = await btService.getSpeed();
       final newCoolantTemp = await btService.getCoolantTemp();
       final newDtcs = await btService.getDTCs();
+
       setState(() {
-        _rpm = newRpm.toDouble();
-        _speed = newSpeed.toDouble();
-        _coolantTemp = newCoolantTemp.toDouble();
+        _rpm = (newRpm > 0 && newRpm < 10000) ? newRpm.toDouble() : 0.0;
+        _speed = (newSpeed >= 0 && newSpeed < 300) ? newSpeed.toDouble() : 0.0;
+        _coolantTemp =
+            (newCoolantTemp >= -40 && newCoolantTemp < 150)
+                ? newCoolantTemp.toDouble()
+                : null;
+
         _dtcs =
             newDtcs.map((code) {
               return {
@@ -523,9 +528,16 @@ class _OBD2PageState extends State<OBD2Page> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              value,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            AnimatedSwitcher(
+              duration: Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              child: Text(
+                value,
+                key: ValueKey(value), // Important for triggering animation
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ),
             SizedBox(height: 6),
             Text(label, style: TextStyle(fontSize: 12)),
@@ -546,8 +558,8 @@ class _OBD2PageState extends State<OBD2Page> {
           //   IconButton(
           //     icon: Icon(Icons.delete_forever),
           //     tooltip: "Clear Trouble Codes",
-          //     onPressed: _clearTroubleCodes,
-          //   ),
+          //     onPressed: _clearTroubleCodes,`
+          //   ),`
         ],
       ),
       body: SingleChildScrollView(
@@ -817,46 +829,70 @@ class BluetoothService {
   Future<String> sendAndRead(String command) async {
     _responseCompleter = Completer<String>();
     sendCommand(command);
-    return await _responseCompleter!.future.timeout(
+    final response = await _responseCompleter!.future.timeout(
       Duration(seconds: 5),
       onTimeout: () => 'TIMEOUT',
     );
+    if (response.trim().isEmpty || response == 'TIMEOUT') return '';
+    return response;
   }
 
   Future<int> getRPM() async {
     final res = await sendAndRead("010C");
-    if (res.length >= 6) {
+    print("RPM Raw: $res");
+
+    // Match valid RPM response like "41 0C 1A F8"
+    final match = RegExp(
+      r'41\s0C\s([0-9A-Fa-f]{2})\s([0-9A-Fa-f]{2})',
+    ).firstMatch(res);
+    if (match != null) {
       try {
-        var A = int.parse(res.substring(4, 6), radix: 16);
-        var B = int.parse(res.substring(6, 8), radix: 16);
-        return ((256 * A) + B) ~/ 4;
-      } catch (_) {}
+        final A = int.parse(match.group(1)!, radix: 16);
+        final B = int.parse(match.group(2)!, radix: 16);
+        final rpm = ((256 * A) + B) ~/ 4;
+
+        // Optional: Clamp out-of-range or fake values
+        if (rpm < 50 || rpm > 8000) {
+          return 0; // assume engine is off
+        }
+        return rpm;
+      } catch (e) {
+        print("RPM parse error: $e");
+      }
     }
+
+    // Fallback: invalid data or car off
     return 0;
   }
 
   Future<int> getSpeed() async {
     final res = await sendAndRead("010D");
-    if (res.length >= 4) {
-      try {
-        return int.parse(res.substring(4, 6), radix: 16);
-      } catch (_) {}
+    print("Speed Raw: $res");
+
+    final match = RegExp(r'41\s0D\s([0-9A-Fa-f]{2})').firstMatch(res);
+    if (match != null) {
+      return int.parse(match.group(1)!, radix: 16);
     }
     return 0;
   }
 
   Future<int> getCoolantTemp() async {
     final res = await sendAndRead("0105");
-    if (res.length >= 4) {
-      try {
-        return int.parse(res.substring(4, 6), radix: 16) - 40;
-      } catch (_) {}
+    print("Coolant Raw: $res");
+
+    final match = RegExp(r'41\s05\s([0-9A-Fa-f]{2})').firstMatch(res);
+    if (match != null) {
+      return int.parse(match.group(1)!, radix: 16) - 40;
     }
     return 0;
   }
 
   final Map<String, String> dtcDescriptions = {
     // Engine Management
+    'P0001': 'Fuel Volume Regulator Control Circuit/Open',
+    'P0002': 'Fuel Volume Regulator Control Circuit Range/Performance',
+    'P0003': 'Fuel Volume Regulator Control Circuit Low',
+    'P0004': 'Fuel Volume Regulator Control Circuit High',
     'P0100': 'Mass/Volume Air Flow Circuit Malfunction',
     'P0101': 'Mass/Volume Air Flow Circuit Range/Performance',
     'P0102': 'Mass/Volume Air Flow Circuit Low Input',
@@ -926,9 +962,11 @@ class BluetoothService {
     if (raw.length < 4) return "Invalid";
     final b1 = int.parse(raw.substring(0, 2), radix: 16);
     final b2 = raw.substring(2, 4);
-    String type = ['P', 'C', 'B', 'U'][(b1 & 0xC0) >> 6];
-    int firstDigit = (b1 & 0x30) >> 4;
-    int secondDigit = b1 & 0x0F;
-    return '$type$firstDigit${secondDigit.toRadixString(16).toUpperCase()}$b2';
+
+    final type = ['P', 'C', 'B', 'U'][(b1 & 0xC0) >> 6];
+    final digit1 = ((b1 & 0x30) >> 4).toString();
+    final digit2 = (b1 & 0x0F).toRadixString(16).toUpperCase();
+
+    return '$type$digit1$digit2$b2';
   }
 }
