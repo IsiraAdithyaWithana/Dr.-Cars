@@ -42,63 +42,79 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
 
   // Indicator explanations
   final Map<String, String> explanations = {
-    // BMW indicators
     'images/BMW/123.png':
-        'Battery Warning: Issue with battery or charging system',
+        '🔋 Battery Warning:\n- Problem: Issue with battery or charging system.\n- Action: Check battery connections or have it inspected by a technician.',
+
     'images/BMW/ABS.png':
-        'Anti-lock Braking System Warning: ABS may not be functioning properly.',
+        '⚠️ ABS Warning:\n- Problem: ABS may not be functioning properly.\n- Action: Brakes will still work, but without anti-lock function. Get system checked soon.',
+
     'images/BMW/airbag waring.png':
-        'Airbag System Warning: Service required for airbag system.',
+        '🎈 Airbag Warning:\n- Problem: Airbag or SRS system malfunction.\n- Action: Have the airbag system inspected to ensure safety in a crash.',
+
     'images/BMW/breake.png':
-        'Brake System Warning: Check brake fluid level and brake function.',
+        '🛑 Brake System Warning:\n- Problem: Issue with brake system or low brake fluid.\n- Action: Check brake fluid level and brake performance immediately.',
+
     'images/BMW/check engine.png':
-        'Check Engine Warning: Engine issue detected, service needed.',
-    'images/BMW/e brake.png': 'Automatic Brake Hold: This system is active.',
+        '🛠️ Check Engine Warning:\n- Problem: Engine or emissions system malfunction.\n- Action: Drive moderately and have the engine diagnosed as soon as possible.',
+
+    'images/BMW/e brake.png':
+        '⛔ Auto Brake Hold:\n- Problem: Automatic brake hold system is active.\n- Action: No action needed unless stuck; disables when accelerator is pressed.',
+
     'images/BMW/fog lights.png':
-        'Fog Lights: Fog lights are currently turned on.',
+        '🌁 Fog Lights On:\n- Problem: Fog lights are active.\n- Action: Use only in foggy or low-visibility conditions.',
+
     'images/BMW/fuel low.png':
-        'Low Fuel Warning: Fuel level is low, refuel soon.',
+        '⛽ Low Fuel Warning:\n- Problem: Fuel level is low.\n- Action: Refuel the vehicle as soon as possible to avoid running out.',
+
     'images/BMW/glow.png':
-        'Diesel Pre-heating: Diesel glow plug indicator is active.',
+        '🌡️ Diesel Pre-Heating:\n- Problem: Diesel glow plugs are warming up.\n- Action: Wait until the light turns off before starting the engine (for diesel engines).',
+
     'images/BMW/high heat.png':
-        'Engine Temperature Warning: Engine is overheating.',
+        '🌡️ Engine Overheating:\n- Problem: Engine temperature is too high.\n- Action: Pull over safely, turn off engine, let it cool. Check coolant level.',
+
     'images/BMW/oil light.png':
-        'Oil Pressure Warning: Check oil level immediately.',
+        '🛢️ Oil Pressure Warning:\n- Problem: Low oil pressure.\n- Action: Stop engine immediately. Check and refill oil. Seek service if light remains on.',
+
     'images/BMW/seatbelt.png':
-        'Seatbelt Reminder: One or more seatbelts are not fastened.',
+        '🔔 Seatbelt Reminder:\n- Problem: One or more seatbelts unfastened.\n- Action: Ensure all occupants fasten their seatbelts.',
+
     'images/BMW/tire presure waring.png':
-        'Tire Pressure Warning: Check tire pressure in one or more tires.',
+        '🚨 Tire Pressure Warning:\n- Problem: One or more tires may be underinflated.\n- Action: Check all tires and inflate to recommended pressure.',
+
     'images/BMW/TRC.png':
-        'Traction Control: Traction control system is active or has an issue.',
-    'images/BMW/warning.png': 'General Warning: Check vehicle systems.',
+        '🚗 Traction Control Warning:\n- Problem: Traction control is active or malfunctioning.\n- Action: Drive cautiously on slippery roads. If warning stays, check system.',
+
+    'images/BMW/warning.png':
+        '⚠️ General Warning:\n- Problem: Non-specific issue with the vehicle.\n- Action: Check iDrive system or consult user manual for details.',
+
     'images/BMW/window heater.png':
-        'Window Defroster: Rear window defroster is active.',
+        '❄️ Rear Window Defroster:\n- Problem: Rear window defroster is on.\n- Action: No issue. Helps clear frost or condensation.',
 
     // Toyota indicators
     'images/Toyota/ABS.png':
-        'ABS Warning: Indicates a problem with the Anti-lock Braking System.',
+        'ABS Warning: Indicates a problem with the Anti-lock Braking System.\n Action: Safely stop the vehicle and have it inspected by a qualified technician.',
     'images/Toyota/BATTERY CHECK.png':
-        'Battery Warning: Issue with battery or charging system.',
+        'Battery Warning: Issue with battery or charging system.\n Action: Check battery connections and voltage; recharge or replace battery if necessary.',
     'images/Toyota/DOORS OPEND.png':
-        'Door Ajar Warning: One or more doors are not fully closed.',
+        'Door Ajar Warning: One or more doors are not fully closed.\n Action: Stop the vehicle in a safe place and ensure all doors are properly closed.',
     'images/Toyota/ENGINE CHECK LIGHT.png':
-        'Check Engine Warning: Engine malfunction detected.',
+        'Check Engine Warning: Engine malfunction detected.\n Action: Reduce vehicle speed and have the engine checked by a qualified technician.',
     'images/Toyota/HAND BREAK.png':
-        'Parking Brake: Parking brake is currently engaged.',
+        'Parking Brake: Parking brake is currently engaged.\n Action: Release the parking brake before driving.',
     'images/Toyota/HAZARD.png':
-        'Hazard Lights: Hazard warning lights are active.',
+        'Hazard Lights: Hazard warning lights are active.\n Action: Check the reason for hazard light activation (e.g., breakdown, emergency stop).',
     'images/Toyota/HEAD BEAM.png':
-        'High Beam: High beam headlights are currently active.',
+        'High Beam: High beam headlights are currently active.\n Action: Switch to low beams when approaching other vehicles or in well-lit areas.',
     'images/Toyota/LOW BEAM.png':
-        'Low Beam: Low beam headlights are currently active.',
+        'Low Beam: Low beam headlights are currently active.\n Action: Ensure headlights are properly adjusted for optimal visibility.',
     'images/Toyota/LOW FUEL.png':
-        'Low Fuel Warning: Fuel level is low, refuel soon.',
+        'Low Fuel Warning: Fuel level is low, refuel soon.\n Action: Refuel at the nearest gas station to avoid running out of fuel.',
     'images/Toyota/seat bealts.png':
-        'Seatbelt Reminder: One or more seatbelts are not fastened.',
+        'Seatbelt Reminder: One or more seatbelts are not fastened.\n Action: Ensure all passengers fasten their seatbelts for safety.',
     'images/Toyota/WATER HEAT.png':
-        'Engine Temperature Warning: Engine is overheating.',
+        'Engine Temperature Warning: Engine is overheating.\n Action: Turn off the engine and allow it to cool down. Check coolant level and radiator for leaks.',
     'images/Toyota/WINDSCREEN WASHER LIQUID LOW.png':
-        'Washer Fluid Warning: Windshield washer fluid is low.',
+        'Washer Fluid Warning: Windshield washer fluid is low.\n Action: Refill windshield washer fluid reservoir as soon as possible.',
   };
 
   // Indicator title mapping
