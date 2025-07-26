@@ -511,8 +511,14 @@ Future<void> _getRoute(LatLng destination) async {
             );
           },
         ),
-        title: const Text(" Dr Cars Service Centers"),
-      ),
+        title: const Text(
+           " Dr Cars Service Centers",
+      style: TextStyle(
+      fontSize: 25,
+      
+    ),
+  ),
+),
       body: _userLocation == null
           ? const Center(child: CircularProgressIndicator())
           : Stack(
