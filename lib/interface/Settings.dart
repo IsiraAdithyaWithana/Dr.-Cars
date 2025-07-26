@@ -580,7 +580,15 @@ Chat: https://wa.me/+94772111426
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(t('settings')),
+        title: Text(
+          'Settings',
+          style: TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: const Color.fromARGB(255, 45, 44, 44),
         elevation: 0,
         leading: BackButton(),
         actions: [
