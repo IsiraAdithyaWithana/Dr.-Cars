@@ -333,7 +333,8 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
         _showIndicatorInfo(imagePath, title);
       },
       child: Card(
-        elevation: 2,
+        elevation: 5,
+        shadowColor: const Color.fromARGB(255, 74, 3, 198),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -460,10 +461,18 @@ class _VehicleDashboardScreenState extends State<VehicleDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Vehicle Dashboard', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.black,
+        title: Text(
+          'Vehicle Dashboard',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: const Color.fromARGB(255, 72, 64, 122),
         foregroundColor: Colors.white,
         elevation: 0,
+
         iconTheme: IconThemeData(color: Colors.black),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),

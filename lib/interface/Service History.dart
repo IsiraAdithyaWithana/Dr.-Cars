@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dr_cars/interface/OBD2.dart';
 import 'package:dr_cars/interface/dashboard.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
 import 'package:dr_cars/interface/profile.dart';
@@ -362,6 +363,11 @@ class _ServiceHistorypageState extends State<ServiceHistorypage> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => MapScreen()),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => OBD2Page()),
             );
           } else if (index == 3) {
             // Already here

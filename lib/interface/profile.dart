@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dr_cars/interface/Service%20History.dart';
 import 'package:dr_cars/interface/Settings.dart';
 import 'package:dr_cars/interface/mapscreen.dart';
+import 'package:dr_cars/interface/service_history.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dashboard.dart';
@@ -417,6 +419,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => OBD2Page()),
+          );
+        } else if (index == 3) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ServiceHistorypage()),
           );
         } else if (index == 4) {
           Navigator.push(
