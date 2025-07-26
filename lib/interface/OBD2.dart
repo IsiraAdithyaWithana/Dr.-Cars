@@ -553,8 +553,15 @@ class _OBD2PageState extends State<OBD2Page> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('OBD2 Diagnostics'),
-        backgroundColor: Colors.black,
+        backgroundColor: const Color.fromARGB(255, 0, 48, 144),
+        title: Text(
+          'OBD2 Diagnostics',
+          style: TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         actions: [
           // if (_dtcs.isNotEmpty && _isConnected)
           //   IconButton(
