@@ -132,21 +132,24 @@ class _RatingScreenState extends State<RatingScreen> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 72, 64, 122),
         foregroundColor: Colors.white,
-        title: Center(
-          child: Text(
-            widget.serviceCenterId != null
-                ? "${widget.serviceCenterId} Reviews"
-                : "Reviews",
-            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-          ),
+        title: Stack(
+          children: [
+            Align(
+              alignment: Alignment.topCenter,
+              child: Text(
+                widget.serviceCenterId != null
+                    ? "${widget.serviceCenterId} Reviews"
+                    : "Reviews",
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
         ),
-        leading:
-            widget.serviceCenterId != null
-                ? IconButton(
-                  icon: Icon(Icons.arrow_back),
-                  onPressed: () => Navigator.pop(context),
-                )
-                : null,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () => Navigator.pop(context),
+        ),
         automaticallyImplyLeading: widget.serviceCenterId != null,
       ),
       body: Padding(
@@ -158,12 +161,12 @@ class _RatingScreenState extends State<RatingScreen> {
               widget.serviceCenterId != null
                   ? "Share your feedback for ${widget.serviceCenterId}"
                   : "Share your feedback",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 18),
             Text(
               "How was the service at the service center today?",
-              style: TextStyle(fontSize: 19, color: Colors.black87),
+              style: TextStyle(fontSize: 18, color: Colors.black87),
             ),
             SizedBox(height: 18),
             Row(
@@ -171,7 +174,7 @@ class _RatingScreenState extends State<RatingScreen> {
                 return IconButton(
                   icon: Icon(
                     Icons.star,
-                    size: 34,
+                    size: 45,
                     color:
                         _selectedRating > index ? Colors.orange : Colors.grey,
                   ),
@@ -184,7 +187,7 @@ class _RatingScreenState extends State<RatingScreen> {
               controller: _feedbackController,
               maxLines: 6,
               decoration: InputDecoration(
-                hintText: "Add feedback",
+                hintText: "Add feedback here!",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                 ),
@@ -195,6 +198,7 @@ class _RatingScreenState extends State<RatingScreen> {
             SizedBox(height: 25),
             Row(
               children: [
+                SizedBox(width: 20),
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
@@ -207,6 +211,13 @@ class _RatingScreenState extends State<RatingScreen> {
                         });
                       }
                     },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 240, 190, 9),
+                      minimumSize: Size(double.infinity, 65),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
                     child: Text(
                       "Cancel",
                       style: TextStyle(fontSize: 20, color: Colors.black),
@@ -218,7 +229,11 @@ class _RatingScreenState extends State<RatingScreen> {
                   child: ElevatedButton(
                     onPressed: _showSubmitDialog,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
+                      backgroundColor: const Color.fromARGB(255, 81, 60, 98),
+                      minimumSize: Size(double.infinity, 65),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
                     ),
                     child: Text(
                       "Submit",
@@ -267,6 +282,7 @@ class _RatingScreenState extends State<RatingScreen> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
+                          color: const Color.fromARGB(255, 170, 2, 2),
                         ),
                       ),
                       SizedBox(height: 10),
