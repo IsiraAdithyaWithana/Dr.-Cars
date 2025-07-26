@@ -144,7 +144,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
     );
+
+    
   }
+
+  
 
   Widget _buildSmartVehicleDashboardButton() {
     if (_checkingVehicleInfo) {
@@ -456,10 +460,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   );
                 },
+                
               ),
           ],
         ),
       ),
+
+      
 
       body: SingleChildScrollView(
         child: Column(

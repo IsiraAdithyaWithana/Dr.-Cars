@@ -27,6 +27,76 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
   String? _selectedOilType;
   DateTime? _selectedDate;
 
+  Widget _buildServiceRecordsList() {
+  User? user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    return const Center(child: Text("Please log in to see service records."));
+  }
+
+  return StreamBuilder<QuerySnapshot>(
+    stream: FirebaseFirestore.instance
+        .collection('service_records')
+        .where('userId', isEqualTo: user.uid)
+        .orderBy('createdAt', descending: true)
+        .snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+        return const Center(child: Text("No service records found."));
+      }
+
+      return ListView.builder(
+        shrinkWrap: true,
+        itemCount: snapshot.data!.docs.length,
+        itemBuilder: (context, index) {
+          var doc = snapshot.data!.docs[index];
+          var data = doc.data() as Map<String, dynamic>;
+
+          DateTime? date = (data['date'] as Timestamp?)?.toDate();
+
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            elevation: 5,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    data['serviceType'] ?? 'Unknown Service',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  const SizedBox(height: 8),
+                  if (date != null)
+                    Text("Date: ${date.day}/${date.month}/${date.year}"),
+                  Text("Current Mileage: ${data['currentMileage'] ?? '-'} KM"),
+                  Text("Service Mileage: ${data['serviceMileage'] ?? '-'} KM"),
+                  Text("Service Provider: ${data['serviceProvider'] ?? '-'}"),
+                  Text("Service Cost: Rs. ${data['serviceCost'] ?? '-'}"),
+                  if (data['oilType'] != null)
+                    Text("Oil Type: ${data['oilType']}"),
+                  if (data['notes'] != null && data['notes'].toString().trim() != '')
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text("Notes: ${data['notes']}"),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+
   final List<String> _serviceTypes = [
     'Full Service',
     'Oil Filter Change',
@@ -65,43 +135,57 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
     }
   }
 
-  Future<void> _saveServiceRecord() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        User? user = FirebaseAuth.instance.currentUser;
-        if (user != null) {
-          Map<String, dynamic> serviceData = {
-            'userId': user.uid,
-            'currentMileage': _currentMileageController.text,
-            'serviceType': _selectedServiceType,
-            'date': _selectedDate,
-            'serviceMileage': _serviceMileageController.text,
-            'serviceProvider': _serviceProviderController.text,
-            'notes': _notesController.text,
-            'createdAt': FieldValue.serverTimestamp(),
-          };
+ Future<void> _saveServiceRecord() async {
+  if (_formKey.currentState!.validate()) {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in first')),
+      );
+      return;
+    }
 
-          if (_selectedServiceType == 'Oil Filter Change') {
-            serviceData['oilType'] = _selectedOilType;
-          }
+    try {
+      await FirebaseFirestore.instance.collection('service_records').add({
+        'userId': user.uid, // must be here!
+        'currentMileage': _currentMileageController.text.trim(),
+        'serviceMileage': _serviceMileageController.text.trim(),
+        'serviceProvider': _serviceProviderController.text.trim(),
+        'serviceCost': _serviceCostController.text.trim(),
+        'serviceType': _selectedServiceType,
+        'oilType': _selectedOilType,
+        'notes': _notesController.text.trim(),
+        'date': _selectedDate, // if null, it's okay, Firestore accepts null
+        'createdAt': FieldValue.serverTimestamp(), // must be here!
+      });
 
-          await FirebaseFirestore.instance
-              .collection('service_records')
-              .add(serviceData);
+      // Reset form & clear controllers
+      _formKey.currentState!.reset();
+      _currentMileageController.clear();
+      _serviceMileageController.clear();
+      _serviceProviderController.clear();
+      _serviceCostController.clear();
+      _notesController.clear();
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Service record saved successfully')),
-          );
+      setState(() {
+        _selectedServiceType = null;
+        _selectedOilType = null;
+        _selectedDate = null;
+      });
 
-          Navigator.pop(context);
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving service record: $e')),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Service record saved!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error saving record: $e')),
+      );
     }
   }
+}
+
+
+
 
   Widget _buildAnimatedDropdown(
     List<String> items,
@@ -444,42 +528,66 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
                             filled: true,
                             fillColor: Colors.grey[200],
                           ),
+                          
                         ),
+
+
+                        
+
+                        
 
                         const SizedBox(height: 24),
                         Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: _saveServiceRecord,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.black,
-                                  foregroundColor: Colors.white,
-                                  minimumSize: const Size.fromHeight(50),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25),
-                                  ),
-                                ),
-                                child: const Text('Save'),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () => Navigator.pop(context),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey[200],
-                                  foregroundColor: Colors.black,
-                                  minimumSize: const Size.fromHeight(50),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25),
-                                  ),
-                                ),
-                                child: const Text('Cancel'),
-                              ),
-                            ),
-                          ],
-                        ),
+  children: [
+    Expanded(
+      child: ElevatedButton(
+        onPressed: _saveServiceRecord,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          minimumSize: const Size.fromHeight(50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+        ),
+        child: const Text('Save'),
+      ),
+    ),
+    const SizedBox(width: 16),
+    Expanded(
+      child: ElevatedButton(
+        onPressed: () => Navigator.pop(context),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.grey[200],
+          foregroundColor: Colors.black,
+          minimumSize: const Size.fromHeight(50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+        ),
+        child: const Text('Cancel'),
+      ),
+    ),
+  ],
+),
+
+const SizedBox(height: 32),
+
+const Text(
+  'Saved Records:',
+  style: TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+  ),
+),
+
+const SizedBox(height: 16),
+
+Container(
+  height: 300, // adjust as needed
+  child: _buildServiceRecordsList(),
+),
+
                       ],
                     ),
                   ),
@@ -489,6 +597,7 @@ class _ServiceRecordsPageState extends State<ServiceRecordsPage> {
           ),
         ),
       ),
+      
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.black,
