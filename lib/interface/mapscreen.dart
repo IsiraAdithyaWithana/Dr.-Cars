@@ -39,7 +39,7 @@ class _MapScreenState extends State<MapScreen> {
 Future<void> _getRoute(LatLng destination) async {
   final originLat = _userLocation!.latitude!;
   final originLng = _userLocation!.longitude!;
-  final apiKey = "AIzaSyB4WgMn8qywWKjtTz_lboNoIcOM1PbBeco";
+  final apiKey = "AIzaSyCAkq8qyW7RiNAqcy7ZJ3E-nrtuHfoaIs4";
 
   final url =
       "https://maps.googleapis.com/maps/api/directions/json?origin=$originLat,$originLng&destination=${destination.latitude},${destination.longitude}&key=$apiKey";
@@ -530,6 +530,7 @@ Future<void> _getRoute(LatLng destination) async {
                     TileLayer(
                       urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                       subdomains: ['a', 'b', 'c'],
+                      userAgentPackageName: 'com.example.dr_cars',
                     ),
                     if (_distanceText.isNotEmpty)
   Positioned(
